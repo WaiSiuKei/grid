@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "module": "amd",
+    "moduleResolution": "node",
+    "target": "es5",
+    "sourceMap": false,
+    "inlineSourceMap": true,
+    "lib": [
+      "es5",
+      "es2015.collection",
+      "es2015.iterable",
+      "es2015.core",
+      "dom"
+    ],
+    "declaration": false,
+    "outDir": "dist",
+    "noImplicitAny": false,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "experimentalDecorators": true,
+    "noImplicitReturns": true,
+    "baseUrl": ".",
+    "emitDecoratorMetadata": true,
+    "typeRoots": [
+      "./src/typings",
+      "./node_modules/@types"
+    ],
+    "types": [
+    ]
+  },
+  "filesGlob": [
+    "./src/**/*.ts",
+    "!node_modules/**"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test",
+    "defs"
+  ]
+}

@@ -1,0 +1,22 @@
+.slick-headerrow-spacer {
+  display: block;
+  height: 1px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.slick-viewport {
+  width: 100%;
+  overflow: auto;
+  outline: 0;
+  position: relative;
+}
+
+
+.unselectable {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
