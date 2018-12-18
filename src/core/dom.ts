@@ -20,8 +20,8 @@ export function getscrollbarDimensions(dom: HTMLElement) {
   dom.appendChild($innerdiv);
 
   let dim = {
-    width: $outerdiv[0].offsetWidth - $outerdiv[0].clientWidth,
-    height: $outerdiv[0].offsetHeight - $outerdiv[0].clientHeight
+    width: $outerdiv.offsetWidth - $outerdiv.clientWidth,
+    height: $outerdiv.offsetHeight - $outerdiv.clientHeight
   };
 
   dom.removeChild($innerdiv);
@@ -184,7 +184,7 @@ const _manualClassList = new class implements IDomClassList {
 
 const _nativeClassList = new class implements IDomClassList {
   hasClass(node: HTMLElement, className: string): boolean {
-    return className && node.classList && node.classList.contains(className);
+    return !!className && !!node.classList && node.classList.contains(className);
   }
 
   addClasses(node: HTMLElement, ...classNames: string[]): void {
@@ -228,4 +228,8 @@ export function hide(...elements: HTMLElement[]): void {
   for (let element of elements) {
     element.style.display = 'none';
   }
+}
+
+export function setWidth(element: HTMLElement, width: number): void {
+  element.style.width = width + 'px';
 }

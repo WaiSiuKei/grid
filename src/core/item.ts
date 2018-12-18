@@ -87,7 +87,7 @@ export class Group extends NonDataItem {
      */
     groupingKey = null;
 
-    equals(group) {
+    equals(group: Group) {
         return this.value === group.value &&
             this.count === group.count &&
             this.collapsed === group.collapsed &&

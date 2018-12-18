@@ -265,4 +265,8 @@ export class DataView {
     }
     return diff;
   }
+
+  get length(): number {
+    return this.getLength();
+  }
 }

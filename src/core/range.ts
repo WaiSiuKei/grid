@@ -12,7 +12,7 @@ export class Range {
   fromCell: number;
   toRow: number;
   toCell: number;
-  constructor(fromRow, fromCell, toRow, toCell) {
+  constructor(fromRow: number, fromCell: number, toRow: number, toCell: number) {
     if (toRow === undefined && toCell === undefined) {
       toRow = fromRow;
       toCell = fromCell;
@@ -68,7 +68,7 @@ export class Range {
    * @param cell {Integer}
    * @return {Boolean}
    */
-  contains(row, cell) {
+  contains(row: number, cell: number) {
     return row >= this.fromRow && row <= this.toRow &&
       cell >= this.fromCell && cell <= this.toCell;
   }
