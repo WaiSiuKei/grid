@@ -5,28 +5,32 @@ export interface RefreshHints {
   ignoreDiffsAfter: number
 }
 
+export interface IDataViewOptions {
+
+}
+
+export type Datum = { [key: string]: any }
+
 export class DataView {
   // private
-  idProperty = 'id';  // property holding a unique row id
-  items = [];         // data by index
-  rows = [];          // data by row
-  idxById = {};       // indexes by id
-  rowsById = null;    // rows by id; lazy-calculated
-  updated = null;     // updated item ids
-  suspend = false;    // suspends the recalculation
+  idProperty: string = 'id';  // property holding a unique row id
+  items: Datum[];         // data by index
+  rows: Datum[];          // data by row
+  idxById: { [id: string]: number } = Object.create(null);       // indexes by id
+  suspend: boolean = false;    // suspends the recalculation
   refreshHints: RefreshHints = Object.create(null);
   prevRefreshHints: RefreshHints = Object.create(null);
 
-  pagesize = 0;
-  pagenum = 0;
-  totalRows = 0;
+  pagesize: number = 0;
+  pagenum: number = 0;
+  totalRows: number = 0;
   // events
-  onRowCountChanged = new Event();
-  onRowsChanged = new Event();
+  onRowCountChanged: Event = new Event();
+  onRowsChanged: Event = new Event();
 
-  options: any;
+  options: IDataViewOptions;
 
-  constructor(options) {
+  constructor(options: IDataViewOptions) {
     this.options = options;
   }
 
@@ -39,11 +43,11 @@ export class DataView {
     this.refresh();
   }
 
-  setRefreshHints(hints) {
+  setRefreshHints(hints: RefreshHints) {
     this.refreshHints = hints;
   }
 
-  updateIdxById(startingIndex = 0) {
+  updateIdxById(startingIndex: number = 0) {
     let id;
     for (let i = startingIndex, l = this.items.length; i < l; i++) {
       id = this.items[i][this.idProperty];
@@ -68,10 +72,8 @@ export class DataView {
     return this.items;
   }
 
-  setItems(data, objectIdProperty) {
-    if (objectIdProperty !== undefined) {
-      this.idProperty = objectIdProperty;
-    }
+  setItems(data: Datum[], objectIdProperty: string = 'id') {
+    this.idProperty = objectIdProperty;
     this.items = data;
     this.idxById = {};
     this.updateIdxById();
@@ -79,96 +81,65 @@ export class DataView {
     this.refresh();
   }
 
-  getItemByIdx(i) {
-    return this.items[i];
-  }
-
-  getIdxById(id) {
-    return this.idxById[id];
-  }
-
-  ensureRowsByIdCache() {
-    if (!this.rowsById) {
-      this.rowsById = {};
-      for (let i = 0, l = this.rows.length; i < l; i++) {
-        this.rowsById[this.rows[i][this.idProperty]] = i;
-      }
-    }
-  }
-
-  getRowByItem(item) {
-    this.ensureRowsByIdCache();
-    return this.rowsById[item[this.idProperty]];
-  }
-
-  getRowById(id) {
-    this.ensureRowsByIdCache();
-    return this.rowsById[id];
-  }
-
-  getItemById(id) {
+  getItemById(id: string) {
     return this.items[this.idxById[id]];
   }
 
-  mapItemsToRows(itemArray) {
-    let rows = [];
-    this.ensureRowsByIdCache();
-    for (let i = 0, l = itemArray.length; i < l; i++) {
-      let row = this.rowsById[itemArray[i][this.idProperty]];
-      if (row != null) {
-        rows[rows.length] = row;
-      }
-    }
-    return rows;
-  }
+  // mapItemsToRows(itemArray) {
+  //   let rows = [];
+  //   this.ensureRowsByIdCache();
+  //   for (let i = 0, l = itemArray.length; i < l; i++) {
+  //     let row = this.rowsById[itemArray[i][this.idProperty]];
+  //     if (row != null) {
+  //       rows[rows.length] = row;
+  //     }
+  //   }
+  //   return rows;
+  // }
 
-  mapIdsToRows(idArray) {
-    let rows = [];
-    this.ensureRowsByIdCache();
-    for (let i = 0, l = idArray.length; i < l; i++) {
-      let row = this.rowsById[idArray[i]];
-      if (row != null) {
-        rows[rows.length] = row;
-      }
-    }
-    return rows;
-  }
+  // mapIdsToRows(idArray) {
+  //   let rows = [];
+  //   this.ensureRowsByIdCache();
+  //   for (let i = 0, l = idArray.length; i < l; i++) {
+  //     let row = this.rowsById[idArray[i]];
+  //     if (row != null) {
+  //       rows[rows.length] = row;
+  //     }
+  //   }
+  //   return rows;
+  // }
 
-  mapRowsToIds(rowArray) {
-    let ids = [];
-    for (let i = 0, l = rowArray.length; i < l; i++) {
-      if (rowArray[i] < this.rows.length) {
-        ids[ids.length] = this.rows[rowArray[i]][this.idProperty];
-      }
-    }
-    return ids;
-  }
+  // mapRowsToIds(rowArray) {
+  //   let ids = [];
+  //   for (let i = 0, l = rowArray.length; i < l; i++) {
+  //     if (rowArray[i] < this.rows.length) {
+  //       ids[ids.length] = this.rows[rowArray[i]][this.idProperty];
+  //     }
+  //   }
+  //   return ids;
+  // }
 
-  updateItem(id, item) {
+  updateItem(id: string, item: Datum) {
     if (this.idxById[id] === undefined || id !== item[this.idProperty]) {
       throw new Error('Invalid or non-matching id');
     }
     this.items[this.idxById[id]] = item;
-    if (!this.updated) {
-      this.updated = {};
-    }
-    this.updated[id] = true;
     this.refresh();
   }
 
-  insertItem(insertBefore, item) {
+  insertItem(insertBefore: number, item: Datum) {
     this.items.splice(insertBefore, 0, item);
     this.updateIdxById(insertBefore);
     this.refresh();
   }
 
-  addItem(item) {
+  addItem(item: Datum) {
     this.items.push(item);
     this.updateIdxById(this.items.length - 1);
     this.refresh();
   }
 
-  deleteItem(id) {
+  deleteItem(id: string) {
     let idx = this.idxById[id];
     if (idx === undefined) {
       throw new Error('Invalid id');
@@ -183,13 +154,13 @@ export class DataView {
     return this.rows.length;
   }
 
-  getItem(i) {
+  getItem(i: number) {
     let item = this.rows[i];
 
     return item;
   }
 
-  getItemMetadata(i) {
+  getItemMetadata(i: number) {
     let item = this.rows[i];
     if (item === undefined) {
       return null;
@@ -215,21 +186,18 @@ export class DataView {
       diff = this.recalc(this.items);
     }
 
-    this.updated = null;
     this.prevRefreshHints = this.refreshHints;
     this.refreshHints = Object.create(null);
 
     if (countBefore !== this.rows.length) {
-      this.onRowCountChanged.notify({ previous: countBefore, current: this.rows.length, dataView: self }, null, self);
+      this.onRowCountChanged.notify({ previous: countBefore, current: this.rows.length, dataView: this }, void 0, this);
     }
     if (diff.length > 0) {
-      this.onRowsChanged.notify({ rows: diff, dataView: self }, null, self);
+      this.onRowsChanged.notify({ rows: diff, dataView: this }, void 0, this);
     }
   }
 
-  recalc(_items) {
-    this.rowsById = null;
-
+  private recalc(_items: Datum[]) {
     let newRows = _items;
 
     let diff = this.getRowDiffs(this.rows, newRows);
@@ -239,7 +207,7 @@ export class DataView {
     return diff;
   }
 
-  getRowDiffs(rows, newRows) {
+  getRowDiffs(rows: Datum[], newRows: Datum[]) {
     let item, r, eitherIsNonData, diff = [];
     let from = 0, to = newRows.length;
 

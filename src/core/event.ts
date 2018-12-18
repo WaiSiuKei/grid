@@ -82,7 +82,7 @@ export class Event {
    *      The scope ("this") within which the handler will be executed.
    *      If not specified, the scope will be set to the <code>Event</code> instance.
    */
-  notify(args: Object, e: EventData, context = null) {
+  notify(args: Object, e?: EventData, context?: any) {
     e = e || new EventData();
 
     let returnValue;
