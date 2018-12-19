@@ -1,5 +1,38 @@
 {
+  "scripts": {
+    "build": "gulp",
+    "watch": "gulp watch",
+    "start": "gulp serve",
+    "serve:dist": "gulp serve:dist",
+    "lib:webpack": "gulp clean && webpack --config ./conf/webpack.lib.conf.js",
+    "lib": "rollup -c ./conf/rollup.conf.js",
+    "test": "gulp test",
+    "test:auto": "gulp test:auto",
+    "test:unit": "karma start conf/karma.unit.conf.js"
+  },
   "devDependencies": {
-    "typescript": "^3.2.1"
+    "@babel/core": "^7.2.2",
+    "babel-loader": "^8.0.4",
+    "browser-sync": "^2.26.3",
+    "css-loader": "^2.0.1",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "gulp": "github:gulpjs/gulp#4.0",
+    "gulp-filter": "^5.1.0",
+    "gulp-hub": "github:frankwallis/gulp-hub#4.1.0",
+    "gulp-sass": "^4.0.2",
+    "gulp-util": "^3.0.8",
+    "html-webpack-plugin": "^3.2.0",
+    "sass-loader": "^7.1.0",
+    "style-loader": "^0.23.1",
+    "ts-loader": "^5.3.1",
+    "tslint-loader": "^3.5.4",
+    "typescript": "^3.2.1",
+    "webpack": "^4.27.1",
+    "webpack-dev-server": "^3.1.10",
+    "webpack-fail-plugin": "^2.0.0",
+    "webpack-hot-middleware": "^2.24.3"
+  },
+  "dependencies": {
+    "browser-sync-spa": "^1.0.3"
   }
 }

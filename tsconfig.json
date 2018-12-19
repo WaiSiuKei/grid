@@ -48,6 +48,7 @@
     "node_modules",
     "dist",
     "test",
-    "defs"
+    "defs",
+    "conf"
   ]
 }

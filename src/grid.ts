@@ -1,3 +1,4 @@
+import './grid.scss';
 import { addClass, addClasses, clearNode, disableSelection, getscrollbarDimensions, hide, maxSupportedCssHeight, removeClass } from './core/dom';
 import { Datum } from './dataView';
 
@@ -123,7 +124,7 @@ export class Grid {
   activeCell: number | null;
   activeCellNode: HTMLElement | null;
 
-  rowsCache: Array<RowCache>;
+  rowsCache: Array<RowCache> = [];
   renderedRows = 0;
   numVisibleRows: number;
   prevScrollTop = 0;
@@ -133,11 +134,11 @@ export class Grid {
   prevScrollLeft = 0;
   scrollLeft = 0;
 
-  cellCssClasses: { [key: string]: { [row: number]: { [cell: string]: string } } };
+  cellCssClasses: { [key: string]: { [row: number]: { [cell: string]: string } } } = Object.create(null);
 
   columnsById: { [id: string]: number } = Object.create(null);
-  columnPosLeft: number[];
-  columnPosRight: number[];
+  columnPosLeft: number[] = [];
+  columnPosRight: number[] = [];
 
   pagingActive = false;
   pagingIsLastPage = false;
@@ -146,7 +147,7 @@ export class Grid {
   h_render: number;
   h_postrender: number;
   h_postrenderCleanup: number;
-  postProcessedRows: { [row: number]: { [col: number]: 'R' | 'C' } };
+  postProcessedRows: { [row: number]: { [col: number]: 'R' | 'C' } } = Object.create(null);
   postProcessToRow: number;
   postProcessFromRow: number;
   postProcessedCleanupQueue: Array<{
@@ -261,7 +262,7 @@ export class Grid {
     }
 
     this.$headerScroller = document.createElement('div');
-    addClasses(this.$headerScroller, 'slick-header', 'ui-state-default');
+    addClass(this.$headerScroller, 'slick-header');
     this.$container.appendChild(this.$headerScroller);
 
     this.$headers = document.createElement('div');
@@ -270,7 +271,7 @@ export class Grid {
     this.$container.appendChild(this.$headers);
 
     this.$headerRowScroller = document.createElement('div');
-    addClasses(this.$headerRowScroller, 'slick-headerrow', 'ui-state-default');
+    addClass(this.$headerRowScroller, 'slick-headerrow');
     this.$container.appendChild(this.$headerRowScroller);
 
     this.$headerRow = document.createElement('div');
@@ -281,7 +282,7 @@ export class Grid {
     addClass(this.$headerRow, 'slick-headerrow-spacer');
     this.$headerRowScroller.appendChild(this.$headerRowSpacer);
 
-    if (!options.showHeaderRow) {
+    if (!this.options.showHeaderRow) {
       hide(this.$headerRowScroller);
     }
 
@@ -304,7 +305,7 @@ export class Grid {
     this.$headers.style.width = this.getHeadersWidth() + 'px';
     this.$headerRowSpacer.style.width = this.getCanvasWidth() + this.scrollbarDimensions.width + 'px';
 
-    if (!options.explicitInitialization) {
+    if (!this.options.explicitInitialization) {
       this.init();
     }
   }
@@ -357,7 +358,7 @@ export class Grid {
       // be enabled there so that editors work as expected); note that
       // selection in grid cells (grid body) is already unavailable in
       // all browsers except IE
-      disableSelection(this.$headers); // disable all text selection in header (including input and textarea)
+      // disableSelection(this.$headers); // disable all text selection in header (including input and textarea)
 
       this.updateColumnCaches();
       this.createColumnHeaders();
@@ -592,10 +593,10 @@ export class Grid {
   }
 
   getViewportHeight() {
-    return parseFloat(this.$container.style.height || '') -
-      parseFloat(this.$container.style.paddingTop || '') -
-      parseFloat(this.$container.style.paddingBottom || '') -
-      parseFloat(this.$headerScroller.style.height || '') -
+    return parseFloat(this.$container.style.height || '0') -
+      parseFloat(this.$container.style.paddingTop || '0') -
+      parseFloat(this.$container.style.paddingBottom || '0') -
+      parseFloat(this.$headerScroller.style.height || '0') -
       this.getVBoxDelta(this.$headerScroller) - (this.options.showHeaderRow ? this.options.headerRowHeight + this.getVBoxDelta(this.$headerRowScroller) : 0);
   }
 
