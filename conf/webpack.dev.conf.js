@@ -56,7 +56,7 @@ module.exports = {
   },
   entry: [
     'webpack/hot/dev-server',
-    'webpack-hot-middleware/client?quiet=true',
+    'webpack-hot-middleware/client?reload=true',
     `./${conf.path.src('index')}`
   ]
 };

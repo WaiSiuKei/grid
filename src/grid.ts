@@ -1,5 +1,5 @@
 import './grid.scss';
-import { addClass, addClasses, clearNode, disableSelection, getscrollbarDimensions, hide, maxSupportedCssHeight, removeClass } from './core/dom';
+import { addClass, addClasses, clearNode, getscrollbarDimensions, hide, maxSupportedCssHeight, removeClass } from './core/dom';
 import { Datum } from './dataView';
 
 function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum, grid: Grid) {
@@ -360,6 +360,7 @@ export class Grid {
       // all browsers except IE
       // disableSelection(this.$headers); // disable all text selection in header (including input and textarea)
 
+      debugger
       this.updateColumnCaches();
       this.createColumnHeaders();
       this.createCssRules();
