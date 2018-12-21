@@ -1,8 +1,3 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-'use strict';
 
 const userAgent = navigator.userAgent;
 
@@ -16,8 +11,4 @@ export const isWebKit = (userAgent.indexOf('AppleWebKit') >= 0);
 export const isChrome = (userAgent.indexOf('Chrome') >= 0);
 export const isSafari = (userAgent.indexOf('Chrome') === -1) && (userAgent.indexOf('Safari') >= 0);
 export const isIPad = (userAgent.indexOf('iPad') >= 0);
-
-export const canUseTranslate3d = !isFirefox;
-
-export const enableEmptySelectionClipboard = isWebKit;
-
+export const isEdgeWebView = isEdge && (userAgent.indexOf('WebView/') >= 0);
