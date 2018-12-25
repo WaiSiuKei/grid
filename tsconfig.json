@@ -3,8 +3,7 @@
     "module": "amd",
     "moduleResolution": "node",
     "target": "es5",
-    "sourceMap": false,
-    "inlineSourceMap": true,
+    "sourceMap": true,
     "lib": [
       "es5",
       "es2015",

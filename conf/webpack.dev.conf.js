@@ -8,10 +8,11 @@ const FailPlugin = require('webpack-fail-plugin');
 module.exports = {
   module: {
     rules: [
+      { enforce: 'pre', test: /\.js$/, loader: 'source-map-loader' },
       {
         test: /\.ts$/,
         exclude: /node_modules/,
-        loaders: ['babel-loader', 'ts-loader']
+        loaders: ['ts-loader']
       },
       {
         test: /\.(css|scss)$/,
@@ -33,7 +34,6 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin(),
     new webpack.LoaderOptionsPlugin({
       options: {
-        resolve: {},
         ts: {
           configFile: 'tsconfig.json'
         }
@@ -41,7 +41,7 @@ module.exports = {
       debug: true
     })
   ],
-  devtool: 'eval',
+  devtool: 'source-map',
   output: {
     path: path.join(process.cwd(), conf.paths.tmp),
     filename: 'index.js'
@@ -53,6 +53,9 @@ module.exports = {
       '.js',
       '.ts'
     ],
+    alias: {
+      src: path.resolve(__dirname, '../src'),
+    }
   },
   entry: [
     'webpack/hot/dev-server',
