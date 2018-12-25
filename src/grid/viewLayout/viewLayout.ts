@@ -19,14 +19,14 @@ export class ViewLayout extends Disposable implements IViewLayout {
     super();
 
     this._configuration = configuration;
-    this._linesLayout = new LinesLayout(lineCount, this._configuration.editor.lineHeight);
+    this._linesLayout = new LinesLayout(lineCount, this._configuration.grid.lineHeight);
 
     this.scrollable = this._register(new Scrollable(0, scheduleAtNextAnimationFrame));
     this._configureSmoothScrollDuration();
 
     this.scrollable.setScrollDimensions({
-      width: configuration.editor.layoutInfo.contentWidth,
-      height: configuration.editor.layoutInfo.contentHeight
+      width: configuration.grid.layoutInfo.contentWidth,
+      height: configuration.grid.layoutInfo.contentHeight
     });
     this.onDidScroll = this.scrollable.onScroll;
 
@@ -46,7 +46,7 @@ export class ViewLayout extends Disposable implements IViewLayout {
   }
 
   private _getHorizontalScrollbarHeight(scrollDimensions: IScrollDimensions): number {
-    if (this._configuration.editor.viewInfo.scrollbar.horizontal === ScrollbarVisibility.Hidden) {
+    if (this._configuration.grid.viewInfo.scrollbar.horizontal === ScrollbarVisibility.Hidden) {
       // horizontal scrollbar not visible
       return 0;
     }
@@ -54,7 +54,7 @@ export class ViewLayout extends Disposable implements IViewLayout {
       // horizontal scrollbar not visible
       return 0;
     }
-    return this._configuration.editor.viewInfo.scrollbar.horizontalScrollbarSize;
+    return this._configuration.grid.viewInfo.scrollbar.horizontalScrollbarSize;
   }
 
   private _getTotalHeight(): number {

@@ -6,6 +6,7 @@
 import { Position } from 'src/grid/core/position';
 import { Range } from 'src/grid/core/range';
 import { IViewLayout } from 'src/grid/viewModel/viewModel';
+import { ViewportData } from 'src/grid/viewLayout/viewLinesViewportData';
 
 export interface IViewRows {
 }
@@ -26,9 +27,11 @@ export abstract class RestrictedRenderingContext {
   public readonly viewportHeight: number;
 
   private readonly _viewLayout: IViewLayout;
+  private readonly viewportData: ViewportData;
 
-  constructor(viewLayout: IViewLayout,) {
+  constructor(viewLayout: IViewLayout, viewportData?: ViewportData) {
     this._viewLayout = viewLayout;
+    // this.viewportData = viewportData;
 
     this.scrollWidth = this._viewLayout.getScrollWidth();
     this.scrollHeight = this._viewLayout.getScrollHeight();

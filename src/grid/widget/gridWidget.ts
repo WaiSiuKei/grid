@@ -10,7 +10,7 @@ import { scheduleAtNextAnimationFrame } from 'src/base/browser/dom';
 import { ViewOutgoingEvents } from 'src/grid/view/viewOutgoingEvents';
 import { GridModel } from 'src/grid/model/gridModel';
 
-let EDITOR_ID = 0;
+let GRID_ID = 0;
 
 export class GridWidget extends Disposable implements IGrid {
   private readonly _domElement: HTMLElement;
@@ -26,11 +26,11 @@ export class GridWidget extends Disposable implements IGrid {
   ) {
     super();
     this._domElement = domElement;
-    this._id = (++EDITOR_ID);
+    this._id = (++GRID_ID);
 
     options = options || {};
 
-    this._configuration = { editor: <IGridOptions>{ ...GRID_DEFAULTS, ...options } };
+    this._configuration = { grid: <IGridOptions>{ ...GRID_DEFAULTS, ...options } };
 
     this._attachModel(new GridModel());
   }

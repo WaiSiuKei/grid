@@ -6,7 +6,7 @@ export interface IGrid {
 
 export interface IConfiguration {
 
-  readonly editor: IGridOptions;
+  readonly grid: IGridOptions;
 }
 
 export interface IScrollEvent {

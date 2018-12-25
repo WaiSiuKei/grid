@@ -41,7 +41,7 @@ module.exports = {
       debug: true
     })
   ],
-  devtool: 'source-map',
+  devtool: 'eval-source-map',
   output: {
     path: path.join(process.cwd(), conf.paths.tmp),
     filename: 'index.js'

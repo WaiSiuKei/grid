@@ -63,8 +63,8 @@ export interface GridLayoutInfo {
 export const GRID_DEFAULTS: Partial<IGridOptions> = {
   viewInfo: {
     scrollbar: {
-      vertical: ScrollbarVisibility.Auto,
-      horizontal: ScrollbarVisibility.Auto,
+      vertical: ScrollbarVisibility.Visible,
+      horizontal: ScrollbarVisibility.Visible,
       arrowSize: 11,
       useShadows: true,
       verticalHasArrows: false,

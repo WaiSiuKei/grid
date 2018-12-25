@@ -15,6 +15,7 @@ export class ViewContext {
     model: IViewModel,
     privateViewEventBus: ViewEventDispatcher
   ) {
+    this.configuration = configuration;
     this.model = model;
     this.viewLayout = model.viewLayout;
     this.privateViewEventBus = privateViewEventBus;

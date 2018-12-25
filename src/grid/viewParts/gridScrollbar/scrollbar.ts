@@ -22,7 +22,7 @@ export class GridScrollbar extends ViewPart {
   ) {
     super(context);
 
-    const editor = this._context.configuration.editor;
+    const editor = this._context.configuration.grid;
     const configScrollbarOpts = editor.viewInfo.scrollbar;
 
     let scrollbarOptions: ScrollableElementCreationOptions = {
@@ -87,7 +87,7 @@ export class GridScrollbar extends ViewPart {
   }
 
   private _setLayout(): void {
-    const layoutInfo = this._context.configuration.editor.layoutInfo;
+    const layoutInfo = this._context.configuration.grid.layoutInfo;
 
     this.scrollbarDomNode.setLeft(layoutInfo.contentLeft);
 

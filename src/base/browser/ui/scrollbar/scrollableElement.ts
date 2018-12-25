@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'src/css!./media/scrollbars';
 import * as dom from 'src/base/browser/dom';
 import { FastDomNode, createFastDomNode } from 'src/base/browser/fastDomNode';
 import { IMouseEvent, StandardWheelEvent, IMouseWheelEvent } from 'src/base/browser/mouseEvent';
@@ -182,31 +181,18 @@ export abstract class AbstractScrollableElement extends Widget {
 			onDragStart: () => this._onDragStart(),
 			onDragEnd: () => this._onDragEnd(),
 		};
+
 		this._verticalScrollbar = this._register(new VerticalScrollbar(this._scrollable, this._options, scrollbarHost));
 		this._horizontalScrollbar = this._register(new HorizontalScrollbar(this._scrollable, this._options, scrollbarHost));
 
 		this._domNode = document.createElement('div');
-		this._domNode.className = 'monaco-scrollable-element ' + this._options.className;
+		this._domNode.className = 'nila-scrollable-element ' + this._options.className;
 		this._domNode.setAttribute('role', 'presentation');
 		this._domNode.style.position = 'relative';
 		this._domNode.style.overflow = 'hidden';
 		this._domNode.appendChild(element);
 		this._domNode.appendChild(this._horizontalScrollbar.domNode.domNode);
 		this._domNode.appendChild(this._verticalScrollbar.domNode.domNode);
-
-		if (this._options.useShadows) {
-			this._leftShadowDomNode = createFastDomNode(document.createElement('div'));
-			this._leftShadowDomNode.setClassName('shadow');
-			this._domNode.appendChild(this._leftShadowDomNode.domNode);
-
-			this._topShadowDomNode = createFastDomNode(document.createElement('div'));
-			this._topShadowDomNode.setClassName('shadow');
-			this._domNode.appendChild(this._topShadowDomNode.domNode);
-
-			this._topLeftShadowDomNode = createFastDomNode(document.createElement('div'));
-			this._topLeftShadowDomNode.setClassName('shadow top-left-corner');
-			this._domNode.appendChild(this._topLeftShadowDomNode.domNode);
-		}
 
 		this._listenOnDomNode = this._options.listenOnDomNode || this._domNode;
 
@@ -237,13 +223,6 @@ export abstract class AbstractScrollableElement extends Widget {
 		return this._domNode;
 	}
 
-	public getOverviewRulerLayoutInfo(): IOverviewRulerLayoutInfo {
-		return {
-			parent: this._domNode,
-			insertBefore: this._verticalScrollbar.domNode.domNode,
-		};
-	}
-
 	/**
 	 * Delegate a mouse down event to the vertical scrollbar.
 	 * This is to help with clicking somewhere else and having the scrollbar react.
@@ -269,7 +248,7 @@ export abstract class AbstractScrollableElement extends Widget {
 		if (platform.isMacintosh) {
 			this._options.className += ' mac';
 		}
-		this._domNode.className = 'monaco-scrollable-element ' + this._options.className;
+		this._domNode.className = 'nila-scrollable-element ' + this._options.className;
 	}
 
 	/**

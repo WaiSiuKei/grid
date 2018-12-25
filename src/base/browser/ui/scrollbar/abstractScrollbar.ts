@@ -1,4 +1,4 @@
-import './scrollbar.css';
+import './scrollbars.css';
 
 import * as dom from 'src/base/browser/dom';
 import { FastDomNode, createFastDomNode } from 'src/base/browser/fastDomNode';

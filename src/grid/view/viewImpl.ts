@@ -10,8 +10,9 @@ import { isInDOM, runAtThisOrScheduleAtNextAnimationFrame } from 'src/base/brows
 import { Cursor } from '../controller/cursorImpl';
 import { ViewOutgoingEvents } from 'src/grid/view/viewOutgoingEvents';
 import { ViewPart } from 'src/grid/view/viewPart';
-import { RenderingContext } from 'src/grid/view/renderingContext';
 import { IConfiguration } from 'src/grid/gridCommon';
+import { GridScrollbar } from 'src/grid/viewParts/gridScrollbar/scrollbar';
+import { RenderingContext } from 'src/grid/view/renderingContext';
 
 export class View extends ViewEventHandler {
 
@@ -25,8 +26,10 @@ export class View extends ViewEventHandler {
   private readonly outgoingEvents: ViewOutgoingEvents;
 
   // Dom nodes
-  private linesContent: FastDomNode<HTMLElement>;
+  private rowsContent: FastDomNode<HTMLElement>;
+  private header: FastDomNode<HTMLElement>;
   public domNode: FastDomNode<HTMLElement>;
+  private overflowGuardContainer: FastDomNode<HTMLElement>;
 
   // Actual mutable state
   private _renderAnimationFrame: IDisposable | null;
@@ -59,12 +62,29 @@ export class View extends ViewEventHandler {
 
   private createViewParts(): void {
     // These two dom nodes must be constructed up front, since references are needed in the layout provider (scrolling & co.)
-    this.linesContent = createFastDomNode(document.createElement('div'));
-    this.linesContent.setClassName('lines-content' + ' monaco-editor-background');
-    this.linesContent.setPosition('absolute');
+    this.rowsContent = createFastDomNode(document.createElement('div'));
+    this.rowsContent.setClassName('rows-content' + ' nila-editor-background');
+    this.rowsContent.setPosition('absolute');
+
+    this.header = createFastDomNode(document.createElement('div'));
+    this.header.setClassName('header');
+    this.header.setPosition('absolute');
+
+    this.overflowGuardContainer = createFastDomNode(document.createElement('div'));
+    this.overflowGuardContainer.setClassName('overflow-guard');
 
     this.domNode = createFastDomNode(document.createElement('div'));
+    this.domNode.setClassName(this.getGridClassName());
 
+    let scrollbar = new GridScrollbar(this._context, this.rowsContent, this.domNode, this.overflowGuardContainer);
+    this.viewParts.push(scrollbar);
+
+    this.overflowGuardContainer.appendChild(scrollbar.getDomNode());
+    this.domNode.appendChild(this.overflowGuardContainer);
+  }
+
+  private getGridClassName() {
+    return 'nila-grid';
   }
 
   private _flushAccumulatedAndRenderNow(): void {
@@ -72,9 +92,15 @@ export class View extends ViewEventHandler {
   }
 
   private _setLayout(): void {
-    // const layoutInfo = this._context.configuration.editor.layoutInfo;
-    // this.domNode.setWidth(layoutInfo.width);
-    // this.domNode.setHeight(layoutInfo.height);
+    const layoutInfo = this._context.configuration.grid.layoutInfo;
+    this.domNode.setWidth(layoutInfo.width);
+    this.domNode.setHeight(layoutInfo.height);
+
+    this.overflowGuardContainer.setWidth(layoutInfo.width);
+    this.overflowGuardContainer.setHeight(layoutInfo.height);
+
+    this.rowsContent.setWidth(1000000);
+    this.rowsContent.setHeight(1000000);
 
   }
   // --- begin event handlers
@@ -142,10 +168,9 @@ export class View extends ViewEventHandler {
     }
 
     let viewPartsToRender = this._getViewPartsToRender();
-
-    // const partialViewportData = this._context.viewLayout.getLinesViewportData();
+    // const partialViewportData = this._context.viewLayout.getRowsViewportData();
     // this._context.model.setViewport(partialViewportData.startLineNumber, partialViewportData.endLineNumber, partialViewportData.centeredLineNumber);
-
+    //
     let renderingContext = new RenderingContext(this._context.viewLayout);
 
     // Render the rest of the parts
