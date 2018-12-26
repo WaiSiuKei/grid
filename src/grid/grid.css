@@ -32,6 +32,7 @@
   cursor: pointer;
   overflow: hidden;
   width: 100%;
+  height: 20px;
 }
 
 .nila-grid .nila-grid-rows > .nila-grid-row > .content {

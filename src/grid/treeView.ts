@@ -123,7 +123,6 @@ export class TreeView {
   }
 
   private render(scrollTop: number, viewHeight: number,): void {
-
     let i: number;
     let stop: number;
 
@@ -153,10 +152,8 @@ export class TreeView {
 
     let topItem = this.indexAt(renderTop);
 
-    if (topItem) {
-      let t = (this.getItemTop(topItem) - renderTop);
-      this.rowsContainer.style.top = clamp(t, RowHeight, 0) + 'px';
-    }
+    let t = (this.getItemTop(topItem) - renderTop);
+    this.rowsContainer.style.top = clamp(t, RowHeight, -RowHeight) + 'px';
 
     // this.rowsContainer.style.left = -scrollLeft + 'px';
     // this.rowsContainer.style.width = `${Math.max(scrollWidth, viewWidth)}px`;
@@ -175,7 +172,6 @@ export class TreeView {
     addClass(d, 'nila-grid-row');
     d.dataset.row = index.toString();
     d.innerText = index.toString();
-    d.style.height = RowHeight + 'px';
     let next = this.rowsContainer.querySelector(`div[data-row='${index + 1}']`);
     if (next) {
       this.rowsContainer.insertBefore(d, next);
