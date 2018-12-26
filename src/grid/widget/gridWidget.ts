@@ -9,6 +9,7 @@ import { ViewModel } from 'src/grid/viewModel/viewModelImpl';
 import { scheduleAtNextAnimationFrame } from 'src/base/browser/dom';
 import { ViewOutgoingEvents } from 'src/grid/view/viewOutgoingEvents';
 import { GridModel } from 'src/grid/model/gridModel';
+import { INewScrollPosition } from 'src/base/common/scrollable';
 
 let GRID_ID = 0;
 
@@ -19,6 +20,7 @@ export class GridWidget extends Disposable implements IGrid {
 
   // --- Members logically associated to a model
   protected _view: View;
+  protected viewModel: ViewModel;
 
   constructor(
     domElement: HTMLElement,
@@ -36,11 +38,11 @@ export class GridWidget extends Disposable implements IGrid {
   }
 
   protected _attachModel(model: IModel): void {
-    const viewModel = new ViewModel(this._id, this._configuration, model, (callback) => scheduleAtNextAnimationFrame(callback));
+    this.viewModel = new ViewModel(this._id, this._configuration, model, (callback) => scheduleAtNextAnimationFrame(callback));
 
-    const cursor = new Cursor(this._configuration, model, viewModel);
+    const cursor = new Cursor(this._configuration, model, this.viewModel);
 
-    this._createView(viewModel, cursor);
+    this._createView(this.viewModel, cursor);
   }
 
   _createView(viewModel: IViewModel, cursor: Cursor) {
@@ -50,6 +52,26 @@ export class GridWidget extends Disposable implements IGrid {
 
     view.render(false, true);
     this._view = view;
+  }
+
+  public setScrollLeft(newScrollLeft: number): void {
+    if (typeof newScrollLeft !== 'number') {
+      throw new Error('Invalid arguments');
+    }
+    this.viewModel.viewLayout.setScrollPositionNow({
+      scrollLeft: newScrollLeft
+    });
+  }
+  public setScrollTop(newScrollTop: number): void {
+    if (typeof newScrollTop !== 'number') {
+      throw new Error('Invalid arguments');
+    }
+    this.viewModel.viewLayout.setScrollPositionNow({
+      scrollTop: newScrollTop
+    });
+  }
+  public setScrollPosition(position: INewScrollPosition): void {
+    this.viewModel.viewLayout.setScrollPositionNow(position);
   }
 
   public render(): void {
