@@ -129,6 +129,8 @@ export class GridView {
     let renderBottom = scrollTop + viewHeight;
     let thisRenderBottom = this.lastRenderTop + this.lastRenderHeight;
 
+    if (renderTop && renderTop === this.lastRenderTop) return;
+
     // when view scrolls down, start rendering from the renderBottom
     for (i = this.indexAfter(renderBottom) - 1, stop = this.indexAt(Math.max(thisRenderBottom, renderTop)); i >= stop; i--) {
       this.insertItemInDOM(i);
