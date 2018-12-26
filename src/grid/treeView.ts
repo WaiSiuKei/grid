@@ -2,6 +2,7 @@ import { ScrollbarVisibility } from 'src/base/common/scrollable';
 import { Item, TreeModel } from 'src/grid/treeModel';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
 import { addClass, getContentHeight, getContentWidth } from 'src/base/browser/dom';
+import { clamp } from 'src/base/common/number';
 
 const RowHeight = 20;
 
@@ -153,7 +154,8 @@ export class TreeView {
     let topItem = this.indexAt(renderTop);
 
     if (topItem) {
-      this.rowsContainer.style.top = (this.getItemTop(topItem) - renderTop) + 'px';
+      let t = (this.getItemTop(topItem) - renderTop);
+      this.rowsContainer.style.top = clamp(t, RowHeight, 0) + 'px';
     }
 
     // this.rowsContainer.style.left = -scrollLeft + 'px';
