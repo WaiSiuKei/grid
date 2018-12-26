@@ -1,17 +1,17 @@
 import { ScrollbarVisibility } from 'src/base/common/scrollable';
-import { Item, TreeModel } from 'src/grid/treeModel';
+import { Item, GridModel } from 'src/grid/gridModel';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
 import { addClass, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
 
 const RowHeight = 20;
 
-export class TreeView {
+export class GridView {
 
   private static counter: number = 0;
   private instanceId: number;
 
-  private model: TreeModel;
+  private model: GridModel;
 
   private domNode: HTMLElement;
   private wrapper: HTMLElement;
@@ -21,10 +21,10 @@ export class TreeView {
   private lastRenderTop: number;
   private lastRenderHeight: number;
 
-  constructor(container: HTMLElement, model: TreeModel) {
+  constructor(container: HTMLElement, model: GridModel) {
 
-    TreeView.counter++;
-    this.instanceId = TreeView.counter;
+    GridView.counter++;
+    this.instanceId = GridView.counter;
 
     this.model = model;
 
@@ -37,7 +37,6 @@ export class TreeView {
   private createElement(container: HTMLElement) {
     this.domNode = document.createElement('div');
     this.domNode.className = `nila-grid nila-grid-instance-${this.instanceId}`;
-    // to allow direct tabbing into the tree instead of first focusing the tree
 
     this.wrapper = document.createElement('div');
     this.wrapper.className = 'nila-grid-wrapper';

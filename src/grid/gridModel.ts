@@ -1,4 +1,4 @@
-import { Datum, IDataSource } from 'src/grid/tree';
+import { Datum, IDataSource } from 'src/grid/grid';
 
 export class Item {
   public id: string;
@@ -10,7 +10,7 @@ export class Item {
   }
 }
 
-export class TreeModel {
+export class GridModel {
   items: Item[];
 
   constructor(ds: IDataSource) {

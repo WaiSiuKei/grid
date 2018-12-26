@@ -1,6 +1,3 @@
-export interface ITree {
-}
-
 export interface Datum {
   [key: string]: any
 }
@@ -10,7 +7,7 @@ export interface IDataSource {
   length: number
 }
 
-export interface ITreeOptions {
+export interface IGridOptions {
 
 }
 

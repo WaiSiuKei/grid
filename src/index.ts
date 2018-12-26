@@ -36,9 +36,9 @@ for (var i = 0; i < 500; i++) {
 // });
 //
 
-import { Tree } from 'src/grid/treeImpl';
+import { Grid } from 'src/grid/gridImpl';
 
-let t = new Tree(document.getElementById('myGrid'), {
+let t = new Grid(document.getElementById('myGrid'), {
   items: data,
   length: data.length
 });
