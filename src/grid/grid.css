@@ -1,5 +1,40 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 .nila-grid {
-  background-color: #282a36;
+  height: 100%;
+  width: 100%;
 
+  white-space: nowrap;
+  user-select: none;
   position: relative;
+}
+
+.nila-grid > .nila-scrollable-element {
+  height: 100%;
+}
+
+.nila-grid > .nila-scrollable-element > .nila-grid-wrapper {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.nila-grid .nila-grid-rows {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.nila-grid .nila-grid-rows > .nila-grid-row {
+  box-sizing: border-box;
+  cursor: pointer;
+  overflow: hidden;
+  width: 100%;
+}
+
+.nila-grid .nila-grid-rows > .nila-grid-row > .content {
+  position: relative;
+  height: 100%;
 }
