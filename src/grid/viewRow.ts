@@ -10,8 +10,11 @@ function defaultFormatter(row: number, cell: number, value: any, columnDef: IGri
 }
 
 export class ViewCell implements IDisposable {
-  private value: any;
   public width: number;
+  public left: number;
+  public right: number;
+
+  private value: any;
   private domNode: HTMLElement;
   private host: HTMLElement;
   constructor(container: HTMLElement, row: number, cell: number, datum: Datum, col: IGridColumnDefinition, left: number) {
@@ -27,6 +30,8 @@ export class ViewCell implements IDisposable {
     this.width = col.width || 80;
     el.style.width = `${this.width}px`;
     el.style.left = left + 'px';
+    this.left = left;
+    this.right = this.left + this.width;
     this.domNode = el;
   }
 
@@ -46,7 +51,6 @@ export class ViewCell implements IDisposable {
 export class ViewRow implements IDisposable {
   cells: ViewCell[] = [];
   domNode: HTMLElement;
-  widths: number[] = [];
 
   mounted: boolean = false;
   host: HTMLElement;
@@ -62,19 +66,22 @@ export class ViewRow implements IDisposable {
       let col = columnDefinations[i];
       let c = new ViewCell(container, rowIndex, i, data, col, left);
       this.cells.push(c);
-      this.widths.push(c.width);
       left += c.width;
     }
   }
 
   mount(slibing?: ViewRow) {
     this.mounted = true;
-    this.cells.forEach(c => c.mount());
     if (slibing) {
       this.host.insertBefore(this.domNode, slibing.domNode);
     } else {
       this.host.appendChild(this.domNode);
     }
+  }
+
+  render(scrollLeft: number, viewWidth: number) {
+    // console.log(scrollLeft, viewWidth);
+    this.cells.forEach(c => c.mount());
   }
 
   dispose() {

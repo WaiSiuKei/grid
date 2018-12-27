@@ -9,10 +9,23 @@
   white-space: nowrap;
   user-select: none;
   position: relative;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.nila-grid .nila-grid-header {
+  box-sizing: border-box;
+  cursor: pointer;
+  overflow: hidden;
+  width: 100%;
+  height: 20px;
+
+  position: relative;
 }
 
 .nila-grid > .nila-scrollable-element {
-  height: 100%;
+  width: 100%;
 }
 
 .nila-grid > .nila-scrollable-element > .nila-grid-wrapper {

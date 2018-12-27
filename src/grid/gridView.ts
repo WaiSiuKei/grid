@@ -6,6 +6,7 @@ import { clamp } from 'src/base/common/number';
 import { IGridColumnDefinition } from 'src/grid/grid';
 import { ViewRow } from 'src/grid/viewRow';
 import { isNumber } from 'src/base/common/types';
+import { ViewHeaderRow } from 'src/grid/viewHeader';
 
 const RowHeight = 20;
 
@@ -20,6 +21,7 @@ export class GridView {
   private wrapper: HTMLElement;
   private rowsContainer: HTMLElement;
   private scrollableElement: ScrollableElement;
+  private header: ViewHeaderRow;
 
   private lastRenderTop: number;
   private lastRenderHeight: number;
@@ -45,6 +47,8 @@ export class GridView {
     this.domNode = document.createElement('div');
     this.domNode.className = `nila-grid nila-grid-instance-${this.instanceId}`;
 
+    this.header = new ViewHeaderRow(this.cols);
+
     this.wrapper = document.createElement('div');
     this.wrapper.className = 'nila-grid-wrapper';
     this.scrollableElement = new ScrollableElement(this.wrapper, {
@@ -54,6 +58,7 @@ export class GridView {
     });
 
     this.scrollableElement.onScroll((e) => {
+      console.log(e);
       this.render(e);
     });
 
@@ -61,8 +66,11 @@ export class GridView {
     this.rowsContainer.className = 'nila-grid-rows';
 
     this.wrapper.appendChild(this.rowsContainer);
-    this.domNode.appendChild(this.scrollableElement.getDomNode());
+    this.domNode.appendChild(this.header.domNode);
+    let scroll = this.scrollableElement.getDomNode();
     container.appendChild(this.domNode);
+    scroll.style.height = getContentHeight(this.domNode) - getContentHeight(this.header.domNode) + 'px';
+    this.domNode.appendChild(scroll);
   }
 
   public layout(height?: number, width?: number): void {
@@ -73,7 +81,7 @@ export class GridView {
     this.viewWidth = w;
     this.scrollWidth = this.getContentWidth();
 
-    this.render(h);
+    this.render(h, w);
   }
 
   getContentHeight(): number {
@@ -128,21 +136,28 @@ export class GridView {
     this.scrollableElement.setScrollPosition({ scrollLeft });
   }
 
-  private render(height: number): void
+  private render(height: number, width: number): void
   private render(e: ScrollEvent): void
-  private render(arg: any): void {
+  private render(arg1: any, arg2?: any): void {
     let scrollTop = 0;
+    let scrollLeft = 0;
     let viewHeight: number;
+    let viewWidth: number;
     let hasVerticalDelta = false;
     let hasHorizonDelta = false;
-    if (isNumber(arg)) {
-      viewHeight = arg;
+    if (isNumber(arg1)) {
+      viewHeight = arg1;
+      viewWidth = arg2;
       hasVerticalDelta = true;
+      hasHorizonDelta = true;
     } else {
-      let e = arg as ScrollEvent;
+      let e = arg1 as ScrollEvent;
       scrollTop = e.scrollTop;
+      scrollLeft = e.scrollLeft;
       viewHeight = e.height;
+      viewWidth = e.width;
       hasVerticalDelta = e.scrollHeightChanged || e.scrollTopChanged || e.heightChanged;
+      hasHorizonDelta = e.scrollLeftChanged || e.scrollWidthChanged || e.widthChanged;
     }
 
     if (hasVerticalDelta) {
@@ -182,6 +197,13 @@ export class GridView {
       this.lastRenderHeight = renderBottom - renderTop;
     }
 
+    if (hasHorizonDelta) {
+      for (let index in this.rowCache) {
+        let row: ViewRow = this.rowCache[index];
+        row.render(scrollLeft, viewWidth);
+      }
+    }
+
     // this.rowsContainer.style.left = -scrollLeft + 'px';
     // this.rowsContainer.style.width = `${Math.max(scrollWidth, viewWidth)}px`;
   }
@@ -209,10 +231,6 @@ export class GridView {
       row.dispose();
       delete this.rowCache[index];
     }
-  }
-
-  public itemAt(position: number): string {
-    return this.model.items[this.indexAt(position)].id;
   }
 
   private getItemTop(index: number) {
