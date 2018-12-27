@@ -9,8 +9,7 @@ function defaultFormatter(row: number, cell: number, value: any, columnDef: IGri
   if (value == null) {
     return null;
   } else {
-    return h('div', { innerText: value + '' });
-    // return (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return h('div', { innerText: (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') });
   }
 }
 
@@ -84,7 +83,6 @@ export class ViewRow implements IDisposable {
 
   dispose() {
     this.mounted = false;
-    // this.cells.forEach(c => c.dispose());
     this.domNode.remove();
   }
 }
