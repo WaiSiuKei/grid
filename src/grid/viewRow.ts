@@ -6,11 +6,7 @@ import { h } from 'src/virtual-dom/h';
 import { createElement } from 'src/virtual-dom/create-element';
 
 function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): VirtualNode {
-  if (value == null) {
-    return null;
-  } else {
-    return h('div', { innerText: (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') });
-  }
+  return h('div', { innerText: (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') });
 }
 
 export class ViewCell implements IDisposable {
