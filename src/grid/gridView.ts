@@ -1,10 +1,11 @@
-import { ScrollbarVisibility } from 'src/base/common/scrollable';
+import { ScrollbarVisibility, ScrollEvent } from 'src/base/common/scrollable';
 import { GridModel } from 'src/grid/gridModel';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
 import { addClass, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
 import { IGridColumnDefinition } from 'src/grid/grid';
 import { ViewRow } from 'src/grid/viewRow';
+import { isNumber } from 'src/base/common/types';
 
 const RowHeight = 20;
 
@@ -53,7 +54,7 @@ export class GridView {
     });
 
     this.scrollableElement.onScroll((e) => {
-      this.render(e.scrollTop, e.height);
+      this.render(e);
     });
 
     this.rowsContainer = document.createElement('div');
@@ -72,7 +73,7 @@ export class GridView {
     this.viewWidth = w;
     this.scrollWidth = this.getContentWidth();
 
-    this.render(0, h);
+    this.render(h);
   }
 
   getContentHeight(): number {
@@ -80,7 +81,7 @@ export class GridView {
   }
 
   getContentWidth(): number {
-    return 700;
+    return this.cols.reduce((acc, col) => acc + (col.width || 80), 0);
   }
 
   public get viewHeight() {
@@ -127,46 +128,62 @@ export class GridView {
     this.scrollableElement.setScrollPosition({ scrollLeft });
   }
 
-  private render(scrollTop: number, viewHeight: number,): void {
-    let i: number;
-    let stop: number;
-
-    let renderTop = scrollTop;
-    let renderBottom = scrollTop + viewHeight;
-    let thisRenderBottom = this.lastRenderTop + this.lastRenderHeight;
-
-    if (renderTop && renderTop === this.lastRenderTop) return;
-
-    // when view scrolls down, start rendering from the renderBottom
-    for (i = this.indexAfter(renderBottom) - 1, stop = this.indexAt(Math.max(thisRenderBottom, renderTop)); i >= stop; i--) {
-      this.insertItemInDOM(i);
+  private render(height: number): void
+  private render(e: ScrollEvent): void
+  private render(arg: any): void {
+    let scrollTop = 0;
+    let viewHeight: number;
+    let hasVerticalDelta = false;
+    let hasHorizonDelta = false;
+    if (isNumber(arg)) {
+      viewHeight = arg;
+      hasVerticalDelta = true;
+    } else {
+      let e = arg as ScrollEvent;
+      scrollTop = e.scrollTop;
+      viewHeight = e.height;
+      hasVerticalDelta = e.scrollHeightChanged || e.scrollTopChanged || e.heightChanged;
     }
 
-    // when view scrolls up, start rendering from either this.renderTop or renderBottom
-    for (i = Math.min(this.indexAt(this.lastRenderTop), this.indexAfter(renderBottom)) - 1, stop = this.indexAt(renderTop); i >= stop; i--) {
-      this.insertItemInDOM(i);
+    if (hasVerticalDelta) {
+      let i: number;
+      let stop: number;
+
+      let renderTop = scrollTop;
+      let renderBottom = scrollTop + viewHeight;
+      let thisRenderBottom = this.lastRenderTop + this.lastRenderHeight;
+
+      // when view scrolls down, start rendering from the renderBottom
+      for (i = this.indexAfter(renderBottom) - 1, stop = this.indexAt(Math.max(thisRenderBottom, renderTop)); i >= stop; i--) {
+        this.insertItemInDOM(i);
+      }
+
+      // when view scrolls up, start rendering from either this.renderTop or renderBottom
+      for (i = Math.min(this.indexAt(this.lastRenderTop), this.indexAfter(renderBottom)) - 1, stop = this.indexAt(renderTop); i >= stop; i--) {
+        this.insertItemInDOM(i);
+      }
+
+      // when view scrolls down, start unrendering from renderTop
+      for (i = this.indexAt(this.lastRenderTop), stop = Math.min(this.indexAt(renderTop), this.indexAfter(thisRenderBottom)); i < stop; i++) {
+        this.removeItemFromDOM(i);
+      }
+
+      // when view scrolls up, start unrendering from either renderBottom this.renderTop
+      for (i = Math.max(this.indexAfter(renderBottom), this.indexAt(this.lastRenderTop)), stop = this.indexAfter(thisRenderBottom); i < stop; i++) {
+        this.removeItemFromDOM(i);
+      }
+
+      let topItem = this.indexAt(renderTop);
+
+      let t = (this.getItemTop(topItem) - renderTop);
+      this.rowsContainer.style.top = clamp(t, RowHeight, -RowHeight) + 'px';
+
+      this.lastRenderTop = renderTop;
+      this.lastRenderHeight = renderBottom - renderTop;
     }
-
-    // when view scrolls down, start unrendering from renderTop
-    for (i = this.indexAt(this.lastRenderTop), stop = Math.min(this.indexAt(renderTop), this.indexAfter(thisRenderBottom)); i < stop; i++) {
-      this.removeItemFromDOM(i);
-    }
-
-    // when view scrolls up, start unrendering from either renderBottom this.renderTop
-    for (i = Math.max(this.indexAfter(renderBottom), this.indexAt(this.lastRenderTop)), stop = this.indexAfter(thisRenderBottom); i < stop; i++) {
-      this.removeItemFromDOM(i);
-    }
-
-    let topItem = this.indexAt(renderTop);
-
-    let t = (this.getItemTop(topItem) - renderTop);
-    this.rowsContainer.style.top = clamp(t, RowHeight, -RowHeight) + 'px';
 
     // this.rowsContainer.style.left = -scrollLeft + 'px';
     // this.rowsContainer.style.width = `${Math.max(scrollWidth, viewWidth)}px`;
-
-    this.lastRenderTop = renderTop;
-    this.lastRenderHeight = renderBottom - renderTop;
   }
 
   // DOM changes

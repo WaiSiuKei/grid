@@ -44,8 +44,9 @@ export class ViewCell implements IDisposable {
 }
 
 export class ViewRow implements IDisposable {
-  cells: ViewCell[];
+  cells: ViewCell[] = [];
   domNode: HTMLElement;
+  widths: number[] = [];
 
   mounted: boolean = false;
   host: HTMLElement;
@@ -56,13 +57,12 @@ export class ViewRow implements IDisposable {
     this.domNode = container;
     this.host = host;
 
-    this.cells = [];
-
     let left = 0;
     for (let i = 0, len = columnDefinations.length; i < len; i++) {
       let col = columnDefinations[i];
       let c = new ViewCell(container, rowIndex, i, data, col, left);
       this.cells.push(c);
+      this.widths.push(c.width);
       left += c.width;
     }
   }

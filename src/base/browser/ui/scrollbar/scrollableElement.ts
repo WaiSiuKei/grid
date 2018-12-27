@@ -296,8 +296,6 @@ export abstract class AbstractScrollableElement extends Widget {
       classifier.accept(Date.now(), e.deltaX, e.deltaY);
     }
 
-    // console.log(`${Date.now()}, ${e.deltaY}, ${e.deltaX}`);
-
     if (e.deltaY || e.deltaX) {
       let deltaY = e.deltaY * this._options.mouseWheelScrollSensitivity;
       let deltaX = e.deltaX * this._options.mouseWheelScrollSensitivity;
