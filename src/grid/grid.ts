@@ -1,3 +1,5 @@
+import { VirtualNode } from 'src/virtual-dom/vnode';
+
 export interface Datum {
   [key: string]: any
 }
@@ -30,7 +32,7 @@ export interface IGridOptions {
 }
 
 export interface CellFormatter {
-  (row: number, cell: number, value: any, m: IGridColumnDefinition, item: Datum): string
+  (row: number, cell: number, value: any, m: IGridColumnDefinition, item: Datum): VirtualNode
 }
 
 export interface IGridColumnDefinition {

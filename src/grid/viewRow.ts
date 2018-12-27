@@ -1,12 +1,16 @@
 import { Datum, IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass } from 'src/base/browser/dom';
+import { VirtualNode } from 'src/virtual-dom/vnode';
+import { h } from 'src/virtual-dom/h';
+import { createElement } from 'src/virtual-dom/create-element';
 
-function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): string {
+function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): VirtualNode {
   if (value == null) {
-    return '';
+    return null;
   } else {
-    return (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return h('div', { innerText: value + '' });
+    // return (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 }
 
@@ -23,8 +27,8 @@ export class ViewCell implements IDisposable {
 
     let el = document.createElement('div');
     el.className = 'nila-grid-cell';
-    el.innerText = this.value.toString();
-    // el.innerHTML = formatter(row, cell, this.value, col, datum);
+    let content = createElement(formatter(row, cell, this.value, col, datum));
+    el.appendChild(content);
     this.width = col.width || 80;
     el.style.width = `${this.width}px`;
     el.style.left = left + 'px';

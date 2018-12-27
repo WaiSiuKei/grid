@@ -11,6 +11,18 @@ const _typeof = {
 	function: 'function'
 };
 
+export function isArray(array: any): array is any[] {
+  if (Array.isArray) {
+    return Array.isArray(array);
+  }
+
+  if (array && typeof (array.length) === _typeof.number && array.constructor === Array) {
+    return true;
+  }
+
+  return false;
+}
+
 /**
  *
  * @returns whether the provided parameter is of type `object` but **not**
