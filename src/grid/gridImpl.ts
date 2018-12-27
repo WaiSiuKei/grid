@@ -11,7 +11,7 @@ export class Grid {
   private model: GridModel;
   private view: GridView;
 
-  constructor(container: HTMLElement, ds: IDataSource, options: IGridOptions = {}) {
+  constructor(container: HTMLElement, ds: IDataSource, options: Partial<IGridOptions> = {}) {
     this.container = container;
 
     this.model = new GridModel(ds);

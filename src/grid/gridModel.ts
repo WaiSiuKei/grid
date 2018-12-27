@@ -15,6 +15,6 @@ export class GridModel {
 
   constructor(ds: IDataSource) {
 
-    this.items = ds.items.map((i, idx) => new Item(idx.toString(), i));
+    this.items = ds.map((i, idx) => new Item(idx.toString(), i));
   }
 }
