@@ -1,8 +1,10 @@
 import { ScrollbarVisibility } from 'src/base/common/scrollable';
-import { Item, GridModel } from 'src/grid/gridModel';
+import { GridModel } from 'src/grid/gridModel';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
 import { addClass, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
+import { IGridColumnDefinition } from 'src/grid/grid';
+import { ViewRow } from 'src/grid/viewRow';
 
 const RowHeight = 20;
 
@@ -21,12 +23,16 @@ export class GridView {
   private lastRenderTop: number;
   private lastRenderHeight: number;
 
-  constructor(container: HTMLElement, model: GridModel) {
+  private rowCache: { [key: string]: ViewRow } = Object.create(null);
+  private cols: IGridColumnDefinition[];
+
+  constructor(container: HTMLElement, model: GridModel, cols: IGridColumnDefinition[]) {
 
     GridView.counter++;
     this.instanceId = GridView.counter;
 
     this.model = model;
+    this.cols = cols;
 
     this.lastRenderTop = 0;
     this.lastRenderHeight = 0;
@@ -166,25 +172,25 @@ export class GridView {
   // DOM changes
 
   private insertItemInDOM(index: number): void {
-    let existed = this.rowsContainer.querySelector(`div[data-row='${index}']`);
-    if (existed) return;
-
-    let d = document.createElement('div');
-    addClass(d, 'nila-grid-row');
-    d.dataset.row = index.toString();
-    d.innerText = index.toString();
-    let next = this.rowsContainer.querySelector(`div[data-row='${index + 1}']`);
-    if (next) {
-      this.rowsContainer.insertBefore(d, next);
+    let row: ViewRow;
+    if (!this.rowCache[index]) {
+      row = new ViewRow(this.rowsContainer, index, this.model.items[index], this.cols);
+      this.rowCache[index] = row;
     } else {
-      this.rowsContainer.appendChild(d);
+      row = this.rowCache[index];
     }
+    if (row.mounted) return;
+
+    let nextRow = this.rowCache[index + 1];
+
+    row.mount(nextRow);
   }
 
   private removeItemFromDOM(index: number): void {
-    let d = this.rowsContainer.querySelector(`div[data-row='${index}']`);
-    if (d) {
-      d.remove();
+    let row = this.rowCache[index];
+    if (row) {
+      row.dispose();
+      delete this.rowCache[index];
     }
   }
 

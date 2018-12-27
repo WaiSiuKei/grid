@@ -33,6 +33,15 @@
   overflow: hidden;
   width: 100%;
   height: 20px;
+
+  position: relative;
+}
+
+.nila-grid-cell {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  bottom: 0;
 }
 
 .nila-grid .nila-grid-rows > .nila-grid-row > .content {

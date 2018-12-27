@@ -1,7 +1,7 @@
 // import './index.scss';
 import { Grid } from 'src/grid/gridImpl';
 
-var columns = [
+let columns = [
   { id: 'title', name: 'Title', field: 'title' },
   { id: 'duration', name: 'Duration', field: 'duration' },
   { id: '%', name: '% Complete', field: 'percentComplete' },
@@ -10,8 +10,8 @@ var columns = [
   { id: 'effort-driven', name: 'Effort Driven', field: 'effortDriven' }
 ];
 
-var data = [];
-for (var i = 0; i < 500; i++) {
+let data = [];
+for (let i = 0; i < 500; i++) {
   data[i] = {
     title: 'Task ' + i,
     duration: '5 days',
@@ -22,7 +22,7 @@ for (var i = 0; i < 500; i++) {
   };
 }
 
-let t = new Grid(document.getElementById('myGrid'), data);
+let t = new Grid(document.getElementById('myGrid'), data, columns);
 
 t.layout();
 

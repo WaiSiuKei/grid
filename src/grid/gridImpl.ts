@@ -1,6 +1,6 @@
 import './grid.css';
 
-import { IDataSource, IGridOptions, } from 'src/grid/grid';
+import { IDataSource, IGridColumnDefinition, IGridOptions, } from 'src/grid/grid';
 import { GridModel } from 'src/grid/gridModel';
 import { GridView } from 'src/grid/gridView';
 
@@ -11,11 +11,11 @@ export class Grid {
   private model: GridModel;
   private view: GridView;
 
-  constructor(container: HTMLElement, ds: IDataSource, options: Partial<IGridOptions> = {}) {
+  constructor(container: HTMLElement, ds: IDataSource, col: IGridColumnDefinition[], options: Partial<IGridOptions> = {}) {
     this.container = container;
 
     this.model = new GridModel(ds);
-    this.view = new GridView(this.container, this.model);
+    this.view = new GridView(this.container, this.model, col);
   }
 
   layout() {
