@@ -84,10 +84,10 @@ export class ViewRow implements IDisposable {
     }
   }
 
-  private mountCell(index: string): boolean {
+  private mountCell(index: number): boolean {
     let cell: ViewCell = this.cellCache[index];
     if (!cell) {
-      cell = new ViewCell(this.domNode, this.rowIndex, parseInt(index), this.data, this.cols[index]);
+      cell = new ViewCell(this.domNode, this.rowIndex, index, this.data, this.cols[index]);
       this.cellCache[index] = cell;
     }
     if (cell.mounted) return false;
@@ -96,7 +96,7 @@ export class ViewRow implements IDisposable {
     return true;
   }
 
-  private unmountCell(index: string): boolean {
+  private unmountCell(index: number): boolean {
     let cell = this.cellCache[index];
     if (cell) {
       cell.dispose();
@@ -108,12 +108,12 @@ export class ViewRow implements IDisposable {
   updateCell(headerMounted: string[], margin: number) {
     let thisMounted = Object.keys(this.cellCache);
     let h = {};
-    for (let i in headerMounted) {
-      h[i] = true;
-      this.mountCell(i);
+    for (let i = 0, len = headerMounted.length; i < len; i++) {
+      h[headerMounted[i]] = true;
+      this.mountCell(parseInt(headerMounted[i]));
     }
-    for (let i of thisMounted) {
-      if (!h[i]) this.unmountCell(i);
+    for (let i = 0, len = thisMounted.length; i < len; i++) {
+      if (!h[thisMounted[i]]) this.unmountCell(parseInt(thisMounted[i]));
     }
 
     this.domNode.style.left = margin + 'px';
