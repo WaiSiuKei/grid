@@ -9,16 +9,16 @@
   white-space: nowrap;
   user-select: none;
   position: relative;
-
-  display: flex;
-  flex-direction: column;
+  overflow: hidden;
 }
 
 .nila-grid .nila-grid-header {
+  display: block;
+
   box-sizing: border-box;
   cursor: pointer;
   overflow: hidden;
-  width: 100%;
+  width: 200%;
   height: 20px;
 
   position: relative;
@@ -30,6 +30,7 @@
 }
 
 .nila-grid > .nila-scrollable-element {
+  display: block;
   width: 100%;
 }
 
@@ -41,7 +42,7 @@
 
 .nila-grid .nila-grid-rows {
   position: absolute;
-  width: 100%;
+  width: 200%;
   height: 100%;
 }
 
