@@ -59,7 +59,8 @@ export class ViewRow implements IDisposable {
   mounted: boolean = false;
   cols: IGridColumnDefinition[] = [];
 
-  cellCache: { [index: number]: ViewCell } = Object.create(null);
+  private cellCache: { [key: string]: ViewCell } = Object.create(null);
+
   host: HTMLElement;
   rowIndex: number;
   data: Datum;
@@ -121,6 +122,12 @@ export class ViewRow implements IDisposable {
 
   dispose() {
     this.mounted = false;
+
     this.domNode.remove();
+
+    Object.keys(this.cellCache).forEach(i => {
+      this.cellCache[i].dispose();
+      delete this.cellCache[i];
+    });
   }
 }
