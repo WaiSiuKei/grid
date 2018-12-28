@@ -3,19 +3,16 @@ import { GridModel } from 'src/grid/gridModel';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
 import { addClass, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
-import { IGridColumnDefinition } from 'src/grid/grid';
+import { IGridColumnDefinition, IGridOptions } from 'src/grid/grid';
 import { ViewRow } from 'src/grid/viewRow';
 import { isNumber } from 'src/base/common/types';
 import { ViewHeaderRow } from 'src/grid/viewHeader';
-
-const RowHeight = 20;
+import { GridContext } from 'src/grid/girdContext';
 
 export class GridView {
 
   private static counter: number = 0;
   private instanceId: number;
-
-  private model: GridModel;
 
   private domNode: HTMLElement;
   private body: HTMLElement;
@@ -27,15 +24,13 @@ export class GridView {
   private lastRenderHeight: number;
 
   private rowCache: { [key: string]: ViewRow } = Object.create(null);
-  private cols: IGridColumnDefinition[];
 
-  constructor(container: HTMLElement, model: GridModel, cols: IGridColumnDefinition[]) {
+  constructor(container: HTMLElement,
+              private ctx: GridContext
+  ) {
 
     GridView.counter++;
     this.instanceId = GridView.counter;
-
-    this.model = model;
-    this.cols = cols;
 
     this.lastRenderTop = 0;
     this.lastRenderHeight = 0;
@@ -47,7 +42,7 @@ export class GridView {
     this.domNode = document.createElement('div');
     this.domNode.className = `nila-grid nila-grid-instance-${this.instanceId}`;
 
-    this.header = new ViewHeaderRow(this.cols);
+    this.header = new ViewHeaderRow(this.ctx);
 
     this.body = document.createElement('div');
     this.body.className = 'nila-grid-body';
@@ -85,11 +80,11 @@ export class GridView {
   }
 
   getContentHeight(): number {
-    return this.model.items.length * RowHeight;
+    return this.ctx.model.items.length * this.ctx.options.rowHeight;
   }
 
   getContentWidth(): number {
-    return this.cols.reduce((acc, col) => acc + (col.width || 80), 0);
+    return this.ctx.columns.reduce((acc, col) => acc + (col.width || 80), 0);
   }
 
   public get viewHeight() {
@@ -190,7 +185,8 @@ export class GridView {
       let topItem = this.indexAt(renderTop);
 
       let t = (this.getItemTop(topItem) - renderTop);
-      this.rowsContainer.style.top = clamp(t, RowHeight, -RowHeight) + 'px';
+      let r = this.ctx.options.rowHeight;
+      this.rowsContainer.style.top = clamp(t, r, -r) + 'px';
 
       this.lastRenderTop = renderTop;
       this.lastRenderHeight = renderBottom - renderTop;
@@ -208,7 +204,7 @@ export class GridView {
   private insertItemInDOM(index: number): void {
     let row: ViewRow = this.rowCache[index];
     if (!row) {
-      row = new ViewRow(this.rowsContainer, index, this.model.items[index], this.cols);
+      row = new ViewRow(this.rowsContainer, index, this.ctx.model.items[index], this.ctx);
       this.rowCache[index] = row;
     }
     if (row.mounted) return;
@@ -232,17 +228,19 @@ export class GridView {
 
   public indexAt(position: number): number {
     let left = 0;
-    let right = this.model.items.length - 1;
+    let l = this.ctx.model.items.length;
+    let right = l - 1;
     let center: number;
 
     // Binary search
+    let r = this.ctx.options.rowHeight;
     while (left < right) {
       center = Math.floor((left + right) / 2);
 
       let top = this.getItemTop(center);
       if (position < top) {
         right = center;
-      } else if (position >= top + RowHeight) {
+      } else if (position >= top + r) {
         if (left === center) {
           break;
         }
@@ -252,10 +250,10 @@ export class GridView {
       }
     }
 
-    return this.model.items.length;
+    return l;
   }
 
   public indexAfter(position: number): number {
-    return Math.min(this.indexAt(position) + 1, this.model.items.length);
+    return Math.min(this.indexAt(position) + 1, this.ctx.model.items.length);
   }
 }

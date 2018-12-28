@@ -1,4 +1,9 @@
 import { VirtualNode } from 'src/virtual-dom/vnode';
+import { h } from 'src/virtual-dom/h';
+
+function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): VirtualNode {
+  return h('div', { innerText: (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') });
+}
 
 export interface Datum {
   [key: string]: any
@@ -11,7 +16,7 @@ export type IDataSource = Datum[]
 export interface IGridOptions {
   // alwaysShowVerticalScroll: boolean
   // explicitInitialization: boolean
-  // defaultColumnWidth: number
+  defaultColumnWidth: number
   showHeaderRow: boolean
   rowHeight: number
   // forceFitColumns: boolean
@@ -31,6 +36,16 @@ export interface IGridOptions {
   // addNewRowCssClass: string
 }
 
+export const GRID_DEFAULT: Partial<IGridOptions> = {
+  defaultColumnWidth: 80,
+  showHeaderRow: true,
+  rowHeight: 20
+};
+
+export const COLUMN_DEFAULT: Partial<IGridColumnDefinition> = {
+  formatter: defaultFormatter
+};
+
 export interface CellFormatter {
   (row: number, cell: number, value: any, m: IGridColumnDefinition, item: Datum): VirtualNode
 }
@@ -39,12 +54,12 @@ export interface IGridColumnDefinition {
   id: string
   field: string
   name: string
-  // resizable: boolean
-  // minWidth: number
   // rerenderOnResize: boolean
   // headerCssClass: string
+  // resizable: boolean
+  minWidth: number
   width?: number
-  // maxWidth: number
+  maxWidth: number
   // viewportClass: string
   // tooltip: string
   // colspan: number

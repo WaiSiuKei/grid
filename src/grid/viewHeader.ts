@@ -2,6 +2,7 @@ import { Datum, IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
+import { GridContext } from 'src/grid/girdContext';
 
 export class ViewHeaderCell implements IDisposable {
   public width: number;
@@ -49,17 +50,15 @@ export class ViewHeaderRow implements IDisposable {
   domNode: HTMLElement;
 
   private cellCache: { [index: number]: ViewHeaderCell } = Object.create(null);
-  private cols: IGridColumnDefinition[] = [];
 
   private lastRenderLeft: number = 0;
   private lastRenderWidth: number = 0;
 
-  constructor(columnDefinations: IGridColumnDefinition[]) {
+  constructor(private ctx: GridContext) {
     let container = document.createElement('div');
     addClass(container, 'nila-grid-header');
     this.domNode = container;
 
-    this.cols = columnDefinations;
   }
 
   render(scrollLeft: number, viewWidth: number): CellToModify {
@@ -120,7 +119,7 @@ export class ViewHeaderRow implements IDisposable {
     if (index === 0) return 0;
     let sum = 0;
     for (let i = 0; i < index; i++) {
-      sum += this.cols[i].width;
+      sum += this.ctx.columns[i].width;
     }
     return sum;
   }
@@ -128,7 +127,7 @@ export class ViewHeaderRow implements IDisposable {
   private mount(index: number): boolean {
     let cell = this.cellCache[index];
     if (!cell) {
-      cell = new ViewHeaderCell(this.domNode, index, this.cols[index], this.getItemLeft(index));
+      cell = new ViewHeaderCell(this.domNode, index, this.ctx.columns[index], this.getItemLeft(index));
       this.cellCache[index] = cell;
     }
     if (cell.mounted) return false;
@@ -149,7 +148,7 @@ export class ViewHeaderRow implements IDisposable {
 
   public indexAt(position: number): number {
     let left = 0;
-    let right = this.cols.length - 1;
+    let right = this.ctx.columns.length - 1;
     let center: number;
 
     // Binary search
@@ -159,7 +158,7 @@ export class ViewHeaderRow implements IDisposable {
       let leftPosition = this.getItemLeft(center);
       if (position < leftPosition) {
         right = center;
-      } else if (position >= leftPosition + this.cols[center].width) {
+      } else if (position >= leftPosition + this.ctx.columns[center].width) {
         if (left === center) {
           break;
         }
@@ -169,11 +168,11 @@ export class ViewHeaderRow implements IDisposable {
       }
     }
 
-    return this.cols.length - 1;
+    return this.ctx.columns.length - 1;
   }
 
   public indexAfter(position: number): number {
-    return Math.min(this.indexAt(position) + 1, this.cols.length);
+    return Math.min(this.indexAt(position) + 1, this.ctx.columns.length);
   }
 
   dispose() {

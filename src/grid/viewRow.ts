@@ -1,13 +1,8 @@
 import { Datum, IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass } from 'src/base/browser/dom';
-import { VirtualNode } from 'src/virtual-dom/vnode';
-import { h } from 'src/virtual-dom/h';
 import { createElement } from 'src/virtual-dom/create-element';
-
-function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): VirtualNode {
-  return h('div', { innerText: (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') });
-}
+import { GridContext } from 'src/grid/girdContext';
 
 export class ViewCell implements IDisposable {
   public width: number;
@@ -20,7 +15,7 @@ export class ViewCell implements IDisposable {
 
   constructor(container: HTMLElement, row: number, cell: number, datum: Datum, col: IGridColumnDefinition) {
     this.value = datum[col.field];
-    let formatter = col.formatter || defaultFormatter;
+    let formatter = col.formatter;
 
     this.host = container;
 
@@ -57,7 +52,6 @@ export class ViewRow implements IDisposable {
   domNode: HTMLElement;
 
   mounted: boolean = false;
-  cols: IGridColumnDefinition[] = [];
 
   private cellCache: { [key: string]: ViewCell } = Object.create(null);
 
@@ -65,15 +59,13 @@ export class ViewRow implements IDisposable {
   rowIndex: number;
   data: Datum;
 
-  constructor(host: HTMLElement, rowIndex: number, data: Datum, columnDefinations: IGridColumnDefinition[]) {
+  constructor(host: HTMLElement, rowIndex: number, data: Datum, private ctx: GridContext) {
     let container = document.createElement('div');
     addClass(container, 'nila-grid-row');
     this.domNode = container;
     this.host = host;
     this.rowIndex = rowIndex;
     this.data = data;
-
-    this.cols = columnDefinations;
   }
 
   mount(slibing?: ViewRow) {
@@ -88,7 +80,7 @@ export class ViewRow implements IDisposable {
   private mountCell(index: number): boolean {
     let cell: ViewCell = this.cellCache[index];
     if (!cell) {
-      cell = new ViewCell(this.domNode, this.rowIndex, index, this.data, this.cols[index]);
+      cell = new ViewCell(this.domNode, this.rowIndex, index, this.data, this.ctx.columns[index]);
       this.cellCache[index] = cell;
     }
     if (cell.mounted) return false;
