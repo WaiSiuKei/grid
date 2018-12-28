@@ -144,12 +144,10 @@ export class GridView {
     let viewHeight: number;
     let viewWidth: number;
     let hasVerticalDelta = false;
-    let hasHorizonDelta = false;
     if (isNumber(arg1)) {
       viewHeight = arg1;
       viewWidth = arg2;
       hasVerticalDelta = true;
-      hasHorizonDelta = true;
     } else {
       let e = arg1 as ScrollEvent;
       scrollTop = e.scrollTop;
@@ -157,7 +155,6 @@ export class GridView {
       viewHeight = e.height;
       viewWidth = e.width;
       hasVerticalDelta = e.scrollHeightChanged || e.scrollTopChanged || e.heightChanged;
-      hasHorizonDelta = e.scrollLeftChanged || e.scrollWidthChanged || e.widthChanged;
     }
 
     if (!viewHeight) return;
@@ -199,22 +196,20 @@ export class GridView {
       this.lastRenderHeight = renderBottom - renderTop;
     }
 
-    let { toInsert, toRemove, mounted, margin } = this.header.render(scrollLeft, viewWidth);
+    let { mounted, margin } = this.header.render(scrollLeft, viewWidth);
     for (let index in this.rowCache) {
       let row: ViewRow = this.rowCache[index];
-      row.updateCell(toInsert, toRemove, mounted, margin);
+      row.updateCell(mounted, margin);
     }
   }
 
   // DOM changes
 
   private insertItemInDOM(index: number): void {
-    let row: ViewRow;
-    if (!this.rowCache[index]) {
+    let row: ViewRow = this.rowCache[index];
+    if (!row) {
       row = new ViewRow(this.rowsContainer, index, this.model.items[index], this.cols);
       this.rowCache[index] = row;
-    } else {
-      row = this.rowCache[index];
     }
     if (row.mounted) return;
 
@@ -236,9 +231,9 @@ export class GridView {
   }
 
   public indexAt(position: number): number {
-    var left = 0;
-    var right = this.model.items.length - 1;
-    var center: number;
+    let left = 0;
+    let right = this.model.items.length - 1;
+    let center: number;
 
     // Binary search
     while (left < right) {

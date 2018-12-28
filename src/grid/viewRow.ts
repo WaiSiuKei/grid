@@ -28,7 +28,7 @@ export class ViewCell implements IDisposable {
     el.className = 'nila-grid-cell';
     let content = createElement(formatter(row, cell, this.value, col, datum));
     el.appendChild(content);
-    this.width = col.width || 80;
+    this.width = col.width;
     el.style.width = `${this.width}px`;
     this.domNode = el;
   }
@@ -54,23 +54,25 @@ export class ViewCell implements IDisposable {
 }
 
 export class ViewRow implements IDisposable {
-  cells: ViewCell[] = [];
   domNode: HTMLElement;
 
   mounted: boolean = false;
+  cols: IGridColumnDefinition[] = [];
+
+  cellCache: { [index: number]: ViewCell } = Object.create(null);
   host: HTMLElement;
+  rowIndex: number;
+  data: Datum;
 
   constructor(host: HTMLElement, rowIndex: number, data: Datum, columnDefinations: IGridColumnDefinition[]) {
     let container = document.createElement('div');
     addClass(container, 'nila-grid-row');
     this.domNode = container;
     this.host = host;
+    this.rowIndex = rowIndex;
+    this.data = data;
 
-    for (let i = 0, len = columnDefinations.length; i < len; i++) {
-      let col = columnDefinations[i];
-      let c = new ViewCell(container, rowIndex, i, data, col);
-      this.cells.push(c);
-    }
+    this.cols = columnDefinations;
   }
 
   mount(slibing?: ViewRow) {
@@ -82,28 +84,36 @@ export class ViewRow implements IDisposable {
     }
   }
 
-  private mountCell(index: number): boolean {
-    let cell = this.cells[index];
+  private mountCell(index: string): boolean {
+    let cell: ViewCell = this.cellCache[index];
+    if (!cell) {
+      cell = new ViewCell(this.domNode, this.rowIndex, parseInt(index), this.data, this.cols[index]);
+      this.cellCache[index] = cell;
+    }
     if (cell.mounted) return false;
 
-    this.cells[index].mount(this.cells[index + 1]);
+    cell.mount(this.cellCache[index + 1]);
     return true;
   }
 
-  private unmountCell(index: number): boolean {
-    let c = this.cells[index];
-    if (!c.mounted) return false;
-    this.cells[index].unmount();
-
+  private unmountCell(index: string): boolean {
+    let cell = this.cellCache[index];
+    if (cell) {
+      cell.dispose();
+      delete this.cellCache[index];
+    }
     return true;
   }
 
-  updateCell(toInsert: number[], toRemove: number[], mounted: number[], margin: number) {
-    for (let i of mounted) {
+  updateCell(headerMounted: string[], margin: number) {
+    let thisMounted = Object.keys(this.cellCache);
+    let h = {};
+    for (let i in headerMounted) {
+      h[i] = true;
       this.mountCell(i);
     }
-    for (let i of toRemove) {
-      this.unmountCell(i);
+    for (let i of thisMounted) {
+      if (!h[i]) this.unmountCell(i);
     }
 
     this.domNode.style.left = margin + 'px';

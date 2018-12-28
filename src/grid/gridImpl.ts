@@ -15,10 +15,15 @@ export class Grid {
     this.container = container;
 
     this.model = new GridModel(ds);
-    this.view = new GridView(this.container, this.model, col);
+    this.view = new GridView(this.container, this.model, patchColumnDefination(col));
   }
 
   layout() {
     this.view.layout();
   }
+}
+
+function patchColumnDefination(cols: IGridColumnDefinition[]) {
+  cols.forEach(col => col.width = 80);
+  return cols;
 }

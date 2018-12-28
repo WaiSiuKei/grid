@@ -2,7 +2,6 @@ import { Datum, IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
-import { ViewRow } from 'src/grid/viewRow';
 
 export class ViewHeaderCell implements IDisposable {
   public width: number;
@@ -19,7 +18,7 @@ export class ViewHeaderCell implements IDisposable {
     let el = document.createElement('div');
     el.className = 'nila-grid-header-cell';
     el.innerText = col.name;
-    this.width = col.width || 80;
+    this.width = col.width;
     el.style.width = `${this.width}px`;
     this.left = left;
     this.right = this.left + this.width;
@@ -47,10 +46,10 @@ export class ViewHeaderCell implements IDisposable {
 }
 
 export class ViewHeaderRow implements IDisposable {
-  cells: ViewHeaderCell[] = [];
   domNode: HTMLElement;
 
-  host: HTMLElement;
+  private cellCache: { [index: number]: ViewHeaderCell } = Object.create(null);
+  private cols: IGridColumnDefinition[] = [];
 
   private lastRenderLeft: number = 0;
   private lastRenderWidth: number = 0;
@@ -60,24 +59,12 @@ export class ViewHeaderRow implements IDisposable {
     addClass(container, 'nila-grid-header');
     this.domNode = container;
 
-    let left = 0;
-    for (let i = 0, len = columnDefinations.length; i < len; i++) {
-      let col = columnDefinations[i];
-      let c = new ViewHeaderCell(container, i, col, left);
-      this.cells.push(c);
-      left += c.width;
-    }
+    this.cols = columnDefinations;
   }
-
-  // mount() {
-  //   this.host.appendChild(this.domNode);
-  // }
 
   render(scrollLeft: number, viewWidth: number): CellToModify {
     if (!viewWidth) {
       return {
-        toInsert: [],
-        toRemove: [],
         mounted: [],
         margin: 0,
       };
@@ -90,32 +77,29 @@ export class ViewHeaderRow implements IDisposable {
     let renderRight = scrollLeft + viewWidth;
     let thisRenderRight = this.lastRenderLeft + this.lastRenderWidth;
 
-    let toInsert: number[] = [];
-    let toRemove: number[] = [];
-
     // when view scrolls right, start rendering from the renderRight
     for (i = this.indexAfter(renderRight) - 1, stop = this.indexAt(Math.max(thisRenderRight, renderLeft)); i >= stop; i--) {
-      if (this.mount(i)) toInsert.push(i);
+      this.mount(i);
     }
 
     // when view scrolls left, start rendering from either this.renderLeft or renderright
     for (i = Math.min(this.indexAt(this.lastRenderLeft), this.indexAfter(renderRight)) - 1, stop = this.indexAt(renderLeft); i >= stop; i--) {
-      if (this.mount(i)) toInsert.push(i);
+      this.mount(i);
     }
 
     // when view scrolls down, start unrendering from renderTop
     for (i = this.indexAt(this.lastRenderLeft), stop = Math.min(this.indexAt(renderLeft), this.indexAfter(thisRenderRight)); i < stop; i++) {
-      if (this.unmount(i)) toRemove.push(i);
+      this.unmount(i);
     }
 
     // when view scrolls up, start unrendering from either renderBottom this.renderTop
     for (i = Math.max(this.indexAfter(renderRight), this.indexAt(this.lastRenderLeft)), stop = this.indexAfter(thisRenderRight); i < stop; i++) {
-      if (this.unmount(i)) toRemove.push(i);
+      this.unmount(i);
     }
 
     let leftItem = this.indexAt(renderLeft);
 
-    let c = this.cells[leftItem];
+    let c = this.cellCache[leftItem];
     let t = (c.left - renderLeft);
 
     let margin = clamp(t, c.width, -c.width);
@@ -124,47 +108,58 @@ export class ViewHeaderRow implements IDisposable {
     this.lastRenderLeft = renderLeft;
     this.lastRenderWidth = renderRight - renderLeft;
 
-    let mounted = [];
-    for (let i = 0, len = this.cells.length; i < len; i++) {
-      if (this.cells[i].mounted) mounted.push(i);
-    }
+    let mounted = Object.keys(this.cellCache);
+
     return {
-      toInsert,
-      toRemove,
       mounted,
       margin
     };
   }
 
+  private getItemLeft(index: number): number {
+    if (index === 0) return 0;
+    let sum = 0;
+    for (let i = 0; i < index; i++) {
+      sum += this.cols[i].width;
+    }
+    return sum;
+  }
+
   private mount(index: number): boolean {
-    let cell = this.cells[index];
+    let cell = this.cellCache[index];
+    if (!cell) {
+      cell = new ViewHeaderCell(this.domNode, index, this.cols[index], this.getItemLeft(index));
+      this.cellCache[index] = cell;
+    }
     if (cell.mounted) return false;
 
-    this.cells[index].mount(this.cells[index + 1]);
+    cell.mount(this.cellCache[index + 1]);
     return true;
   }
 
   private unmount(index: number): boolean {
-    let c = this.cells[index];
-    if (!c.mounted) return false;
-    this.cells[index].unmount();
+    let cell = this.cellCache[index];
+    if (cell) {
+      cell.dispose();
+      delete this.cellCache[index];
+    }
 
     return true;
   }
 
   public indexAt(position: number): number {
     let left = 0;
-    let right = this.cells.length - 1;
+    let right = this.cols.length - 1;
     let center: number;
 
     // Binary search
     while (left < right) {
       center = Math.floor((left + right) / 2);
 
-      let leftPosition = this.cells[center].left;
+      let leftPosition = this.getItemLeft(center);
       if (position < leftPosition) {
         right = center;
-      } else if (position >= this.cells[center].right) {
+      } else if (position >= leftPosition + this.cols[center].width) {
         if (left === center) {
           break;
         }
@@ -174,11 +169,11 @@ export class ViewHeaderRow implements IDisposable {
       }
     }
 
-    return this.cells.length - 1;
+    return this.cols.length - 1;
   }
 
   public indexAfter(position: number): number {
-    return Math.min(this.indexAt(position) + 1, this.cells.length);
+    return Math.min(this.indexAt(position) + 1, this.cols.length);
   }
 
   dispose() {
@@ -187,8 +182,6 @@ export class ViewHeaderRow implements IDisposable {
 }
 
 export interface CellToModify {
-  toInsert: number[]
-  toRemove: number[]
-  mounted: number[]
+  mounted: string[]
   margin: number
 }

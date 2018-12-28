@@ -27,15 +27,15 @@ export class HorizontalScrollbar extends AbstractScrollbar {
   }
 
   protected _updateSlider(sliderSize: number, sliderPosition: number): void {
-    this.slider.style.width = sliderSize + 'px';
-    this.slider.style.left = sliderPosition + 'px';
+    this.slider.setWidth(sliderSize);
+    this.slider.setLeft(sliderPosition);
   }
 
   protected _renderDomNode(largeSize: number, smallSize: number): void {
-    this.domNode.style.width = largeSize + 'px';
-    this.domNode.style.height = smallSize + 'px';
-    this.domNode.style.left = '0';
-    this.domNode.style.bottom = '0';
+    this.domNode.setWidth(largeSize);
+    this.domNode.setHeight(smallSize);
+    this.domNode.setLeft(0);
+    this.domNode.setBottom(0);
   }
 
   public onDidScroll(e: ScrollEvent): boolean {
