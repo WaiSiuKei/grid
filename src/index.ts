@@ -19,7 +19,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 500; i++) {
+for (let i = 0; i < 500000; i++) {
   data[i] = {
     title: 'Task ' + i,
     duration: '5 days',
