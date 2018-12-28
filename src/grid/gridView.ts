@@ -18,7 +18,7 @@ export class GridView {
   private model: GridModel;
 
   private domNode: HTMLElement;
-  private wrapper: HTMLElement;
+  private body: HTMLElement;
   private rowsContainer: HTMLElement;
   private scrollableElement: ScrollableElement;
   private header: ViewHeaderRow;
@@ -49,35 +49,35 @@ export class GridView {
 
     this.header = new ViewHeaderRow(this.cols);
 
-    this.wrapper = document.createElement('div');
-    this.wrapper.className = 'nila-grid-wrapper';
-    this.scrollableElement = new ScrollableElement(this.wrapper, {
+    this.body = document.createElement('div');
+    this.body.className = 'nila-grid-body';
+    this.scrollableElement = new ScrollableElement(this.body, {
       alwaysConsumeMouseWheel: true,
       horizontal: ScrollbarVisibility.Visible,
       vertical: ScrollbarVisibility.Visible,
     });
 
     this.scrollableElement.onScroll((e) => {
-      console.log(e);
       this.render(e);
     });
 
     this.rowsContainer = document.createElement('div');
     this.rowsContainer.className = 'nila-grid-rows';
 
-    this.wrapper.appendChild(this.rowsContainer);
+    this.body.appendChild(this.rowsContainer);
     this.domNode.appendChild(this.header.domNode);
-    let scroll = this.scrollableElement.getDomNode();
+    let body = this.scrollableElement.getDomNode();
+    this.domNode.appendChild(body);
     container.appendChild(this.domNode);
-    scroll.style.height = getContentHeight(this.domNode) - getContentHeight(this.header.domNode) + 'px';
-    this.domNode.appendChild(scroll);
+    let headerHeight = getContentHeight(this.header.domNode);
+    body.style.height = getContentHeight(this.domNode) - headerHeight + 'px';
   }
 
   public layout(height?: number, width?: number): void {
-    let h = height || getContentHeight(this.wrapper);
+    let h = height || getContentHeight(this.body);
     this.viewHeight = h;
     this.scrollHeight = this.getContentHeight();
-    let w = width || getContentWidth(this.wrapper);
+    let w = width || getContentWidth(this.body);
     this.viewWidth = w;
     this.scrollWidth = this.getContentWidth();
 
@@ -160,6 +160,8 @@ export class GridView {
       hasHorizonDelta = e.scrollLeftChanged || e.scrollWidthChanged || e.widthChanged;
     }
 
+    if (!viewHeight) return;
+
     if (hasVerticalDelta) {
       let i: number;
       let stop: number;
@@ -197,15 +199,11 @@ export class GridView {
       this.lastRenderHeight = renderBottom - renderTop;
     }
 
-    if (hasHorizonDelta) {
-      for (let index in this.rowCache) {
-        let row: ViewRow = this.rowCache[index];
-        row.render(scrollLeft, viewWidth);
-      }
+    let { toInsert, toRemove, mounted, margin } = this.header.render(scrollLeft, viewWidth);
+    for (let index in this.rowCache) {
+      let row: ViewRow = this.rowCache[index];
+      row.updateCell(toInsert, toRemove, mounted, margin);
     }
-
-    // this.rowsContainer.style.left = -scrollLeft + 'px';
-    // this.rowsContainer.style.width = `${Math.max(scrollWidth, viewWidth)}px`;
   }
 
   // DOM changes

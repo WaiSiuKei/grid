@@ -2,6 +2,7 @@ import { Datum, IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
+import { ViewRow } from 'src/grid/viewRow';
 
 export class ViewHeaderCell implements IDisposable {
   public width: number;
@@ -10,29 +11,37 @@ export class ViewHeaderCell implements IDisposable {
 
   private domNode: HTMLElement;
   private host: HTMLElement;
+
+  mounted: boolean = false;
   constructor(container: HTMLElement, cell: number, col: IGridColumnDefinition, left: number) {
     this.host = container;
 
     let el = document.createElement('div');
-    el.className = 'nila-grid-cell';
+    el.className = 'nila-grid-header-cell';
     el.innerText = col.name;
     this.width = col.width || 80;
     el.style.width = `${this.width}px`;
-    el.style.left = left + 'px';
     this.left = left;
     this.right = this.left + this.width;
     this.domNode = el;
   }
 
-  mount() {
-    this.host.appendChild(this.domNode);
+  mount(slibing?: ViewHeaderCell) {
+    this.mounted = true;
+    if (slibing && slibing.mounted) {
+      this.host.insertBefore(this.domNode, slibing.domNode);
+    } else {
+      this.host.appendChild(this.domNode);
+    }
   }
 
   unmount() {
+    this.mounted = false;
     this.host.removeChild(this.domNode);
   }
 
   dispose() {
+    this.mounted = false;
     this.domNode.remove();
   }
 }
@@ -65,8 +74,14 @@ export class ViewHeaderRow implements IDisposable {
   // }
 
   render(scrollLeft: number, viewWidth: number): CellToModify {
-    // console.log(scrollLeft, viewWidth);
-    // this.cells.forEach(c => c.mount());
+    if (!viewWidth) {
+      return {
+        toInsert: [],
+        toRemove: [],
+        mounted: [],
+        margin: 0,
+      };
+    }
 
     let i: number;
     let stop: number;
@@ -78,28 +93,24 @@ export class ViewHeaderRow implements IDisposable {
     let toInsert: number[] = [];
     let toRemove: number[] = [];
 
-    // when view scrolls down, start rendering from the renderBottom
+    // when view scrolls right, start rendering from the renderRight
     for (i = this.indexAfter(renderRight) - 1, stop = this.indexAt(Math.max(thisRenderRight, renderLeft)); i >= stop; i--) {
-      // this.insertItemInDOM(i);
-      toInsert.push(i);
+      if (this.mount(i)) toInsert.push(i);
     }
 
-    // when view scrolls up, start rendering from either this.renderTop or renderBottom
+    // when view scrolls left, start rendering from either this.renderLeft or renderright
     for (i = Math.min(this.indexAt(this.lastRenderLeft), this.indexAfter(renderRight)) - 1, stop = this.indexAt(renderLeft); i >= stop; i--) {
-      // this.insertItemInDOM(i);
-      toInsert.push(i);
+      if (this.mount(i)) toInsert.push(i);
     }
 
     // when view scrolls down, start unrendering from renderTop
     for (i = this.indexAt(this.lastRenderLeft), stop = Math.min(this.indexAt(renderLeft), this.indexAfter(thisRenderRight)); i < stop; i++) {
-      // this.removeItemFromDOM(i);
-      toRemove.push(i);
+      if (this.unmount(i)) toRemove.push(i);
     }
 
     // when view scrolls up, start unrendering from either renderBottom this.renderTop
     for (i = Math.max(this.indexAfter(renderRight), this.indexAt(this.lastRenderLeft)), stop = this.indexAfter(thisRenderRight); i < stop; i++) {
-      // this.removeItemFromDOM(i);
-      toRemove.push(i);
+      if (this.unmount(i)) toRemove.push(i);
     }
 
     let leftItem = this.indexAt(renderLeft);
@@ -108,16 +119,37 @@ export class ViewHeaderRow implements IDisposable {
     let t = (c.left - renderLeft);
 
     let margin = clamp(t, c.width, -c.width);
-    this.domNode.style.top = margin + 'px';
+    this.domNode.style.left = margin + 'px';
 
     this.lastRenderLeft = renderLeft;
     this.lastRenderWidth = renderRight - renderLeft;
 
+    let mounted = [];
+    for (let i = 0, len = this.cells.length; i < len; i++) {
+      if (this.cells[i].mounted) mounted.push(i);
+    }
     return {
       toInsert,
       toRemove,
+      mounted,
       margin
     };
+  }
+
+  private mount(index: number): boolean {
+    let cell = this.cells[index];
+    if (cell.mounted) return false;
+
+    this.cells[index].mount(this.cells[index + 1]);
+    return true;
+  }
+
+  private unmount(index: number): boolean {
+    let c = this.cells[index];
+    if (!c.mounted) return false;
+    this.cells[index].unmount();
+
+    return true;
   }
 
   public indexAt(position: number): number {
@@ -157,5 +189,6 @@ export class ViewHeaderRow implements IDisposable {
 export interface CellToModify {
   toInsert: number[]
   toRemove: number[]
+  mounted: number[]
   margin: number
 }

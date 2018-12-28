@@ -28,15 +28,15 @@ export class VerticalScrollbar extends AbstractScrollbar {
   }
 
   protected _updateSlider(sliderSize: number, sliderPosition: number): void {
-    this.slider.setHeight(sliderSize);
-    this.slider.setTop(sliderPosition);
+    this.slider.style.height = sliderSize + 'px';
+    this.slider.style.top = sliderPosition + 'Px';
   }
 
   protected _renderDomNode(largeSize: number, smallSize: number): void {
-    this.domNode.setWidth(smallSize);
-    this.domNode.setHeight(largeSize);
-    this.domNode.setRight(0);
-    this.domNode.setTop(0);
+    this.domNode.style.width = smallSize + 'px';
+    this.domNode.style.height = smallSize + 'px';
+    this.domNode.style.right = '0';
+    this.domNode.style.top = '0';
   }
 
   public onDidScroll(e: ScrollEvent): boolean {

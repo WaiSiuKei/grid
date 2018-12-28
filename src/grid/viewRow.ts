@@ -11,13 +11,14 @@ function defaultFormatter(row: number, cell: number, value: any, columnDef: IGri
 
 export class ViewCell implements IDisposable {
   public width: number;
-  public left: number;
-  public right: number;
 
   private value: any;
   private domNode: HTMLElement;
   private host: HTMLElement;
-  constructor(container: HTMLElement, row: number, cell: number, datum: Datum, col: IGridColumnDefinition, left: number) {
+
+  mounted: boolean = false;
+
+  constructor(container: HTMLElement, row: number, cell: number, datum: Datum, col: IGridColumnDefinition) {
     this.value = datum[col.field];
     let formatter = col.formatter || defaultFormatter;
 
@@ -29,21 +30,25 @@ export class ViewCell implements IDisposable {
     el.appendChild(content);
     this.width = col.width || 80;
     el.style.width = `${this.width}px`;
-    el.style.left = left + 'px';
-    this.left = left;
-    this.right = this.left + this.width;
     this.domNode = el;
   }
 
-  mount() {
-    this.host.appendChild(this.domNode);
+  mount(slibing?: ViewCell) {
+    this.mounted = true;
+    if (slibing && slibing.mounted) {
+      this.host.insertBefore(this.domNode, slibing.domNode);
+    } else {
+      this.host.appendChild(this.domNode);
+    }
   }
 
   unmount() {
+    this.mounted = false;
     this.host.removeChild(this.domNode);
   }
 
   dispose() {
+    this.mounted = false;
     this.domNode.remove();
   }
 }
@@ -61,12 +66,10 @@ export class ViewRow implements IDisposable {
     this.domNode = container;
     this.host = host;
 
-    let left = 0;
     for (let i = 0, len = columnDefinations.length; i < len; i++) {
       let col = columnDefinations[i];
-      let c = new ViewCell(container, rowIndex, i, data, col, left);
+      let c = new ViewCell(container, rowIndex, i, data, col);
       this.cells.push(c);
-      left += c.width;
     }
   }
 
@@ -79,9 +82,31 @@ export class ViewRow implements IDisposable {
     }
   }
 
-  render(scrollLeft: number, viewWidth: number) {
-    // console.log(scrollLeft, viewWidth);
-    this.cells.forEach(c => c.mount());
+  private mountCell(index: number): boolean {
+    let cell = this.cells[index];
+    if (cell.mounted) return false;
+
+    this.cells[index].mount(this.cells[index + 1]);
+    return true;
+  }
+
+  private unmountCell(index: number): boolean {
+    let c = this.cells[index];
+    if (!c.mounted) return false;
+    this.cells[index].unmount();
+
+    return true;
+  }
+
+  updateCell(toInsert: number[], toRemove: number[], mounted: number[], margin: number) {
+    for (let i of mounted) {
+      this.mountCell(i);
+    }
+    for (let i of toRemove) {
+      this.unmountCell(i);
+    }
+
+    this.domNode.style.left = margin + 'px';
   }
 
   dispose() {

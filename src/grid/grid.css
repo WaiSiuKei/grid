@@ -24,11 +24,16 @@
   position: relative;
 }
 
+.nila-grid .nila-grid-header-cell {
+  height: 100%;
+  float: left;
+}
+
 .nila-grid > .nila-scrollable-element {
   width: 100%;
 }
 
-.nila-grid > .nila-scrollable-element > .nila-grid-wrapper {
+.nila-grid > .nila-scrollable-element > .nila-grid-body {
   height: 100%;
   width: 100%;
   position: relative;
@@ -41,6 +46,8 @@
 }
 
 .nila-grid .nila-grid-rows > .nila-grid-row {
+  display: block;
+
   box-sizing: border-box;
   cursor: pointer;
   overflow: hidden;
@@ -50,11 +57,9 @@
   position: relative;
 }
 
-.nila-grid-cell {
-  position: absolute;
+.nila-grid .nila-grid-cell {
   height: 100%;
-  top: 0;
-  bottom: 0;
+  float: left;
 }
 
 .nila-grid .nila-grid-rows > .nila-grid-row > .content {

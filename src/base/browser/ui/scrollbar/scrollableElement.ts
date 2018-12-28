@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { FastDomNode, createFastDomNode } from 'src/base/browser/fastDomNode';
 import { IMouseEvent, StandardWheelEvent, IMouseWheelEvent } from 'src/base/browser/mouseEvent';
 import { ScrollbarHost } from 'src/base/browser/ui/scrollbar/abstractScrollbar';
 import { HorizontalScrollbar } from 'src/base/browser/ui/scrollbar/horizontalScrollbar';
@@ -141,10 +140,6 @@ export abstract class AbstractScrollableElement extends Widget {
   private readonly _horizontalScrollbar: HorizontalScrollbar;
   private readonly _domNode: HTMLElement;
 
-  private readonly _leftShadowDomNode: FastDomNode<HTMLElement>;
-  private readonly _topShadowDomNode: FastDomNode<HTMLElement>;
-  private readonly _topLeftShadowDomNode: FastDomNode<HTMLElement>;
-
   private readonly _listenOnDomNode: HTMLElement;
 
   private _mouseWheelToDispose: IDisposable[];
@@ -186,8 +181,8 @@ export abstract class AbstractScrollableElement extends Widget {
     this._domNode.style.position = 'relative';
     this._domNode.style.overflow = 'hidden';
     this._domNode.appendChild(element);
-    this._domNode.appendChild(this._horizontalScrollbar.domNode.domNode);
-    this._domNode.appendChild(this._verticalScrollbar.domNode.domNode);
+    this._domNode.appendChild(this._horizontalScrollbar.domNode);
+    this._domNode.appendChild(this._verticalScrollbar.domNode);
 
     this._listenOnDomNode = this._options.listenOnDomNode || this._domNode;
 
