@@ -2,7 +2,7 @@ import { CellFormatter, Datum, IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass } from 'src/base/browser/dom';
 import { GridContext } from 'src/grid/girdContext';
-import { ReactDOM } from 'src/react/react';
+import { React } from 'src/rax';
 
 export class ViewCell implements IDisposable {
   public width: number;
@@ -35,18 +35,18 @@ export class ViewCell implements IDisposable {
     } else {
       this.host.appendChild(this.domNode);
     }
-    ReactDOM.render(this.formatter(this.row, this.cell, this.value, this.col, this.datum), this.domNode,);
+    React.render(this.formatter(this.row, this.cell, this.value, this.col, this.datum), this.domNode,);
   }
 
   unmount() {
     this.mounted = false;
-    ReactDOM.unmountComponentAtNode(this.domNode);
+    React.unmountComponentAtNode(this.domNode);
     this.host.removeChild(this.domNode);
   }
 
   dispose() {
     this.mounted = false;
-    ReactDOM.unmountComponentAtNode(this.domNode);
+    React.unmountComponentAtNode(this.domNode);
     this.domNode.remove();
   }
 }

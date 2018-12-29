@@ -1,0 +1,535 @@
+import ReactiveComponent from './reactive';
+import updater from './updater';
+import Host from './host';
+import Ref from './ref';
+import instantiateComponent from './instantiateComponent';
+import shouldUpdateComponent from './shouldUpdateComponent';
+import shallowEqual from './shallowEqual';
+import dom from './dom';
+
+function performInSandbox(fn, instance, callback) {
+  try {
+    return fn();
+  } catch (e) {
+    if (callback) {
+      callback(e);
+    } else {
+      handleError(instance, e);
+    }
+  }
+}
+
+function handleError(instance, error) {
+  let boundary;
+
+  while (instance) {
+    if (typeof instance.componentDidCatch === 'function') {
+      boundary = instance;
+      break;
+    } else if (instance._internal && instance._internal._parentInstance) {
+      instance = instance._internal._parentInstance;
+    } else {
+      break;
+    }
+  }
+
+  if (boundary) {
+    // should not attempt to recover an unmounting error boundary
+    const boundaryInternal = boundary._internal;
+    if (boundaryInternal) {
+      let callbackQueue = boundaryInternal._pendingCallbacks || (boundaryInternal._pendingCallbacks = []);
+      callbackQueue.push(() => boundary.componentDidCatch(error));
+    }
+  } else {
+    if (Host.sandbox) {
+      setTimeout(() => {
+        throw error;
+      }, 0);
+    } else {
+      throw error;
+    }
+  }
+}
+
+let measureLifeCycle;
+if (process.env.NODE_ENV !== 'production') {
+  measureLifeCycle = function (callback, instanceID, type) {
+    Host.measurer && Host.measurer.beforeLifeCycle(instanceID, type);
+    callback();
+    Host.measurer && Host.measurer.afterLifeCycle(instanceID, type);
+  };
+}
+
+/**
+ * Composite Component
+ */
+class CompositeComponent {
+  constructor(element) {
+    this._currentElement = element;
+  }
+
+  getName() {
+    let type = this._currentElement.type;
+    let constructor = this._instance && this._instance.constructor;
+    return (
+      type.displayName || constructor && constructor.displayName ||
+      type.name || constructor && constructor.name ||
+      null
+    );
+  }
+
+  mountComponent(parent, parentInstance, context, childMounter) {
+    this._parent = parent;
+    this._parentInstance = parentInstance;
+    this._context = context;
+    this._mountID = Host.mountID++;
+    this._updateCount = 0;
+
+    if (process.env.NODE_ENV !== 'production') {
+      Host.measurer && Host.measurer.beforeMountComponent(this._mountID, this);
+    }
+
+    let currentElement = this._currentElement;
+    let Component = currentElement.type;
+    let ref = currentElement.ref;
+    let publicProps = currentElement.props;
+    let isClass = Component.prototype;
+    let isComponentClass = isClass && Component.prototype.isComponentClass;
+    // Class stateless component without state but have lifecycles
+    let isStatelessClass = isClass && Component.prototype.render;
+
+    // Context process
+    let publicContext = this._processContext(context);
+
+    // Initialize the public class
+    let instance;
+    let renderedElement;
+
+    try {
+      if (isComponentClass || isStatelessClass) {
+        // Component instance
+        instance = new Component(publicProps, publicContext, updater);
+      } else if (typeof Component === 'function') {
+        // Functional reactive component with hooks
+        instance = new ReactiveComponent(Component, ref);
+      } else {
+        throw new Error(`Invalid component type: ${Component}. (current: ${typeof Component === 'object' && Object.keys(Component) || typeof Component})`);
+      }
+    } catch (e) {
+      handleError(parentInstance, e);
+      return instance;
+    }
+
+    // These should be set up in the constructor, but as a convenience for
+    // simpler class abstractions, we set them up after the fact.
+    instance.props = publicProps;
+    instance.context = publicContext;
+    instance.refs = {};
+
+    // Inject the updater into instance
+    instance.updater = updater;
+    instance._internal = this;
+    this._instance = instance;
+
+    // Init state, must be set to an object or null
+    let initialState = instance.state;
+    if (initialState === undefined) {
+      // TODO clone the state?
+      instance.state = initialState = null;
+    }
+
+    let error = null;
+    let errorCallback = (e) => {
+      error = e;
+    };
+
+    if (instance.componentWillMount) {
+      performInSandbox(() => {
+        if (process.env.NODE_ENV !== 'production') {
+          measureLifeCycle(() => {
+            instance.componentWillMount();
+          }, this._mountID, 'componentWillMount');
+        } else {
+          instance.componentWillMount();
+        }
+      }, instance, errorCallback);
+    }
+
+    if (renderedElement == null) {
+      Host.component = this;
+      // Process pending state when call setState in componentWillMount
+      instance.state = this._processPendingState(publicProps, publicContext);
+
+      performInSandbox(() => {
+        if (process.env.NODE_ENV !== 'production') {
+          measureLifeCycle(() => {
+            renderedElement = instance.render();
+          }, this._mountID, 'render');
+        } else {
+          renderedElement = instance.render();
+        }
+      }, instance, errorCallback);
+
+      Host.component = null;
+    }
+
+    this._renderedComponent = instantiateComponent(renderedElement);
+    this._renderedComponent.mountComponent(
+      this._parent,
+      instance,
+      this._processChildContext(context),
+      childMounter
+    );
+
+    if (error) {
+      handleError(instance, error);
+    }
+
+    if (!this._currentElement.type.forwardRef && ref) {
+      Ref.attach(currentElement._owner, ref, this);
+    }
+
+    if (instance.componentDidMount) {
+      performInSandbox(() => {
+        if (process.env.NODE_ENV !== 'production') {
+          measureLifeCycle(() => {
+            instance.componentDidMount();
+          }, this._mountID, 'componentDidMount');
+        } else {
+          instance.componentDidMount();
+        }
+      }, instance);
+    }
+
+    // Trigger setState callback in componentWillMount or boundary callback after rendered
+    let callbacks = this._pendingCallbacks;
+    if (callbacks) {
+      this._pendingCallbacks = null;
+      updater.runCallbacks(callbacks, instance);
+    }
+
+
+    return instance;
+  }
+
+  unmountComponent(notRemoveChild) {
+    let instance = this._instance;
+
+    if (!instance) {
+      return;
+    }
+
+    if (instance.componentWillUnmount) {
+      performInSandbox(() => {
+        instance.componentWillUnmount();
+      }, instance);
+    }
+
+    instance._internal = null;
+
+    if (this._renderedComponent != null) {
+      let ref = this._currentElement.ref;
+      if (!this._currentElement.type.forwardRef && ref) {
+        Ref.detach(this._currentElement._owner, ref, this);
+      }
+
+      this._renderedComponent.unmountComponent(notRemoveChild);
+      this._renderedComponent = null;
+      this._instance = null;
+    }
+
+    this._currentElement = null;
+    this._parentInstance = null;
+
+    // Reset pending fields
+    // Even if this component is scheduled for another update in ReactUpdates,
+    // it would still be ignored because these fields are reset.
+    this._pendingStateQueue = null;
+    this._pendingForceUpdate = false;
+
+    // These fields do not really need to be reset since this object is no
+    // longer accessible.
+    this._context = null;
+  }
+
+  /**
+   * Filters the context object to only contain keys specified in
+   * `contextTypes`
+   */
+  _processContext(context) {
+    let Component = this._currentElement.type;
+    let contextTypes = Component.contextTypes;
+    if (!contextTypes) {
+      return {};
+    }
+    let maskedContext = {};
+    for (let contextName in contextTypes) {
+      maskedContext[contextName] = context[contextName];
+    }
+    return maskedContext;
+  }
+
+  _processChildContext(currentContext) {
+    let instance = this._instance;
+    let childContext = instance.getChildContext && instance.getChildContext();
+    if (childContext) {
+      return Object.assign({}, currentContext, childContext);
+    }
+    return currentContext;
+  }
+
+  _processPendingState(props, context) {
+    let instance = this._instance;
+    let queue = this._pendingStateQueue;
+    if (!queue) {
+      return instance.state;
+    }
+    // Reset pending queue
+    this._pendingStateQueue = null;
+    let nextState = Object.assign({}, instance.state);
+    for (let i = 0; i < queue.length; i++) {
+      let partial = queue[i];
+      Object.assign(
+        nextState,
+        typeof partial === 'function' ?
+          partial.call(instance, nextState, props, context) :
+          partial
+      );
+    }
+
+    return nextState;
+  }
+
+  updateComponent(
+    prevElement,
+    nextElement,
+    prevUnmaskedContext,
+    nextUnmaskedContext
+  ) {
+    let instance = this._instance;
+
+    if (process.env.NODE_ENV !== 'production') {
+      Host.measurer && Host.measurer.beforeUpdateComponent(this._mountID, this);
+    }
+
+    if (!instance) {
+      console.error(
+        `Update component '${this.getName()}' that has already been unmounted (or failed to mount).`
+      );
+    }
+
+    let willReceive = false;
+    let nextContext;
+    let nextProps;
+
+    // Determine if the context has changed or not
+    if (this._context === nextUnmaskedContext) {
+      nextContext = instance.context;
+    } else {
+      nextContext = this._processContext(nextUnmaskedContext);
+      willReceive = true;
+    }
+
+    // Distinguish between a props update versus a simple state update
+    if (prevElement === nextElement) {
+      // Skip checking prop types again -- we don't read component.props to avoid
+      // warning for DOM component props in this upgrade
+      nextProps = nextElement.props;
+    } else {
+      nextProps = nextElement.props;
+      willReceive = true;
+    }
+
+    let hasReceived = willReceive && instance.componentWillReceiveProps;
+
+    if (hasReceived) {
+      // Calling this.setState() within componentWillReceiveProps will not trigger an additional render.
+      this._pendingState = true;
+      performInSandbox(() => {
+        instance.componentWillReceiveProps(nextProps, nextContext);
+      }, instance);
+      this._pendingState = false;
+    }
+
+    // Update refs
+    if (this._currentElement.type.forwardRef) {
+      instance.prevForwardRef = prevElement.ref;
+      instance.forwardRef = nextElement.ref;
+    } else {
+      Ref.update(prevElement, nextElement, this);
+    }
+
+    // Shoud update always default
+    let shouldUpdate = true;
+    let prevProps = instance.props;
+    let prevState = instance.state;
+    // TODO: could delay execution processPendingState
+    let nextState = this._processPendingState(nextProps, nextContext);
+
+    // ShouldComponentUpdate is not called when forceUpdate is used
+    if (!this._pendingForceUpdate) {
+      if (instance.shouldComponentUpdate) {
+        shouldUpdate = performInSandbox(() => {
+          return instance.shouldComponentUpdate(nextProps, nextState,
+            nextContext);
+        }, instance);
+      } else if (instance.isPureComponentClass) {
+        shouldUpdate = !shallowEqual(prevProps, nextProps) || !shallowEqual(
+          prevState, nextState);
+      }
+    }
+
+    if (shouldUpdate) {
+      this._pendingForceUpdate = false;
+      // Will set `this.props`, `this.state` and `this.context`.
+      let prevContext = instance.context;
+
+      // Cannot use this.setState() in componentWillUpdate.
+      // If need to update state in response to a prop change, use componentWillReceiveProps instead.
+      performInSandbox(() => {
+        if (instance.componentWillUpdate) {
+          instance.componentWillUpdate(nextProps, nextState, nextContext);
+        }
+      }, instance);
+
+      // Replace with next
+      this._currentElement = nextElement;
+      this._context = nextUnmaskedContext;
+      instance.props = nextProps;
+      instance.state = nextState;
+      instance.context = nextContext;
+
+      this._updateRenderedComponent(nextUnmaskedContext);
+
+      performInSandbox(() => {
+        if (instance.componentDidUpdate) {
+          instance.componentDidUpdate(prevProps, prevState, prevContext);
+        }
+      }, instance);
+
+      this._updateCount++;
+    } else {
+      // If it's determined that a component should not update, we still want
+      // to set props and state but we shortcut the rest of the update.
+      this._currentElement = nextElement;
+      this._context = nextUnmaskedContext;
+      instance.props = nextProps;
+      instance.state = nextState;
+      instance.context = nextContext;
+    }
+
+    // Flush setState callbacks set in componentWillReceiveProps or boundary callback
+    let callbacks = this._pendingCallbacks;
+    if (callbacks) {
+      this._pendingCallbacks = null;
+      updater.runCallbacks(callbacks, instance);
+    }
+
+  }
+
+  /**
+   * Call the component's `render` method and update the DOM accordingly.
+   */
+  _updateRenderedComponent(context) {
+    let prevRenderedComponent = this._renderedComponent;
+    let prevRenderedElement = prevRenderedComponent._currentElement;
+
+    let instance = this._instance;
+    let nextRenderedElement;
+
+    Host.component = this;
+
+    performInSandbox(() => {
+      if (process.env.NODE_ENV !== 'production') {
+        measureLifeCycle(() => {
+          nextRenderedElement = instance.render();
+        }, this._mountID, 'render');
+      } else {
+        nextRenderedElement = instance.render();
+      }
+    }, instance);
+
+    Host.component = null;
+
+    if (shouldUpdateComponent(prevRenderedElement, nextRenderedElement)) {
+      const prevRenderedUnmaskedContext = prevRenderedComponent._context;
+      const nextRenderedUnmaskedContext = this._processChildContext(context);
+      if (prevRenderedElement !== nextRenderedElement || prevRenderedUnmaskedContext !== nextRenderedUnmaskedContext) {
+        prevRenderedComponent.updateComponent(
+          prevRenderedElement,
+          nextRenderedElement,
+          prevRenderedUnmaskedContext,
+          nextRenderedUnmaskedContext
+        );
+      }
+
+      if (process.env.NODE_ENV !== 'production') {
+        Host.measurer && Host.measurer.recordOperation({
+          instanceID: this._mountID,
+          type: 'update component',
+          payload: {}
+        });
+      }
+    } else {
+      let oldChild = prevRenderedComponent.getNativeNode();
+      prevRenderedComponent.unmountComponent(true);
+
+      this._renderedComponent = instantiateComponent(nextRenderedElement);
+      this._renderedComponent.mountComponent(
+        this._parent,
+        instance,
+        this._processChildContext(context),
+        (newChild, parent) => {
+          // TODO: Duplicate code in native component file
+          if (!Array.isArray(newChild)) {
+            newChild = [newChild];
+          }
+
+          // oldChild or newChild all maybe fragment
+          if (!Array.isArray(oldChild)) {
+            oldChild = [oldChild];
+          }
+
+          // If newChild count large then oldChild
+          let lastNewChild;
+          for (let i = 0; i < newChild.length; i++) {
+            let child = newChild[i];
+            if (oldChild[i]) {
+              dom.replaceChild(child, oldChild[i]);
+            } else if (lastNewChild) {
+              dom.insertAfter(child, lastNewChild);
+            } else {
+              dom.appendChild(child, parent);
+            }
+            lastNewChild = child;
+          }
+
+          // If newChild count less then oldChild
+          if (newChild.length < oldChild.length) {
+            for (let i = newChild.length; i < oldChild.length; i++) {
+              dom.removeChild(oldChild[i]);
+            }
+          }
+        }
+      );
+    }
+  }
+
+  getNativeNode() {
+    let renderedComponent = this._renderedComponent;
+    if (renderedComponent) {
+      return renderedComponent.getNativeNode();
+    }
+  }
+
+  getPublicInstance() {
+    let instance = this._instance;
+    // The Stateless components cannot be given refs
+    if (instance instanceof ReactiveComponent) {
+      return null;
+    }
+    return instance;
+  }
+}
+
+export default CompositeComponent;
