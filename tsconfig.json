@@ -12,6 +12,7 @@
     ],
     "declaration": false,
     "outDir": "dist",
+    "jsx": "React",
     //    "strict": true,
     /* Enable all strict type-checking options. */
     "strictPropertyInitialization": false,

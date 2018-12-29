@@ -1,8 +1,7 @@
-import { VirtualNode } from 'src/virtual-dom/vnode';
-import { h } from 'src/virtual-dom/h';
+import { React } from 'src/react/react';
 
-function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): VirtualNode {
-  return h('div', { innerText: (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') });
+function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): any {
+  return React.createElement('div', null, (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
 }
 
 export interface Datum {
@@ -47,7 +46,7 @@ export const COLUMN_DEFAULT: Partial<IGridColumnDefinition> = {
 };
 
 export interface CellFormatter {
-  (row: number, cell: number, value: any, m: IGridColumnDefinition, item: Datum): VirtualNode
+  (row: number, cell: number, value: any, m: IGridColumnDefinition, item: Datum): any
 }
 
 export interface IGridColumnDefinition {

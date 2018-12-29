@@ -1,8 +1,8 @@
-import { Datum, IGridColumnDefinition } from 'src/grid/grid';
+import { CellFormatter, Datum, IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass } from 'src/base/browser/dom';
-import { createElement } from 'src/virtual-dom/create-element';
 import { GridContext } from 'src/grid/girdContext';
+import { ReactDOM } from 'src/react/react';
 
 export class ViewCell implements IDisposable {
   public width: number;
@@ -10,19 +10,19 @@ export class ViewCell implements IDisposable {
   private value: any;
   private domNode: HTMLElement;
   private host: HTMLElement;
+  private formatter: CellFormatter;
 
   mounted: boolean = false;
 
-  constructor(container: HTMLElement, row: number, cell: number, datum: Datum, col: IGridColumnDefinition) {
+  constructor(container: HTMLElement, private row: number, private cell: number, private datum: Datum, private col: IGridColumnDefinition) {
     this.value = datum[col.field];
-    let formatter = col.formatter;
+    this.formatter = col.formatter;
 
     this.host = container;
 
     let el = document.createElement('div');
     el.className = 'nila-grid-cell';
-    let content = createElement(formatter(row, cell, this.value, col, datum));
-    el.appendChild(content);
+
     this.width = col.width;
     el.style.width = `${this.width}px`;
     this.domNode = el;
@@ -35,15 +35,18 @@ export class ViewCell implements IDisposable {
     } else {
       this.host.appendChild(this.domNode);
     }
+    ReactDOM.render(this.formatter(this.row, this.cell, this.value, this.col, this.datum), this.domNode,);
   }
 
   unmount() {
     this.mounted = false;
+    ReactDOM.unmountComponentAtNode(this.domNode);
     this.host.removeChild(this.domNode);
   }
 
   dispose() {
     this.mounted = false;
+    ReactDOM.unmountComponentAtNode(this.domNode);
     this.domNode.remove();
   }
 }

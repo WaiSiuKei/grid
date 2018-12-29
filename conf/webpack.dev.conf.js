@@ -51,7 +51,7 @@ module.exports = {
       '.webpack.js',
       '.web.js',
       '.js',
-      '.ts'
+      '.ts',
     ],
     alias: {
       src: path.resolve(__dirname, '../src'),

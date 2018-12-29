@@ -1,9 +1,7 @@
 import { ScrollbarVisibility, ScrollEvent } from 'src/base/common/scrollable';
-import { GridModel } from 'src/grid/gridModel';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
 import { addClass, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
-import { IGridColumnDefinition, IGridOptions } from 'src/grid/grid';
 import { ViewRow } from 'src/grid/viewRow';
 import { isNumber } from 'src/base/common/types';
 import { ViewHeaderRow } from 'src/grid/viewHeader';

@@ -3,20 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-const _typeof = {
-  number: 'number',
-  string: 'string',
-  undefined: 'undefined',
-  object: 'object',
-  function: 'function'
-};
+export enum Typeof {
+  number = 'number',
+  string = 'string',
+  undefined = 'undefined',
+  object = 'object',
+  function = 'function',
+  null = 'null',
+  class = 'class'
+}
 
 export function isArray(array: any): array is any[] {
   if (Array.isArray) {
     return Array.isArray(array);
   }
 
-  if (array && typeof (array.length) === _typeof.number && array.constructor === Array) {
+  if (array && typeof (array.length) === Typeof.number && array.constructor === Array) {
     return true;
   }
 
@@ -32,7 +34,7 @@ export function isObject(obj: any): boolean {
   // The method can't do a type cast since there are type (like strings) which
   // are subclasses of any put not positvely matched by the function. Hence type
   // narrowing results in wrong results.
-  return typeof obj === _typeof.object
+  return typeof obj === Typeof.object
     && obj !== null
     && !Array.isArray(obj)
     && !(obj instanceof RegExp)
@@ -44,7 +46,7 @@ export function isObject(obj: any): boolean {
  * @returns whether the provided parameter is a JavaScript Number or not.
  */
 export function isNumber(obj: any): obj is number {
-  if ((typeof (obj) === _typeof.number || obj instanceof Number) && !isNaN(obj)) {
+  if ((typeof (obj) === Typeof.number || obj instanceof Number) && !isNaN(obj)) {
     return true;
   }
 

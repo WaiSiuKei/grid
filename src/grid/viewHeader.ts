@@ -1,4 +1,4 @@
-import { Datum, IGridColumnDefinition } from 'src/grid/grid';
+import { IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
