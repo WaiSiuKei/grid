@@ -32,7 +32,7 @@ module.exports = {
     new webpack.NoEmitOnErrorsPlugin(),
     FailPlugin,
     new HtmlWebpackPlugin({
-      template: conf.path.page('index.html')
+      template: conf.path.demo('index.html')
     }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"'
@@ -66,6 +66,6 @@ module.exports = {
     ],
   },
   entry: [
-    `./${conf.path.page('index')}`
+    `./${conf.path.demo('index')}`
   ]
 };

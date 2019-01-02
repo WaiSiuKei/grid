@@ -1,11 +1,7 @@
 import { React } from '../rax';
 
 function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): any {
-  return function app() {
-    React.useLayoutEffect(() => {
-      // console.log('hello', row, cell);
-    });
-
+  return function () {
     return React.createElement('div', null, (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
   };
 }
