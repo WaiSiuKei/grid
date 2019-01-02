@@ -238,24 +238,10 @@ class NativeComponent {
           dom.removeAttribute(this.getNativeNode(), propKey,
             prevProps[propKey]);
         }
-        if (process.env.NODE_ENV !== 'production') {
-          Host.measurer && Host.measurer.recordOperation({
-            instanceID: this._mountID,
-            type: 'update attribute',
-            payload: payload
-          });
-        }
       }
     }
 
     if (styleUpdates) {
-      if (process.env.NODE_ENV !== 'production') {
-        Host.measurer && Host.measurer.recordOperation({
-          instanceID: this._mountID,
-          type: 'update style',
-          payload: styleUpdates
-        });
-      }
       dom.setStyles(this.getNativeNode(), styleUpdates);
     }
   }

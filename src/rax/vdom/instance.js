@@ -1,10 +1,10 @@
 import Host from './host';
-import {createElement} from '../element';
+import { createElement } from '../element';
 import unmountComponentAtNode from '../unmountComponentAtNode';
 import instantiateComponent from './instantiateComponent';
 import shouldUpdateComponent from './shouldUpdateComponent';
 import Root from './root';
-import dom from './dom'
+import dom from './dom';
 
 /**
  * Instance manager
@@ -36,10 +36,6 @@ export default {
     }
   },
   mount(element, container, parentInstance) {
-    if (process.env.NODE_ENV !== 'production') {
-      Host.measurer && Host.measurer.beforeRender();
-    }
-
     // Real native root node is body
     if (container == null) {
       container = document.body;

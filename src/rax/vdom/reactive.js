@@ -30,7 +30,8 @@ class ReactiveComponent extends Component {
         for (let i = compares.length - 1; i > -1; i--) {
           if (arePropsEqual = compares[i](this.props, nextProps)) {
             break;
-          };
+          }
+          ;
         }
 
         return !arePropsEqual || this.prevForwardRef !== this.forwardRef;
@@ -98,9 +99,6 @@ class ReactiveComponent extends Component {
   }
 
   render() {
-    if (process.env.NODE_ENV !== 'production') {
-      Host.measurer && Host.measurer.beforeRender();
-    }
     this.hooksIndex = 0;
     return this.pureRender(this.props, this.forwardRef ? this.forwardRef : this.context);
   }
