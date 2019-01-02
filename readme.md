@@ -7,7 +7,7 @@ A Blazing fast grid supports virtual scrolling and React jsx!!!
 
 ## Doc
 ###  Grid Options
-Reference SlickGrid，the difference is that you should returen a component in the formatter function；
+Reference SlickGrid，the difference is that you should return a component in the formatter function；
 - In React project，you should use the built-in React-like library：
 
 ```jsx
