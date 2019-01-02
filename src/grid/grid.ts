@@ -1,10 +1,13 @@
 import { React } from 'src/rax';
 
 function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): any {
-  React.useEffect(() => {
-    console.log('hello', row, cell);
-  });
-  return React.createElement('div', null, (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+  return function app() {
+    React.useEffect(() => {
+      console.log('hello', row, cell);
+    });
+
+    return React.createElement('div', null, (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+  };
 }
 
 export interface Datum {

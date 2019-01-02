@@ -35,7 +35,7 @@ export class ViewCell implements IDisposable {
     } else {
       this.host.appendChild(this.domNode);
     }
-    React.render(this.formatter(this.row, this.cell, this.value, this.col, this.datum), this.domNode,);
+    React.render(React.createElement(this.formatter(this.row, this.cell, this.value, this.col, this.datum)), this.domNode);
   }
 
   unmount() {
