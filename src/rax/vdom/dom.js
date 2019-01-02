@@ -18,33 +18,7 @@ const TEXT_CONTENT_ATTR = typeof document === 'object' && 'textContent' in docum
 const dom = {
 
   tagNamePrefix: '',
-  deviceWidth: typeof DEVICE_WIDTH !== 'undefined' && DEVICE_WIDTH || null,
-  viewportWidth: typeof VIEWPORT_WIDTH !== 'undefined' && VIEWPORT_WIDTH || 750,
   eventRegistry: {},
-
-  setTagNamePrefix(prefix) {
-    this.tagNamePrefix = prefix;
-  },
-
-  getDeviceWidth() {
-    return this.deviceWidth || document.documentElement.clientWidth;
-  },
-
-  setDeviceWidth(width) {
-    this.deviceWidth = width;
-  },
-
-  getViewportWidth() {
-    return this.viewportWidth;
-  },
-
-  setViewportWidth(width) {
-    this.viewportWidth = width;
-  },
-
-  getElementById(id) {
-    return document.getElementById(id);
-  },
 
   createBody() {
     return document.body;
