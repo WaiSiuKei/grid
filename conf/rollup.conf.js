@@ -2,6 +2,7 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import typescript from 'rollup-plugin-typescript2';
 import scss from 'rollup-plugin-scss';
+import uglify from 'rollup-plugin-uglify-es';
 
 const pkg = require('../package.json');
 
@@ -28,6 +29,7 @@ export default {
     }),
     resolve(),
     commonjs(),
+    uglify()
   ]
 
 };
