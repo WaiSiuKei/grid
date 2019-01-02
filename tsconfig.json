@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "module": "amd",
     "moduleResolution": "node",
     "target": "es5",
     "sourceMap": true,
@@ -11,6 +10,7 @@
       "dom"
     ],
     "declaration": false,
+    "allowJs": true,
     "outDir": "dist",
     "jsx": "React",
     //    "strict": true,

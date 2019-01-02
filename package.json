@@ -1,6 +1,9 @@
 {
+  "name": "grid",
+  "main": "dist/grid.umd.js",
   "scripts": {
-    "build": "gulp",
+    "build": "rimraf ./dist && rollup -c ./conf/rollup.conf.js",
+    "b": "tsc --module commonjs",
     "start": "gulp serve"
   },
   "devDependencies": {
@@ -15,6 +18,12 @@
     "gulp-sass": "^4.0.2",
     "gulp-util": "^3.0.8",
     "html-webpack-plugin": "^3.2.0",
+    "rimraf": "^2.6.2",
+    "rollup": "^1.0.0",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-scss": "^0.4.0",
+    "rollup-plugin-typescript2": "^0.18.1",
     "sass-loader": "^7.1.0",
     "source-map-loader": "^0.2.4",
     "style-loader": "^0.23.1",

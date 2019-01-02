@@ -29,7 +29,7 @@ module.exports = {
     new webpack.NoEmitOnErrorsPlugin(),
     FailPlugin,
     new HtmlWebpackPlugin({
-      template: conf.path.src('index.html')
+      template: conf.path.demo('index.html')
     }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.LoaderOptionsPlugin({
@@ -60,6 +60,6 @@ module.exports = {
   entry: [
     'webpack/hot/dev-server',
     'webpack-hot-middleware/client?reload=true',
-    `./${conf.path.src('index')}`
+    `./${conf.path.demo('index')}`
   ]
 };

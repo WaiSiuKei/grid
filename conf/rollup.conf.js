@@ -1,28 +1,33 @@
-import resolve from 'rollup-plugin-node-resolve'
-import commonjs from 'rollup-plugin-commonjs'
-import sourceMaps from 'rollup-plugin-sourcemaps'
-const pkg = require('../package.json')
+import resolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
+import typescript from 'rollup-plugin-typescript2';
+import scss from 'rollup-plugin-scss';
 
-const libraryName = 'finscript'
+const pkg = require('../package.json');
+
+const libraryName = 'NilaGrid';
 
 export default {
-  entry: `compiled/src/Calculator.js`,
-  targets: [
-	  { dest: pkg.main, moduleName: libraryName, format: 'umd' },
-	  { dest: pkg.module, format: 'es' }
+  input: `src/index.ts`,
+  output: [
+    { file: pkg.main, name: libraryName, format: 'umd', sourcemap: false },
   ],
-  sourceMap: true,
-  // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
+  sourceMap: false,
   external: [],
   plugins: [
-    // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
-    commonjs(),
-    // Allow node_modules resolution, so you can use 'external' to control
-    // which external modules to include in the bundle
-    // https://github.com/rollup/rollup-plugin-node-resolve#usage
-    resolve(),
+    scss({
+      //Choose *one* of these possible "output:..." options
+      // Default behaviour is to write all styles to the bundle destination where .js is replaced by .css
+      output: 'dist/grid.css',
 
-    // Resolve source maps to the original source
-    sourceMaps()
+      // Determine if node process should be terminated on error (default: false)
+      failOnError: true,
+    }),
+    typescript({
+      useTsconfigDeclarationDir: true,
+    }),
+    resolve(),
+    commonjs(),
   ]
-}
+
+};

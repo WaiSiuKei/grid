@@ -10,7 +10,10 @@ export const React = {
   createElement,
   useEffect,
   useLayoutEffect,
+};
+
+
+export const ReactDOM = {
   unmountComponentAtNode,
   render
 };
-
