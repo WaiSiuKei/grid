@@ -1,4 +1,4 @@
-import {  typeNumber, isFn, gDSFP, gSBU } from 'src/react/core/util';
+import { typeNumber, gDSFP, gSBU } from 'src/react/core/util';
 import { fiberizeChildren } from 'src/react/core/createElement';
 import { AnuPortal } from 'src/react/core/createPortal';
 
@@ -22,6 +22,7 @@ import {
 } from './ErrorBoundary';
 import { resetCursor } from './dispatcher';
 import { getInsertPoint, setInsertPoints } from './insertPoint';
+import { isFunction } from 'src/base/common/types';
 
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
@@ -141,7 +142,7 @@ function mergeStates(fiber, nextProps) {
   for (let i = 0; i < n; i++) {
     let pending = pendings[i];
     if (pending) {
-      if (isFn(pending)) {
+      if (isFunction(pending)) {
         let a = pending.call(instance, nextState, nextProps);
         if (!a) {
           continue;
@@ -167,7 +168,7 @@ export function updateClassComponent(fiber, info) {
   let getContext = type.contextType;
   let unmaskedContext = contextStack[0];
   //如果这是React16.7的static ContextType
-  let isStaticContextType = isFn(type.contextType);
+  let isStaticContextType = isFunction(type.contextType);
   let newContext = isStaticContextType ? getContext(fiber) : getMaskedContext(
     instance,
     type.contextTypes,

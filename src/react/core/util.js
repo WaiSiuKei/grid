@@ -45,10 +45,6 @@ export function toLowerCase(s) {
   return lowerCache[s] || (lowerCache[s] = s.toLowerCase());
 }
 
-export function isFn(obj) {
-  return __type.call(obj) === '[object Function]';
-}
-
 let rword = /[^, ]+/g;
 
 export function oneObject(array, val) {

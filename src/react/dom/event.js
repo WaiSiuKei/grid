@@ -1,7 +1,8 @@
 import { contains } from './browser';
-import { isFn, noop, toLowerCase } from 'src/react/core/util';
+import { noop, toLowerCase } from 'src/react/core/util';
 import { Renderer } from 'src/react/core/createRenderer';
 import { enqueueDuplex } from './duplex';
+import { isFunction } from 'src/base/common/types';
 
 export let rform = /textarea|input|select|option/i;
 let globalEvents = {};
@@ -103,7 +104,7 @@ function triggerEventFlow(paths, prop, e) {
   for (let i = paths.length; i--;) {
     let path = paths[i];
     let fn = path.events[prop];
-    if (isFn(fn)) {
+    if (isFunction(fn)) {
       e.currentTarget = path.node;
       fn.call(void 666, e);
       if (e._stopPropagation) {

@@ -1,5 +1,6 @@
 import { Renderer } from 'src/react/core/createRenderer';
-import { get, isFn } from 'src/react/core/util';
+import { get } from 'src/react/core/util';
+import { isFunction } from 'src/base/common/types';
 
 function setter(compute, cursor, value) {
   this.updateQueue[cursor] = compute(cursor, value);
@@ -14,7 +15,7 @@ export function resetCursor() {
 
 export var dispatcher = {
   useContext(getContext) {//这个实现并不正确
-    if (isFn(getContext)) {
+    if (isFunction(getContext)) {
       let fiber = getCurrentFiber();
       let context = getContext(fiber);
       let list = getContext.subscribers;

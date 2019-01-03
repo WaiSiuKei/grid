@@ -52,3 +52,8 @@ export function isNumber(obj: any): obj is number {
 
   return false;
 }
+
+export function isFunction(obj: any): obj is Function {
+  return typeof obj === Typeof.function;
+}
+

@@ -6,7 +6,6 @@ import {
   resetStack,
   arrayPush,
   get,
-  isFn,
   topNodes,
   typeNumber,
   topFibers
@@ -15,6 +14,7 @@ import { Unbatch } from './unbatch';
 import { Fiber } from './Fiber';
 
 import { createInstance } from './createInstance';
+import { isFunction } from 'src/base/common/types';
 
 const macrotasks = Renderer.macrotasks;
 let boundaries = Renderer.boundaries;
@@ -183,7 +183,7 @@ function mergeUpdates(fiber, state, isForced, callback) {
   if (state) {
     updateQueue.pendingStates.push(state);
   }
-  if (isFn(callback)) {
+  if (isFunction(callback)) {
     updateQueue.pendingCbs.push(callback);
   }
 }
