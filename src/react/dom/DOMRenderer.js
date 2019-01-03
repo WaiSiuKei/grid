@@ -135,10 +135,6 @@ function insertElement(fiber) {
 //其他Renderer也要实现这些方法
 render.Render = Renderer;
 
-function mergeContext(container, context) {
-  container.contextStack[0] = Object.assign({}, context);
-}
-
 export const DOMRenderer = createRenderer({
   render,
   updateAttribute(fiber) {
@@ -153,27 +149,6 @@ export const DOMRenderer = createRenderer({
   insertElement,
   emptyElement(fiber) {
     emptyElement(fiber.stateNode);
-  },
-  unstable_renderSubtreeIntoContainer(instance, vnode, root, callback) {
-    //看root上面有没有根虚拟DOM，没有就创建
-    let container = createContainer(root),
-      fiber = get(instance),
-      backup;
-    do {
-      var inst = fiber.stateNode;
-      if (inst && inst.getChildContext) {
-        backup = mergeContext(container, inst.getChildContext());
-        break;
-      } else {
-        backup = fiber;
-      }
-    } while ((fiber = fiber.return));
-
-    if (backup && backup.contextStack) {
-      mergeContext(container, backup.contextStack[0]);
-    }
-
-    return Renderer.render(vnode, root, callback);
   },
 
   // [Top API] ReactDOM.unmountComponentAtNode
