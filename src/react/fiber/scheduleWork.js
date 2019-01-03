@@ -3,7 +3,6 @@ import { commitDFS } from './commitWork';
 import { Renderer } from 'src/react/core/createRenderer';
 import {
   effects,
-  isMounted,
   resetStack,
   arrayPush,
   get,

@@ -1,4 +1,4 @@
-import { returnFalse, isMounted, extend, gDSFP, gSBU } from 'src/react/core/util';
+import { returnFalse, isMounted,  gDSFP, gSBU } from 'src/react/core/util';
 import { Component } from 'src/react/core/Component';
 import { Renderer } from 'src/react/core/createRenderer';
 
@@ -31,7 +31,7 @@ export function createInstance(fiber, context) {
   try {
     if (isStateless) {
       Renderer.currentOwner = instance;
-      extend(instance, {
+      Object.assign(instance, {
         __isStateless: true,
         __init: true,
         renderImpl: type,

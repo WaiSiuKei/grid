@@ -1,4 +1,4 @@
-import { extend, typeNumber, isFn, gDSFP, gSBU } from 'src/react/core/util';
+import {  typeNumber, isFn, gDSFP, gSBU } from 'src/react/core/util';
 import { fiberizeChildren } from 'src/react/core/createElement';
 import { AnuPortal } from 'src/react/core/createPortal';
 
@@ -136,7 +136,7 @@ function mergeStates(fiber, nextProps) {
     return state;
   }
 
-  let nextState = extend({}, state); // 每次都返回新的state
+  let nextState = { ...state }; // 每次都返回新的state
   let fail = true;
   for (let i = 0; i < n; i++) {
     let pending = pendings[i];
@@ -150,7 +150,7 @@ function mergeStates(fiber, nextProps) {
         }
       }
       fail = false;
-      extend(nextState, pending);
+      Object.assign(nextState, pending);
     }
   }
 
@@ -446,7 +446,7 @@ function diffChildren(parentFiber, children) {
         //&& !oldFiber.disposed
         alternate = new Fiber(oldFiber);
         let oldRef = oldFiber.ref;
-        newFiber = extend(oldFiber, newFiber);
+        newFiber = { ...oldFiber, ...newFiber };
         delete newFiber.disposed;
         newFiber.alternate = alternate;
         if (newFiber.ref && newFiber.deleteRef) {

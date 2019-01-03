@@ -1,7 +1,8 @@
-import { React } from '../rax';
+import { React } from '../react';
 
 function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): any {
   return function () {
+
     return React.createElement('div', null, (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
   };
 }

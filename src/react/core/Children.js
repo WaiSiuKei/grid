@@ -1,5 +1,5 @@
 import { traverseAllChildren, isValidElement } from './createElement';
-import { extend, noop } from './util';
+import { noop } from './util';
 
 export const Children = {
   only(children) {
@@ -69,7 +69,7 @@ function traverseCallback(bookKeeping, child, childKey) {
     mapChildren(mappedChild, childKey, K, result);
   } else if (mappedChild != null) {
     if (isValidElement(mappedChild)) {
-      mappedChild = extend({}, mappedChild);
+      mappedChild = { ...mappedChild };
       mappedChild.key =
         keyPrefix +
         (mappedChild.key && (!child || child.key !== mappedChild.key)

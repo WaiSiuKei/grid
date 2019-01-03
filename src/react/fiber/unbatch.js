@@ -1,16 +1,15 @@
-import { miniCreateClass } from 'src/react/core/util';
 import { Component } from 'src/react/core/Component';
 
-export var Unbatch = miniCreateClass(
-  function Unbatch(props) {
+export class Unbatch extends Component {
+  constructor(props) {
+    super();
+
     this.state = {
       child: props.child
     };
-  },
-  Component,
-  {
-    render() {
-      return this.state.child;
-    }
   }
-);
+
+  render() {
+    return this.state.child;
+  }
+}

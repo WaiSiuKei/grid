@@ -1,7 +1,7 @@
-import { extend, noop } from './util';
+import { noop } from './util';
 
 export function createRenderer(methods) {
-  return extend(Renderer, methods);
+  return Object.assign(Renderer, methods);
 }
 
 export let middlewares = [];

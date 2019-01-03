@@ -1,5 +1,4 @@
 export const arrayPush = Array.prototype.push;
-export const innerHTML = 'dangerouslySetInnerHTML';
 export const hasOwnProperty = Object.prototype.hasOwnProperty;
 export const gSBU = 'getSnapshotBeforeUpdate';
 export const gDSFP = 'getDerivedStateFromProps';
@@ -7,7 +6,6 @@ export const hasSymbol = typeof Symbol === 'function' && Symbol['for'];
 export const effects = [];
 export const topFibers = [];
 export const topNodes = [];
-export const emptyArray = [];
 export const emptyObject = {};
 
 export const REACT_ELEMENT_TYPE = hasSymbol
@@ -15,10 +13,6 @@ export const REACT_ELEMENT_TYPE = hasSymbol
   : 0xeac7;
 
 export function noop() {}
-
-export function Fragment(props) {
-  return props.children;
-}
 
 export function returnFalse() {
   return false;
@@ -44,24 +38,6 @@ export function get(key) {
 
 export let __type = Object.prototype.toString;
 
-var fakeWindow = {};
-
-export function getWindow() {
-  try {
-    if (window) {
-      return window;
-    }
-    /* istanbul ignore next  */
-  } catch (e) {/*kill*/}
-  try {
-    if (global) {
-      return global;
-    }
-    /* istanbul ignore next  */
-  } catch (e) {/*kill*/}
-  return fakeWindow;
-}
-
 export function isMounted(instance) {
   var fiber = get(instance);
   return !!(fiber && fiber.hasMounted);
@@ -69,55 +45,7 @@ export function isMounted(instance) {
 
 export function toWarnDev(msg, deprecated) {
   msg = deprecated ? msg + ' is deprecated' : msg;
-  let process = getWindow().process;
-  if (process && process.env.NODE_ENV === 'development') {
-    throw msg;
-  }
-}
-
-export function extend(obj, props) {
-  for (let i in props) {
-    if (hasOwnProperty.call(props, i)) {
-      obj[i] = props[i];
-    }
-  }
-  return obj;
-}
-
-export function inherit(SubClass, SupClass) {
-  function Bridge() {}
-
-  let orig = SubClass.prototype;
-  Bridge.prototype = SupClass.prototype;
-  let fn = (SubClass.prototype = new Bridge());
-  // 避免原型链拉长导致方法查找的性能开销
-  extend(fn, orig);
-  fn.constructor = SubClass;
-  return fn;
-}
-
-try {
-  //微信小程序不支持Function
-  var supportEval = Function('a', 'return a + 1')(2) == 3;
-  /* istanbul ignore next  */
-} catch (e) {}
-let rname = /function\s+(\w+)/;
-
-export function miniCreateClass(ctor, superClass, methods, statics) {
-  let className = ctor.name || (ctor.toString().match(rname) || ['', 'Anonymous'])[1];
-  let Ctor = supportEval ? Function('superClass', 'ctor', 'return function ' + className + ' (props, context) {\n            superClass.apply(this, arguments); \n            ctor.apply(this, arguments);\n      }')(superClass, ctor) :
-    function ReactInstance() {
-      superClass.apply(this, arguments);
-      ctor.apply(this, arguments);
-    };
-  Ctor.displayName = className;
-  let proto = inherit(Ctor, superClass);
-  extend(proto, methods);
-  extend(Ctor, superClass);//继承父类的静态成员
-  if (statics) {//添加自己的静态成员
-    extend(Ctor, statics);
-  }
-  return Ctor;
+  throw msg;
 }
 
 let lowerCache = {};
@@ -185,13 +113,3 @@ export function typeNumber(data) {
   let a = numberMap[__type.call(data)];
   return a || 8;
 }
-
-export let toArray =
-  Array.from ||
-  function (a) {
-    let ret = [];
-    for (let i = 0, n = a.length; i < n; i++) {
-      ret[i] = a[i];
-    }
-    return ret;
-  };
