@@ -1,7 +1,6 @@
 import { diffProps } from './props';
 import { NAMESPACE } from './browser';
 import {
-  get,
   noop,
   emptyObject,
   topNodes,
