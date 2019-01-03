@@ -14,18 +14,18 @@ export function resetCursor() {
 }
 
 export var dispatcher = {
-  useContext(getContext) {//这个实现并不正确
-    if (isFunction(getContext)) {
-      let fiber = getCurrentFiber();
-      let context = getContext(fiber);
-      let list = getContext.subscribers;
-      if (list.indexOf(fiber) === -1) {
-        list.push(fiber);
-      }
-      return context;
-    }
-    return null;
-  },
+  // useContext(getContext) {//这个实现并不正确
+  //   if (isFunction(getContext)) {
+  //     let fiber = getCurrentFiber();
+  //     let context = getContext(fiber);
+  //     let list = getContext.subscribers;
+  //     if (list.indexOf(fiber) === -1) {
+  //       list.push(fiber);
+  //     }
+  //     return context;
+  //   }
+  //   return null;
+  // },
   useReducer(reducer, initValue, initAction) {//ok
     let fiber = getCurrentFiber();
     let key = hookCursor + 'Hook';
@@ -67,16 +67,16 @@ export var dispatcher = {
     updateQueue[key] = [value, nextInputs];
     return value;
   },
-  useRef(initValue) {//ok
-    let fiber = getCurrentFiber();
-    let key = hookCursor + 'Hook';
-    let updateQueue = fiber.updateQueue;
-    hookCursor++;
-    if (key in updateQueue) {
-      return updateQueue[key];
-    }
-    return updateQueue[key] = { current: initValue };
-  },
+  // useRef(initValue) {//ok
+  //   let fiber = getCurrentFiber();
+  //   let key = hookCursor + 'Hook';
+  //   let updateQueue = fiber.updateQueue;
+  //   hookCursor++;
+  //   if (key in updateQueue) {
+  //     return updateQueue[key];
+  //   }
+  //   return updateQueue[key] = { current: initValue };
+  // },
   useEffect(create, inputs, EffectTag, createList, destoryList) {//ok
     let fiber = getCurrentFiber();
     let cb = dispatcher.useCallbackOrMemo(create, inputs);
@@ -88,25 +88,25 @@ export var dispatcher = {
     updateQueue[destoryList] || (updateQueue[destoryList] = []);
     list.push(cb);
   },
-  useImperativeMethods(ref, create, inputs) {
-    const nextInputs = Array.isArray(inputs) ? inputs.concat([ref])
-      : [ref, create];
-    dispatcher.useEffect(() => {
-      if (typeof ref === 'function') {
-        const refCallback = ref;
-        const inst = create();
-        refCallback(inst);
-        return () => refCallback(null);
-      } else if (ref !== null && ref !== undefined) {
-        const refObject = ref;
-        const inst = create();
-        refObject.current = inst;
-        return () => {
-          refObject.current = null;
-        };
-      }
-    }, nextInputs);
-  }
+  // useImperativeMethods(ref, create, inputs) {
+  //   const nextInputs = Array.isArray(inputs) ? inputs.concat([ref])
+  //     : [ref, create];
+  //   dispatcher.useEffect(() => {
+  //     if (typeof ref === 'function') {
+  //       const refCallback = ref;
+  //       const inst = create();
+  //       refCallback(inst);
+  //       return () => refCallback(null);
+  //     } else if (ref !== null && ref !== undefined) {
+  //       const refObject = ref;
+  //       const inst = create();
+  //       refObject.current = inst;
+  //       return () => {
+  //         refObject.current = null;
+  //       };
+  //     }
+  //   }, nextInputs);
+  // }
 };
 
 function getCurrentFiber() {

@@ -8,12 +8,12 @@ const FailPlugin = require('webpack-fail-plugin');
 module.exports = {
   module: {
     rules: [
-      {
-        enforce: 'pre',
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: 'eslint-loader',
-      },
+      // {
+      //   enforce: 'pre',
+      //   test: /\.js$/,
+      //   exclude: /node_modules/,
+      //   loader: 'eslint-loader',
+      // },
       { enforce: 'pre', test: /\.js$/, loader: 'source-map-loader' },
       {
         test: /\.ts$/,
