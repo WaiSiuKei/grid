@@ -1,10 +1,9 @@
-import { toWarnDev, returnFalse, returnTrue, get } from './util';
+import { returnFalse, get } from './util';
 import { Renderer } from './createRenderer';
 
 
 export const fakeObject = {
   enqueueSetState: returnFalse,
-  isMounted: returnFalse
 };
 
 /**
@@ -24,18 +23,6 @@ export class Component {
     this.refs = {};
     this.updater = fakeObject;
     this.state = null;
-  }
-
-
-  replaceState() {
-    toWarnDev('replaceState', true);
-  }
-
-  isReactComponent = returnTrue;
-
-  isMounted() {
-    toWarnDev('isMounted', true);
-    return this.updater.isMounted(this);
   }
 
   setState(state, cb) {

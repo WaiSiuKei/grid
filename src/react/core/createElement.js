@@ -1,6 +1,5 @@
 import {
   typeNumber,
-  toWarnDev,
   hasSymbol,
   REACT_ELEMENT_TYPE,
   hasOwnProperty
@@ -68,8 +67,6 @@ export function createElement(type, config, ...children) {
     argsLen = children.length;
   if (type && type.call) {
     tag = type.prototype && type.prototype.render ? 2 : 1;
-  } else if (type + '' !== type) {
-    toWarnDev('React.createElement: type is invalid.');
   }
   if (config != null) {
     if (hasValidRef(config)) {

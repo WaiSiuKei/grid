@@ -18,10 +18,6 @@ export function returnFalse() {
   return false;
 }
 
-export function returnTrue() {
-  return true;
-}
-
 export function resetStack(info) {
   keepLast(info.containerStack);
   keepLast(info.contextStack);
@@ -41,11 +37,6 @@ export let __type = Object.prototype.toString;
 export function isMounted(instance) {
   var fiber = get(instance);
   return !!(fiber && fiber.hasMounted);
-}
-
-export function toWarnDev(msg, deprecated) {
-  msg = deprecated ? msg + ' is deprecated' : msg;
-  throw msg;
 }
 
 let lowerCache = {};
