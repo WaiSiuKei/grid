@@ -26,7 +26,7 @@ export function render(vnode, root, callback) {
   if (!container.hostRoot) {
     let fiber = new Fiber({
       type: Unbatch,
-      tag: 2,
+      tag: BuintinType.boolean,
       props: {},
       hasMounted: true,
       memoizedState: {},
@@ -302,7 +302,7 @@ export function createContainer(root, onlyGet, validate) {
   }
   let container = new Fiber({
     stateNode: root,
-    tag: 5,
+    tag: BuintinType.function,
     name: 'hostRoot',
     //contextStack的对象 总是它的后面的元素的并集 ［dUcUbUa, cUbUa, bUa, a, {}］
     contextStack: [{}],
@@ -324,7 +324,7 @@ export function getContainer(p) {
     return p.parent;
   }
   while ((p = p.return)) {
-    if (p.tag === 5) {
+    if (p.tag === BuintinType.function) {
       return p.stateNode;
     }
   }

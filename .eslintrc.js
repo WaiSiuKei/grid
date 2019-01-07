@@ -7,6 +7,7 @@ module.exports = {
     sourceType: 'module'
   },
   env: {
+    es6: true,
     browser: true,
   },
   // required to lint *.vue files
@@ -14,5 +15,6 @@ module.exports = {
   // add your custom rules here
   'rules': {
     'no-unused-vars': 2,
+    'no-undef': 'error'
   }
 };

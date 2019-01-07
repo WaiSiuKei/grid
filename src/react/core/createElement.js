@@ -5,6 +5,8 @@ import {
 } from './util';
 import { Component } from './Component';
 import { BuintinType, isFunction } from 'src/base/common/types';
+import { ReactCurrentOwner } from '../ReactCurrentOwner';
+import { typeOf } from 'src/base/common/types';
 
 const RESERVED_PROPS = {
   key: true,

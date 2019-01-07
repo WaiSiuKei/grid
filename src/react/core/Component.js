@@ -1,5 +1,4 @@
 import { returnFalse, get } from './util';
-import { Renderer } from './createRenderer';
 import { ReactCurrentOwner } from 'src/react/ReactCurrentOwner';
 
 
