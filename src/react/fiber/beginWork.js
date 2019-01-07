@@ -1,4 +1,4 @@
-import { typeNumber, gDSFP, gSBU } from 'src/react/core/util';
+import { gDSFP, gSBU } from 'src/react/core/util';
 import { fiberizeChildren } from 'src/react/core/createElement';
 
 import { Renderer } from 'src/react/core/createRenderer';
@@ -21,7 +21,8 @@ import {
 } from './ErrorBoundary';
 import { resetCursor } from './dispatcher';
 import { getInsertPoint, setInsertPoints } from './insertPoint';
-import { isFunction } from 'src/base/common/types';
+import { isFunction, isObject } from 'src/base/common/types';
+import { ReactCurrentOwner } from 'src/react/ReactCurrentOwner';
 
 /**
  * 基于DFS遍历虚拟DOM树，初始化vnode为fiber,并产出组件实例或DOM节点
@@ -38,7 +39,7 @@ export function reconcileDFS(fiber, info, deadline, ENOUGH_TIME) {
     }
     let occurError;
     if (fiber.tag < 3) {
-      let keepbook = Renderer.currentOwner;
+      let keepbook = ReactCurrentOwner.current;
       try {
         // 为了性能起见，constructor, render, cWM,cWRP, cWU, gDSFP, render
         // getChildContext都可能 throw Exception，因此不逐一try catch
@@ -48,7 +49,7 @@ export function reconcileDFS(fiber, info, deadline, ENOUGH_TIME) {
         occurError = true;
         pushError(fiber, fiber.errorHook, e);
       }
-      Renderer.currentOwner = keepbook;
+      ReactCurrentOwner.current = keepbook;
       if (fiber.batching) {
         delete fiber.updateFail;
         delete fiber.batching;
@@ -254,7 +255,7 @@ export function updateClassComponent(fiber, info) {
   }
   Renderer.onBeforeRender(fiber);
   fiber._hydrating = true;
-  Renderer.currentOwner = instance;
+  ReactCurrentOwner.current = instance;
   let rendered = applyCallback(instance, 'render', []);
   resetCursor();
   diffChildren(fiber, rendered);
@@ -350,7 +351,7 @@ function setStateByProps(fiber, nextProps, prevState) {
   let fn = fiber.type[gDSFP];
   if (fn) {
     let partialState = fn.call(null, nextProps, prevState);
-    if (typeNumber(partialState) === 8) {
+    if (isObject(partialState) === 8) {
       fiber.memoizedState = Object.assign({}, prevState, partialState);
     }
   }

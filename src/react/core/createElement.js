@@ -1,11 +1,10 @@
 import {
-  typeNumber,
   hasSymbol,
   REACT_ELEMENT_TYPE,
   hasOwnProperty
 } from './util';
-import { Renderer } from './createRenderer';
 import { Component } from './Component';
+import { BuintinType, isFunction } from 'src/base/common/types';
 
 const RESERVED_PROPS = {
   key: true,
@@ -53,24 +52,26 @@ function hasValidKey(config) {
 
 export function createElement(type, config, ...children) {
   let props = {},
-    tag = 5,
+    tag = BuintinType.function,
     key = null,
     ref = null,
     argsLen = children.length;
-  if (type && type.call) {
-    tag = type.prototype && type.prototype.render ? 2 : 1;
+
+  if (isFunction(type)) {
+    tag = type.prototype && type.prototype.render ? BuintinType.class : BuintinType.null;
   }
+
   if (config != null) {
     if (hasValidRef(config)) {
       ref = config.ref;
     }
     if (hasValidKey(config)) {
-      key = '' + config.key;
+      key = config.key.toString();
     }
   }
   props = makeProps(type, config || {}, props, children, argsLen);
 
-  return ReactElement(type, tag, props, key, ref, Renderer.currentOwner);
+  return ReactElement(type, tag, props, key, ref, ReactCurrentOwner.current);
 }
 
 function ReactElement(type, tag, props, key, ref, owner) {
@@ -79,24 +80,21 @@ function ReactElement(type, tag, props, key, ref, owner) {
     tag,
     props
   };
-  if (tag !== 6) {
+  if (tag !== BuintinType.symbol) {
     ret.$$typeof = REACT_ELEMENT_TYPE;
     ret.key = key || null;
-    let refType = typeNumber(ref);
-    if (
-      refType === 2 ||
-      refType === 3 ||
-      refType === 4 ||
-      refType === 5 ||
-      refType === 8
-    ) {
-      //boolean number, string, function,object
-      if (refType < 4) {
-        ref += '';
-      }
-      ret.ref = ref;
-    } else {
-      ret.ref = null;
+    switch (typeOf(ref)) {
+      case BuintinType.null:
+      case BuintinType.undefined:
+        ret.ref = null;
+        break;
+      case BuintinType.number:
+      case BuintinType.boolean:
+        ret.ref = ref.toString();
+        break;
+      default:
+        ret.ref = ref;
+        break;
     }
     ret._owner = owner;
   }
@@ -127,7 +125,7 @@ function flattenCb(context, child, key, childType) {
     lastText = null;
     return;
   }
-  if (childType === 3 || childType === 4) {
+  if (childType === BuintinType.number || childType === BuintinType.string) {
     if (lastText) {
       lastText.props += child;
       return;
@@ -181,29 +179,29 @@ export function traverseAllChildren(
   callback,
   bookKeeping
 ) {
-  let childType = typeNumber(children);
+  let childType = typeOf(children);
   let invokeCallback = false;
   switch (childType) {
-    case 0: //undefined
-    case 1: //null
-    case 2: //boolean
-    case 5: //function
-    case 6: //symbol
+    case BuintinType.undefined: //undefined
+    case BuintinType.null: //null
+    case BuintinType.boolean: //boolean
+    case BuintinType.function: //function
+    case BuintinType.symbol: //symbol
       children = null;
       invokeCallback = true;
       break;
-    case 3: //string
-    case 4: //number
+    case BuintinType.string: //string
+    case BuintinType.number: //number
       invokeCallback = true;
       break;
     // 7 array
-    case 8: //object
+    case BuintinType.object: //object
       if (children.$$typeof || children instanceof Component) {
         invokeCallback = true;
       } else if (children.hasOwnProperty('toString')) {
         children = children + '';
         invokeCallback = true;
-        childType = 3;
+        childType = BuintinType.number;
       }
       break;
   }
@@ -219,7 +217,7 @@ export function traverseAllChildren(
         : nameSoFar,
       childType
     );
-    return 1;
+    return BuintinType.null;
   }
 
   let subtreeCount = 0; // Count of children found in the current subtree.

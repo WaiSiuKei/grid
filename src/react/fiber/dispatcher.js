@@ -1,6 +1,7 @@
 import { Renderer } from 'src/react/core/createRenderer';
 import { get } from 'src/react/core/util';
 import { isFunction } from 'src/base/common/types';
+import { ReactCurrentOwner } from 'src/react/ReactCurrentOwner';
 
 function setter(compute, cursor, value) {
   this.updateQueue[cursor] = compute(cursor, value);
@@ -110,7 +111,7 @@ export var dispatcher = {
 };
 
 function getCurrentFiber() {
-  return get(Renderer.currentOwner);
+  return get(ReactCurrentOwner.current);
 }
 
 function areHookInputsEqual(arr1, arr2) {

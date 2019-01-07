@@ -1,9 +1,9 @@
 import { NAMESPACE } from './browser';
 import { patchStyle } from './style';
 import { eventAction, rform } from './event';
-import { typeNumber, emptyObject, noop } from 'src/react/core/util';
-//import { duplexAction } from './duplex';
+import { emptyObject, noop } from 'src/react/core/util';
 import { DUPLEX } from 'src/react/fiber/effectTag';
+import { isNumber, isUndefinedOrNull } from 'src/base/common/types';
 //布尔属性的值末必为true,false
 //https://github.com/facebook/react/issues/10589
 
@@ -263,15 +263,14 @@ export let actionStrategy = {
     // https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#notable-enh
     // a ncements xlinkActuate, xlinkArcrole, xlinkHref, xlinkRole, xlinkShow,
     // xlinkTitle, xlinkType eslint-disable-next-line
-    let method =
-      typeNumber(val) < 3 && !val ? 'removeAttribute' : 'setAttribute';
+    let method = isUndefinedOrNull(val) && !val ? 'removeAttribute' : 'setAttribute';
     let nameRes = getSVGAttributeName(name);
     if (nameRes.ifSpecial) {
       let prefix = nameRes.name.split(':')[0];
       // 将xlinkHref 转换为 xlink:href
       dom[method + 'NS'](NAMESPACE[prefix], nameRes.name, val || '');
     } else {
-      dom[method](nameRes, typeNumber(val) !== 3 && !val ? '' : val);
+      dom[method](nameRes, !isNumber(val) && !val ? '' : val);
     }
   },
   booleanAttr: function (dom, name, val) {

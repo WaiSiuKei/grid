@@ -1,5 +1,5 @@
 import { pushError } from './ErrorBoundary';
-import { typeNumber } from 'src/react/core/util';
+import { BuintinType, typeOf } from 'src/base/common/types';
 
 //fix 0.14对此方法的改动，之前refs里面保存的是虚拟DOM
 
@@ -16,8 +16,7 @@ export let Refs = {
     let ref = fiber.ref;
     let owner = fiber._owner;
     try {
-      let number = typeNumber(ref);
-      refStrategy[number](owner, ref, dom);
+      refStrategy[typeOf(ref)](owner, ref, dom);
       if (owner && owner.__isStateless) {
         delete fiber.ref;
         fiber.deleteRef = true;
@@ -30,7 +29,7 @@ export let Refs = {
 };
 
 const refStrategy = {
-  4: function (owner, ref, dom) {
+  [BuintinType.string]: function (owner, ref, dom) {
     //string
     if (dom === null) {
       delete owner.refs[ref];
@@ -41,10 +40,10 @@ const refStrategy = {
       owner.refs[ref] = dom;
     }
   },
-  5: function (owner, ref, dom) {
+  [BuintinType.function]: function (owner, ref, dom) {
     ref(dom);
   },
-  8: function (owner, ref, dom) {
+  [BuintinType.object]: function (owner, ref, dom) {
     ref.current = dom;
   },
 };

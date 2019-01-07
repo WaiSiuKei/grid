@@ -1,5 +1,6 @@
 import { returnFalse, get } from './util';
 import { Renderer } from './createRenderer';
+import { ReactCurrentOwner } from 'src/react/ReactCurrentOwner';
 
 
 export const fakeObject = {
@@ -17,7 +18,7 @@ export class Component {
   constructor(props, context) {
     //防止用户在构造器生成JSX
 
-    Renderer.currentOwner = this;
+    ReactCurrentOwner.current = this;
     this.context = context;
     this.props = props;
     this.refs = {};

@@ -1,6 +1,7 @@
-import { returnFalse, isMounted,  gDSFP, gSBU } from 'src/react/core/util';
+import { returnFalse, isMounted, gDSFP, gSBU } from 'src/react/core/util';
 import { Component } from 'src/react/core/Component';
 import { Renderer } from 'src/react/core/createRenderer';
+import { ReactCurrentOwner } from 'src/react/ReactCurrentOwner';
 
 export function UpdateQueue() {
   return {
@@ -17,7 +18,7 @@ export function createInstance(fiber, context) {
   };
   let { props, type, tag, ref } = fiber,
     isStateless = tag === 1,
-    lastOwn = Renderer.currentOwner,
+    lastOwn = ReactCurrentOwner.current,
     instance = {
       refs: {},
       props,
@@ -30,7 +31,7 @@ export function createInstance(fiber, context) {
   fiber.errorHook = 'constructor';
   try {
     if (isStateless) {
-      Renderer.currentOwner = instance;
+      ReactCurrentOwner.current = instance;
       Object.assign(instance, {
         __isStateless: true,
         __init: true,
@@ -58,7 +59,7 @@ export function createInstance(fiber, context) {
           return a;
         }
       });
-      Renderer.currentOwner = instance;
+      ReactCurrentOwner.current = instance;
       if (type.render) {
         //forwardRef函数形式只会执行一次，对象形式执行多次
         instance.render = function () {
@@ -76,7 +77,7 @@ export function createInstance(fiber, context) {
       }
     }
   } finally {
-    Renderer.currentOwner = lastOwn;
+    ReactCurrentOwner.current = lastOwn;
     fiber.stateNode = instance;
     // fiber.updateQueue = UpdateQueue();
     instance._reactInternalFiber = fiber;

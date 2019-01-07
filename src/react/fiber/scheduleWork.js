@@ -7,14 +7,13 @@ import {
   arrayPush,
   get,
   topNodes,
-  typeNumber,
   topFibers
 } from 'src/react/core/util';
 import { Unbatch } from './unbatch';
 import { Fiber } from './Fiber';
 
 import { createInstance } from './createInstance';
-import { isFunction } from 'src/base/common/types';
+import { BuintinType, isFunction, typeOf } from 'src/base/common/types';
 
 const macrotasks = Renderer.macrotasks;
 let boundaries = Renderer.boundaries;
@@ -250,11 +249,11 @@ function pushChildQueue(fiber, queue) {
 function updateComponent(fiber, state, callback, immediateUpdate) {
   fiber.dirty = true;
 
-  let sn = typeNumber(state);
+  let sn = typeOf(state);
   let isForced = state === true;
   let microtasks = getQueue(fiber);
 
-  state = isForced ? null : sn === 5 || sn === 8 ? state : null;
+  state = isForced ? null : sn === BuintinType.function || sn === BuintinType.object ? state : null;
   if (fiber.setout) {
     // cWM/cWRP中setState， 不放进列队
     immediateUpdate = false;

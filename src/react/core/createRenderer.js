@@ -28,5 +28,4 @@ export const Renderer = {
       index += delta;
     }
   },
-  currentOwner: null, //vnode
 };

@@ -3,14 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export enum Typeof {
+export enum BuintinType {
   number = 'number',
   string = 'string',
   undefined = 'undefined',
   object = 'object',
   function = 'function',
   null = 'null',
-  class = 'class'
+  class = 'class',
+  boolean = 'boolean',
+  symbol = 'symbol',
+  array = 'array'
 }
 
 export function isArray(array: any): array is any[] {
@@ -18,7 +21,7 @@ export function isArray(array: any): array is any[] {
     return Array.isArray(array);
   }
 
-  if (array && typeof (array.length) === Typeof.number && array.constructor === Array) {
+  if (array && typeof (array.length) === BuintinType.number && array.constructor === Array) {
     return true;
   }
 
@@ -34,7 +37,7 @@ export function isObject(obj: any): boolean {
   // The method can't do a type cast since there are type (like strings) which
   // are subclasses of any put not positvely matched by the function. Hence type
   // narrowing results in wrong results.
-  return typeof obj === Typeof.object
+  return typeof obj === BuintinType.object
     && obj !== null
     && !Array.isArray(obj)
     && !(obj instanceof RegExp)
@@ -46,7 +49,7 @@ export function isObject(obj: any): boolean {
  * @returns whether the provided parameter is a JavaScript Number or not.
  */
 export function isNumber(obj: any): obj is number {
-  if ((typeof (obj) === Typeof.number || obj instanceof Number) && !isNaN(obj)) {
+  if ((typeof (obj) === BuintinType.number || obj instanceof Number) && !isNaN(obj)) {
     return true;
   }
 
@@ -54,6 +57,31 @@ export function isNumber(obj: any): obj is number {
 }
 
 export function isFunction(obj: any): obj is Function {
-  return typeof obj === Typeof.function;
+  return typeof obj === BuintinType.function;
 }
 
+export function isUndefinedOrNull(obj: any): obj is undefined | null {
+  return obj === void 0 || obj === null;
+}
+
+let __type = Object.prototype.toString;
+
+let numberMap = {
+  //null undefined IE6-8这里会返回[object Object]
+  '[object Boolean]': BuintinType.boolean,
+  '[object Number]': BuintinType.number,
+  '[object String]': BuintinType.string,
+  '[object Function]': BuintinType.function,
+  '[object Symbol]': BuintinType.symbol,
+  '[object Array]': BuintinType.array,
+};
+
+export function typeOf(obj: any): BuintinType {
+  if (obj === null) {
+    return BuintinType.null;
+  }
+  if (obj === void 666) {
+    return BuintinType.undefined;
+  }
+  return numberMap[__type.call(obj)] || BuintinType.object;
+}

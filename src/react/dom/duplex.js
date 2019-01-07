@@ -1,12 +1,13 @@
-import { typeNumber, emptyObject } from 'src/react/core/util';
+import { emptyObject } from 'src/react/core/util';
+import { BuintinType, typeOf } from 'src/base/common/types';
 
 function getSafeValue(value) {
-  switch (typeNumber(value)) {
-    case 2:
-    case 3:
-    case 8:
-    case 4:
-    case 0:
+  switch (typeOf(value)) {
+    case BuintinType.boolean:
+    case BuintinType.number:
+    case BuintinType.object:
+    case BuintinType.string:
+    case BuintinType.undefined:
       return value;
     default:
       // function, symbol are assigned as empty strings
