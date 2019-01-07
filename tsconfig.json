@@ -45,15 +45,13 @@
   },
   "filesGlob": [
     "./src/**/*.ts",
-    "!node_modules/**",
-    "!./react/**/*.ts"
+    "!node_modules/**"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "test",
     "defs",
-    "conf",
-    "react"
+    "conf"
   ]
 }
