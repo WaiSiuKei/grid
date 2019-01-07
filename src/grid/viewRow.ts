@@ -2,7 +2,7 @@ import { CellFormatter, Datum, IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass } from 'src/base/browser/dom';
 import { GridContext } from 'src/grid/girdContext';
-import { React, ReactDOM } from '../react';
+import { React, ReactDOM } from '../rax';
 
 export class ViewCell implements IDisposable {
   public width: number;
