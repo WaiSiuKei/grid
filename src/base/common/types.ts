@@ -64,6 +64,10 @@ export function isUndefinedOrNull(obj: any): obj is undefined | null {
   return obj === void 0 || obj === null;
 }
 
+export function isClass(v: any): boolean {
+  return typeof v === 'function' && /^\s*class\s+/.test(v.toString());
+}
+
 let __type = Object.prototype.toString;
 
 let numberMap = {
