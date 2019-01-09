@@ -16,32 +16,56 @@ export interface IGrid {}
 export type IDataSource = Datum[]
 
 export interface IGridOptions {
-  // alwaysShowVerticalScroll: boolean
-  // explicitInitialization: boolean
+  explicitInitialization: boolean
   defaultColumnWidth: number
   showHeaderRow: boolean
   rowHeight: number
-  // forceFitColumns: boolean
-  // autoHeight: boolean
-  // viewportClass: string
-  // leaveSpaceForNewRows: boolean
-  // fullWidthRows: boolean
-  // headerRowHeight: number
-  // forceSyncScrolling: boolean
-  // enableAsyncPostRenderCleanup: boolean
-  // enableAddRow: boolean
-  // asyncPostRenderCleanupDelay: number
-  // minRowBuffer: number
-  // enableAsyncPostRender: boolean
-  // asyncPostRenderDelay: number
-  // showCellSelection: boolean
-  // addNewRowCssClass: string
+  defaultFormatter: CellFormatter,
+
+  // enableAddRow: false,
+  // leaveSpaceForNewRows: false,
+  // editable: false,
+  // autoEdit: true,
+  // enableCellNavigation: true,
+  // enableColumnReorder: true,
+  // asyncEditorLoading: false,
+  // asyncEditorLoadDelay: 100,
+  // forceFitColumns: false,
+  // autoHeight: false,
+  // editorLock: Slick.GlobalEditorLock,
+  // headerRowHeight: 25,
+  // createFooterRow: false,
+  // showFooterRow: false,
+  // footerRowHeight: 25,
+  // formatterFactory: null,
+  // editorFactory: null,
+  // cellFlashingCssClass: "flashing",
+  // selectedCellCssClass: "selected",
+  // multiSelect: true,
+  // enableTextSelectionOnCells: false,
+  // dataItemColumnValueExtractor: null,
+  // fullWidthRows: false,
+  // multiColumnSort: false,
+  // numberedMultiColumnSort: false,
+  // tristateMultiColumnSort: false,
+  // sortColNumberInSeparateSpan: false,
+
+  // forceSyncScrolling: false,
+  // addNewRowCssClass: "new-row",
+  // preserveCopiedSelectionOnPaste: false,
+  // showCellSelection: true,
+  // viewportClass: null,
+  // minRowBuffer: 3,
+  // emulatePagingWhenScrolling: true, // when scrolling off bottom of viewport, place new row at top of viewport
+  // editorCellNavOnLRKeys: false
 }
 
 export const GRID_DEFAULT: Partial<IGridOptions> = {
+  explicitInitialization: false,
   defaultColumnWidth: 80,
   showHeaderRow: true,
-  rowHeight: 20
+  rowHeight: 20,
+  defaultFormatter,
 };
 
 export const COLUMN_DEFAULT: Partial<IGridColumnDefinition> = {
@@ -56,6 +80,7 @@ export interface IGridColumnDefinition {
   id: string
   field: string
   name: string
+
   // rerenderOnResize: boolean
   // headerCssClass: string
   // resizable: boolean
@@ -67,9 +92,6 @@ export interface IGridColumnDefinition {
   // viewportClass: string
   // tooltip: string
   // colspan: number
-  // asyncPostRenderCleanup: (node: HTMLElement, row: number, col: IGridColumnDefinition) => void
-  // cssClass: string
-  // asyncPostRender?: (node: HTMLElement, row: number, context: Datum, m: IGridColumnDefinition, c: boolean) => void
   formatter?: CellFormatter
 }
 

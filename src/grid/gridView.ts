@@ -7,7 +7,7 @@ import { isNumber, isUndefinedOrNull } from 'src/base/common/types';
 import { ViewHeaderRow } from 'src/grid/viewHeader';
 import { GridContext } from 'src/grid/girdContext';
 import { GridModel } from 'src/grid/gridModel';
-import { COLUMN_DEFAULT, GRID_DEFAULT, IDataSource, IGridColumnDefinition, IGridOptions } from 'src/grid/grid';
+import { CellFormatter, COLUMN_DEFAULT, GRID_DEFAULT, IDataSource, IGridColumnDefinition, IGridOptions } from 'src/grid/grid';
 import { mapBy, sum, sumBy } from 'src/base/common/functional';
 import { IDisposable } from 'src/base/common/lifecycle';
 
@@ -15,7 +15,7 @@ function validateAndEnforceOptions(opt: Partial<IGridOptions>): IGridOptions {
   return Object.assign({}, opt, GRID_DEFAULT) as IGridOptions;
 }
 
-function validatedAndEnforeColumnDefinitions(col: Array<Partial<IGridColumnDefinition>>, defaultWidth?: number): IGridColumnDefinition[] {
+function validatedAndEnforeColumnDefinitions(col: Array<Partial<IGridColumnDefinition>>, defaultWidth?: number, defaultFormatter?: CellFormatter): IGridColumnDefinition[] {
   let validatedCols: IGridColumnDefinition[] = [];
 
   let defaultDef = COLUMN_DEFAULT;
@@ -23,6 +23,9 @@ function validatedAndEnforeColumnDefinitions(col: Array<Partial<IGridColumnDefin
     defaultDef.width = defaultWidth;
     defaultDef.flexGrow = 0;
     defaultDef.flexShrink = 0;
+  }
+  if (defaultFormatter) {
+    Object.assign(defaultDef, { formatter: defaultFormatter });
   }
   for (let i = 0; i < col.length; i++) {
     let m = Object.assign({}, defaultDef, col[i]);
@@ -89,7 +92,7 @@ export class GridView implements IDisposable {
   constructor(protected container: HTMLElement, ds: IDataSource, col: Array<Partial<IGridColumnDefinition>>, options: Partial<IGridOptions> = {}) {
     let opt = validateAndEnforceOptions(options);
     let model = new GridModel(ds);
-    let columns = validatedAndEnforeColumnDefinitions(col, opt.defaultColumnWidth);
+    let columns = validatedAndEnforeColumnDefinitions(col, opt.defaultColumnWidth, opt.defaultFormatter);
     resolvingColumnWidths(columns, container.clientWidth);
     this.ctx = new GridContext(model, columns, opt);
 
@@ -100,6 +103,14 @@ export class GridView implements IDisposable {
     this.lastRenderHeight = 0;
 
     this.createElement(container);
+
+    if (this.ctx.options.explicitInitialization) {
+      this.layout();
+    }
+  }
+
+  public render() {
+    this.layout();
   }
 
   protected createElement(container: HTMLElement) {
