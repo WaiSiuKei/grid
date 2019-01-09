@@ -3,29 +3,95 @@ import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableEleme
 import { addClass, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
 import { ViewRow } from 'src/grid/viewRow';
-import { isNumber } from 'src/base/common/types';
+import { isNumber, isUndefinedOrNull } from 'src/base/common/types';
 import { ViewHeaderRow } from 'src/grid/viewHeader';
 import { GridContext } from 'src/grid/girdContext';
+import { GridModel } from 'src/grid/gridModel';
+import { COLUMN_DEFAULT, GRID_DEFAULT, IDataSource, IGridColumnDefinition, IGridOptions } from 'src/grid/grid';
+import { mapBy, sum, sumBy } from 'src/base/common/functional';
+import { IDisposable } from 'src/base/common/lifecycle';
 
-export class GridView {
+function validateAndEnforceOptions(opt: Partial<IGridOptions>): IGridOptions {
+  return Object.assign({}, opt, GRID_DEFAULT) as IGridOptions;
+}
 
-  private static counter: number = 0;
-  private instanceId: number;
+function validatedAndEnforeColumnDefinitions(col: Array<Partial<IGridColumnDefinition>>, defaultWidth?: number): IGridColumnDefinition[] {
+  let validatedCols: IGridColumnDefinition[] = [];
 
-  private domNode: HTMLElement;
-  private body: HTMLElement;
-  private rowsContainer: HTMLElement;
-  private scrollableElement: ScrollableElement;
-  private header: ViewHeaderRow;
+  let defaultDef = COLUMN_DEFAULT;
+  if (defaultWidth) {
+    defaultDef.width = defaultWidth;
+    defaultDef.flexGrow = 0;
+    defaultDef.flexShrink = 0;
+  }
+  for (let i = 0; i < col.length; i++) {
+    let m = Object.assign({}, defaultDef, col[i]);
+    m.flexGrow = Math.max(0, m.flexGrow);
+    m.flexShrink = Math.max(0, m.flexShrink);
 
-  private lastRenderTop: number;
-  private lastRenderHeight: number;
+    if (isUndefinedOrNull(m.minWidth)) {
+      if (m.flexShrink === 0) {
+        m.minWidth = m.width;
+      } else {
+        m.minWidth = 1;
+      }
+    }
+    if (m.width < m.minWidth) {
+      m.width = m.minWidth;
+    }
+    if (isUndefinedOrNull(m.maxWidth)) {
+      if (m.flexGrow === 0) {
+        m.maxWidth = m.width;
+      } else {
+        m.maxWidth = Infinity;
+      }
+    }
+    if (m.width > m.maxWidth) {
+      m.width = m.maxWidth;
+    }
+    validatedCols.push(m as IGridColumnDefinition);
+  }
+  return validatedCols;
+}
 
-  private rowCache: { [key: string]: ViewRow } = Object.create(null);
+function resolvingColumnWidths(col: Array<IGridColumnDefinition>, totalWidth: number): Array<IGridColumnDefinition> {
+  let currentWidths = sumBy(col, 'width');
+  let spaces = totalWidth - currentWidths;
+  if (spaces === 0) return;
+  let factors: number[] = mapBy(col, spaces > 0 ? 'flexGrow' : 'flexShrink');
+  let total = Math.max(1, sum(factors)); // https://github.com/xieranmaya/blog/issues/9
+  if (total === 0) return;
+  for (let i = 0, len = col.length; i < len; i++) {
+    col[i].width += spaces * factors[i] / total;
+  }
+}
 
-  constructor(container: HTMLElement,
-              private ctx: GridContext
-  ) {
+export class GridView implements IDisposable {
+  protected ctx: GridContext;
+
+  protected static counter: number = 0;
+  protected instanceId: number;
+
+  protected domNode: HTMLElement;
+  protected body: HTMLElement;
+  protected rowsContainer: HTMLElement;
+  protected scrollableElement: ScrollableElement;
+  protected header: ViewHeaderRow;
+
+  protected lastRenderTop: number;
+  protected lastRenderHeight: number;
+
+  protected rowCache: { [key: string]: ViewRow } = Object.create(null);
+
+  private shouldShowHorizonalScrollbar = false;
+  private shouldShowVerticalScrollbar = false;
+
+  constructor(protected container: HTMLElement, ds: IDataSource, col: Array<Partial<IGridColumnDefinition>>, options: Partial<IGridOptions> = {}) {
+    let opt = validateAndEnforceOptions(options);
+    let model = new GridModel(ds);
+    let columns = validatedAndEnforeColumnDefinitions(col, opt.defaultColumnWidth);
+    resolvingColumnWidths(columns, container.clientWidth);
+    this.ctx = new GridContext(model, columns, opt);
 
     GridView.counter++;
     this.instanceId = GridView.counter;
@@ -36,7 +102,7 @@ export class GridView {
     this.createElement(container);
   }
 
-  private createElement(container: HTMLElement) {
+  protected createElement(container: HTMLElement) {
     this.domNode = document.createElement('div');
     this.domNode.className = `nila-grid nila-grid-instance-${this.instanceId}`;
 
@@ -51,7 +117,7 @@ export class GridView {
     });
 
     this.scrollableElement.onScroll((e) => {
-      this.render(e);
+      this._render(e);
     });
 
     this.rowsContainer = document.createElement('div');
@@ -66,15 +132,17 @@ export class GridView {
     body.style.height = getContentHeight(this.domNode) - headerHeight + 'px';
   }
 
-  public layout(height?: number, width?: number): void {
+  protected layout(height?: number, width?: number): void {
     let h = height || getContentHeight(this.body);
+    if (h > this.container.clientHeight) this.shouldShowVerticalScrollbar = true;
     this.viewHeight = h;
     this.scrollHeight = this.getContentHeight();
     let w = width || getContentWidth(this.body);
+    if (w > this.container.clientWidth) this.shouldShowHorizonalScrollbar = true;
     this.viewWidth = w;
     this.scrollWidth = this.getContentWidth();
 
-    this.render(h, w);
+    this._render(h, w);
   }
 
   getContentHeight(): number {
@@ -82,56 +150,56 @@ export class GridView {
   }
 
   getContentWidth(): number {
-    return this.ctx.columns.reduce((acc, col) => acc + (col.width || 80), 0);
+    // FIXME
+    return sumBy(this.ctx.columns, 'width');
   }
 
-  public get viewHeight() {
+  protected get viewHeight() {
     const scrollDimensions = this.scrollableElement.getScrollDimensions();
     return scrollDimensions.height;
   }
 
-  public set viewHeight(height: number) {
+  protected set viewHeight(height: number) {
     this.scrollableElement.setScrollDimensions({ height });
   }
 
-  private set scrollHeight(scrollHeight: number) {
-    scrollHeight = scrollHeight + 10;
-    this.scrollableElement.setScrollDimensions({ scrollHeight });
+  protected set scrollHeight(scrollHeight: number) {
+    this.scrollableElement.setScrollDimensions({ scrollHeight: scrollHeight + (this.shouldShowHorizonalScrollbar ? 10 : 0) });
   }
 
-  public get viewWidth(): number {
+  protected get viewWidth(): number {
     const scrollDimensions = this.scrollableElement.getScrollDimensions();
     return scrollDimensions.width;
   }
 
-  public set viewWidth(viewWidth: number) {
+  protected set viewWidth(viewWidth: number) {
     this.scrollableElement.setScrollDimensions({ width: viewWidth });
   }
 
-  private set scrollWidth(scrollWidth: number) {
+  protected set scrollWidth(scrollWidth: number) {
     this.scrollableElement.setScrollDimensions({ scrollWidth });
   }
 
-  public get scrollTop(): number {
+  protected get scrollTop(): number {
     const scrollPosition = this.scrollableElement.getScrollPosition();
     return scrollPosition.scrollTop;
   }
 
-  public set scrollTop(scrollTop: number) {
-    const scrollHeight = this.getContentHeight() + 10;
+  protected set scrollTop(scrollTop: number) {
+    const scrollHeight = this.getContentHeight() + (this.shouldShowHorizonalScrollbar ? 10 : 0);
     this.scrollableElement.setScrollDimensions({ scrollHeight });
     this.scrollableElement.setScrollPosition({ scrollTop });
   }
 
-  public set scrollLeft(scrollLeft: number) {
-    const scrollWidth = this.getContentWidth() + 10;
+  protected set scrollLeft(scrollLeft: number) {
+    const scrollWidth = this.getContentWidth() + (this.shouldShowVerticalScrollbar ? 10 : 0);
     this.scrollableElement.setScrollDimensions({ scrollWidth });
     this.scrollableElement.setScrollPosition({ scrollLeft });
   }
 
-  private render(height: number, width: number): void
-  private render(e: ScrollEvent): void
-  private render(arg1: any, arg2?: any): void {
+  protected _render(height: number, width: number): void
+  protected _render(e: ScrollEvent): void
+  protected _render(arg1: any, arg2?: any): void {
     let scrollTop = 0;
     let scrollLeft = 0;
     let viewHeight: number;
@@ -199,7 +267,7 @@ export class GridView {
 
   // DOM changes
 
-  private insertItemInDOM(index: number): void {
+  protected insertItemInDOM(index: number): void {
     let row: ViewRow = this.rowCache[index];
     if (!row) {
       row = new ViewRow(this.rowsContainer, index, this.ctx.model.items[index], this.ctx);
@@ -212,7 +280,7 @@ export class GridView {
     row.mount(nextRow);
   }
 
-  private removeItemFromDOM(index: number): void {
+  protected removeItemFromDOM(index: number): void {
     let row = this.rowCache[index];
     if (row) {
       row.dispose();
@@ -220,11 +288,11 @@ export class GridView {
     }
   }
 
-  private getItemTop(index: number) {
+  protected getItemTop(index: number) {
     return index * 20 + (index ? 1 : 0);
   }
 
-  public indexAt(position: number): number {
+  protected indexAt(position: number): number {
     let left = 0;
     let l = this.ctx.model.items.length;
     let right = l - 1;
@@ -251,7 +319,17 @@ export class GridView {
     return l;
   }
 
-  public indexAfter(position: number): number {
+  protected indexAfter(position: number): number {
     return Math.min(this.indexAt(position) + 1, this.ctx.model.items.length);
+  }
+
+  dispose() {
+    this.header.dispose();
+    Object.keys(this.rowCache).forEach(k => {
+      this.rowCache[k].dispose();
+      delete this.rowCache[k];
+    });
+    this.scrollableElement.dispose();
+    this.domNode.remove();
   }
 }
