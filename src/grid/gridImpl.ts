@@ -72,7 +72,7 @@ export class Grid {
     let spaces = totalWidth - currentWidths;
     if (spaces === 0) return;
     let factors: number[] = mapBy(col, spaces > 0 ? 'flexGrow' : 'flexShrink');
-    let total = sum(factors);
+    let total = Math.max(1, sum(factors)); // https://github.com/xieranmaya/blog/issues/9
     if (total === 0) return;
     for (let i = 0, len = col.length; i < len; i++) {
       col[i].width += spaces * factors[i] / total;
