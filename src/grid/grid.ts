@@ -24,15 +24,10 @@ export interface IGridOptions {
 
   // enableAddRow: false,
   // leaveSpaceForNewRows: false,
-  // editable: false,
-  // autoEdit: true,
   // enableCellNavigation: true,
   // enableColumnReorder: true,
-  // asyncEditorLoading: false,
-  // asyncEditorLoadDelay: 100,
   // forceFitColumns: false,
   // autoHeight: false,
-  // editorLock: Slick.GlobalEditorLock,
   // headerRowHeight: 25,
   // createFooterRow: false,
   // showFooterRow: false,
@@ -55,7 +50,6 @@ export interface IGridOptions {
   // preserveCopiedSelectionOnPaste: false,
   // showCellSelection: true,
   // viewportClass: null,
-  // minRowBuffer: 3,
   // emulatePagingWhenScrolling: true, // when scrolling off bottom of viewport, place new row at top of viewport
   // editorCellNavOnLRKeys: false
 }
