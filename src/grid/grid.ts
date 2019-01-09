@@ -1,4 +1,4 @@
-import { React } from '../react';
+import { React } from '../rax';
 
 function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): any {
   return function () {
