@@ -59,9 +59,11 @@ export interface IGridColumnDefinition {
   // rerenderOnResize: boolean
   // headerCssClass: string
   // resizable: boolean
-  minWidth: number
+  minWidth?: number
   width?: number
-  maxWidth: number
+  maxWidth?: number
+  flexGrow?: number
+  flexShrink?: number
   // viewportClass: string
   // tooltip: string
   // colspan: number
