@@ -135,11 +135,12 @@ export class GridView implements IDisposable {
     this.rowsContainer.className = 'nila-grid-rows';
 
     this.body.appendChild(this.rowsContainer);
-    this.domNode.appendChild(this.header.domNode);
+    container.appendChild(this.domNode);
+    this.header.mountTo(this.domNode);
+
     let body = this.scrollableElement.getDomNode();
     this.domNode.appendChild(body);
-    container.appendChild(this.domNode);
-    let headerHeight = this.ctx.options.showHeaderRow ? getContentHeight(this.header.domNode) : 0;
+    let headerHeight = this.ctx.options.showHeaderRow ? this.ctx.options.headerRowHeight || getContentHeight(this.header.domNode) : 0;
     body.style.height = getContentHeight(this.domNode) - headerHeight + 'px';
   }
 
@@ -147,7 +148,7 @@ export class GridView implements IDisposable {
     let h = height || getContentHeight(this.body);
     if (h > this.container.clientHeight) this.shouldShowVerticalScrollbar = true;
     this.viewHeight = h;
-    this.scrollHeight = this.getContentHeight();
+    this.scrollHeight = this.getTotalRowsHeight();
     let w = width || getContentWidth(this.body);
     if (w > this.container.clientWidth) this.shouldShowHorizonalScrollbar = true;
     this.viewWidth = w;
@@ -156,7 +157,7 @@ export class GridView implements IDisposable {
     this._render(h, w);
   }
 
-  getContentHeight(): number {
+  getTotalRowsHeight(): number {
     return this.ctx.model.items.length * this.ctx.options.rowHeight;
   }
 
@@ -197,7 +198,7 @@ export class GridView implements IDisposable {
   }
 
   protected set scrollTop(scrollTop: number) {
-    const scrollHeight = this.getContentHeight() + (this.shouldShowHorizonalScrollbar ? 10 : 0);
+    const scrollHeight = this.getTotalRowsHeight() + (this.shouldShowHorizonalScrollbar ? 10 : 0);
     this.scrollableElement.setScrollDimensions({ scrollHeight });
     this.scrollableElement.setScrollPosition({ scrollTop });
   }

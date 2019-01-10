@@ -1,6 +1,6 @@
 import { IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
-import { addClass } from 'src/base/browser/dom';
+import { addClass, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
 import { GridContext } from 'src/grid/girdContext';
 
@@ -61,6 +61,8 @@ export class ViewHeaderRow implements IDisposable {
     if (!this.ctx.options.showHeaderRow) {
       this.domNode.style.visibility = 'hidden';
       this.domNode.style.display = 'none';
+    } else if (this.ctx.options.headerRowHeight) {
+      this.domNode.style.height = this.ctx.options.headerRowHeight + 'px';
     }
   }
 
@@ -81,22 +83,22 @@ export class ViewHeaderRow implements IDisposable {
 
     // when view scrolls right, start rendering from the renderRight
     for (i = this.indexAfter(renderRight) - 1, stop = this.indexAt(Math.max(thisRenderRight, renderLeft)); i >= stop; i--) {
-      this.mount(i);
+      this.mountCell(i);
     }
 
     // when view scrolls left, start rendering from either this.renderLeft or renderright
     for (i = Math.min(this.indexAt(this.lastRenderLeft), this.indexAfter(renderRight)) - 1, stop = this.indexAt(renderLeft); i >= stop; i--) {
-      this.mount(i);
+      this.mountCell(i);
     }
 
     // when view scrolls down, start unrendering from renderTop
     for (i = this.indexAt(this.lastRenderLeft), stop = Math.min(this.indexAt(renderLeft), this.indexAfter(thisRenderRight)); i < stop; i++) {
-      this.unmount(i);
+      this.unmountCell(i);
     }
 
     // when view scrolls up, start unrendering from either renderBottom this.renderTop
     for (i = Math.max(this.indexAfter(renderRight), this.indexAt(this.lastRenderLeft)), stop = this.indexAfter(thisRenderRight); i < stop; i++) {
-      this.unmount(i);
+      this.unmountCell(i);
     }
 
     let leftItem = this.indexAt(renderLeft);
@@ -118,6 +120,13 @@ export class ViewHeaderRow implements IDisposable {
     };
   }
 
+  public mountTo(container: HTMLElement): void {
+    let w = getContentWidth(container);
+    console.log(w);
+    container.appendChild(this.domNode);
+    this.render(0, w);
+  }
+
   private getItemLeft(index: number): number {
     if (index === 0) return 0;
     let sum = 0;
@@ -127,7 +136,7 @@ export class ViewHeaderRow implements IDisposable {
     return sum;
   }
 
-  private mount(index: number): boolean {
+  private mountCell(index: number): boolean {
     let cell = this.cellCache[index];
     if (!cell) {
       cell = new ViewHeaderCell(this.domNode, index, this.ctx.columns[index], this.getItemLeft(index));
@@ -139,7 +148,7 @@ export class ViewHeaderRow implements IDisposable {
     return true;
   }
 
-  private unmount(index: number): boolean {
+  private unmountCell(index: number): boolean {
     let cell = this.cellCache[index];
     if (cell) {
       cell.dispose();

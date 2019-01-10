@@ -69,6 +69,9 @@ export class ViewRow implements IDisposable {
     this.host = host;
     this.rowIndex = rowIndex;
     this.data = data;
+    if (this.ctx.options.rowHeight) {
+      this.domNode.style.height = this.ctx.options.rowHeight + 'px';
+    }
   }
 
   mount(slibing?: ViewRow) {

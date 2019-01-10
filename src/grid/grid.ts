@@ -16,17 +16,16 @@ export type IDataSource = Datum[]
 export interface IGridOptions {
   explicitInitialization: boolean
   defaultColumnWidth: number
-  showHeaderRow: boolean
   rowHeight: number
   defaultFormatter: CellFormatter,
+  showHeaderRow: boolean
+  headerRowHeight: number,
 
   // enableAddRow: false,
-  // leaveSpaceForNewRows: false,
   // enableCellNavigation: true,
   // enableColumnReorder: true,
   // forceFitColumns: false,
   // autoHeight: false,
-  // headerRowHeight: 25,
   // cellFlashingCssClass: "flashing",
   // selectedCellCssClass: "selected",
   // multiSelect: true,
@@ -49,9 +48,10 @@ export interface IGridOptions {
 export const GRID_DEFAULT: Partial<IGridOptions> = {
   explicitInitialization: true,
   defaultColumnWidth: 80,
-  showHeaderRow: true,
   rowHeight: 20,
   defaultFormatter,
+  showHeaderRow: true,
+  // headerRowHeight: 20,
 };
 
 export const COLUMN_DEFAULT: Partial<IGridColumnDefinition> = {
