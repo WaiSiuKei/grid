@@ -7,9 +7,11 @@ import { isNumber, isString, isUndefinedOrNull } from 'src/base/common/types';
 import { ViewHeaderRow } from 'src/grid/viewHeader';
 import { GridContext } from 'src/grid/girdContext';
 import { GridModel } from 'src/grid/gridModel';
-import { CellFormatter, COLUMN_DEFAULT, GRID_DEFAULT, IDataSource, IGridColumnDefinition, IGridOptions } from 'src/grid/grid';
+import { CellFormatter, COLUMN_DEFAULT, GRID_DEFAULT, IGridColumnDefinition, IGridOptions } from 'src/grid/grid';
 import { mapBy, sum, sumBy } from 'src/base/common/functional';
 import { IDisposable } from 'src/base/common/lifecycle';
+import { IDataSet } from 'src/data/data';
+import { DataView } from 'src/data/dataView';
 
 function validateAndEnforceOptions(opt: Partial<IGridOptions>): IGridOptions {
   return Object.assign({}, GRID_DEFAULT, opt) as IGridOptions;
@@ -89,7 +91,7 @@ export class GridView implements IDisposable {
   private shouldShowHorizonalScrollbar = false;
   private shouldShowVerticalScrollbar = false;
 
-  constructor(protected container: HTMLElement, ds: IDataSource, col: Array<Partial<IGridColumnDefinition>>, options: Partial<IGridOptions> = {}) {
+  constructor(protected container: HTMLElement, ds: IDataSet, col: Array<Partial<IGridColumnDefinition>>, options: Partial<IGridOptions> = {}) {
     let opt = validateAndEnforceOptions(options);
     let model = new GridModel(ds);
     let columns = validatedAndEnforeColumnDefinitions(col, opt.defaultColumnWidth, opt.defaultFormatter);
@@ -107,6 +109,16 @@ export class GridView implements IDisposable {
     if (this.ctx.options.explicitInitialization) {
       this.layout();
     }
+
+    if (ds instanceof DataView) {
+      this.registerListeners(ds);
+    }
+  }
+
+  private registerListeners(ds: DataView) {
+    ds.onRowsChanged((evt) => {
+      console.log(evt);
+    });
   }
 
   public render() {
@@ -162,7 +174,7 @@ export class GridView implements IDisposable {
   }
 
   getTotalRowsHeight(): number {
-    return this.ctx.model.items.length * this.ctx.options.rowHeight;
+    return this.ctx.model.length * this.ctx.options.rowHeight;
   }
 
   getContentWidth(): number {
@@ -286,7 +298,7 @@ export class GridView implements IDisposable {
   protected insertItemInDOM(index: number): void {
     let row: ViewRow = this.rowCache[index];
     if (!row) {
-      row = new ViewRow(this.rowsContainer, index, this.ctx.model.items[index], this.ctx);
+      row = new ViewRow(this.rowsContainer, index, this.ctx.model.get(index), this.ctx);
       this.rowCache[index] = row;
     }
     if (row.mounted) return;

@@ -1,5 +1,6 @@
 // import './index.scss';
 import { Grid } from 'src/grid/gridImpl';
+import { DataView } from 'src/data/dataView';
 
 let columns = [
   // multi columns
@@ -71,8 +72,11 @@ for (let i = 0; i < 500000; i++) {
 //   columns.push({ id: j.toString(), name: 'Col' + j.toString(), field: j.toString() });
 // }
 
-let t = new Grid(document.getElementById('myGrid'), data, columns);
+let dv = new DataView();
 
+let t = new Grid(document.getElementById('myGrid'), dv, columns);
+
+dv.setItems(data);
 Object.defineProperty(window, 'grid', {
   value: t
 });

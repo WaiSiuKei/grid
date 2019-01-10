@@ -1,4 +1,5 @@
 import { React } from '../rax';
+import { Datum } from 'src/data/data';
 
 function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): any {
   return function () {
@@ -6,12 +7,6 @@ function defaultFormatter(row: number, cell: number, value: any, columnDef: IGri
     return React.createElement('div', null, (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
   };
 }
-
-export interface Datum {
-  [key: string]: any
-}
-
-export type IDataSource = Datum[]
 
 export interface IGridOptions {
   explicitInitialization: boolean
@@ -65,7 +60,6 @@ export interface IGridColumnDefinition {
   field: string
   name: string
 
-  // rerenderOnResize: boolean
   // headerCssClass: string
   // resizable: boolean
   minWidth?: number
@@ -73,7 +67,6 @@ export interface IGridColumnDefinition {
   maxWidth?: number
   flexGrow?: number
   flexShrink?: number
-  // viewportClass: string
   // tooltip: string
   // colspan: number
   formatter?: CellFormatter

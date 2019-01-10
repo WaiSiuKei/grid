@@ -122,7 +122,6 @@ export class ViewHeaderRow implements IDisposable {
 
   public mountTo(container: HTMLElement): void {
     let w = getContentWidth(container);
-    console.log(w);
     container.appendChild(this.domNode);
     this.render(0, w);
   }
