@@ -74,7 +74,7 @@ for (let i = 0; i < 500000; i++) {
 
 let dv = new DataView();
 
-let t = new Grid(document.getElementById('myGrid'), dv, columns);
+let t = new Grid(document.getElementById('myGrid'), data, columns);
 
 dv.setItems(data);
 Object.defineProperty(window, 'grid', {

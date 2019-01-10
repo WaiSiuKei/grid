@@ -15,7 +15,7 @@ export class ViewCell implements IDisposable {
 
   mounted: boolean = false;
 
-  constructor(container: HTMLElement, private row: number, private cell: number, private datum: Datum, private col: IGridColumnDefinition) {
+  constructor(container: HTMLElement, private datum: Datum, private col: IGridColumnDefinition) {
     this.value = datum[col.field];
     this.formatter = col.formatter;
 
@@ -36,7 +36,7 @@ export class ViewCell implements IDisposable {
     } else {
       this.host.appendChild(this.domNode);
     }
-    ReactDOM.render(React.createElement(this.formatter(this.row, this.cell, this.value, this.col, this.datum)), this.domNode);
+    ReactDOM.render(React.createElement(this.formatter(this.value, this.col, this.datum)), this.domNode);
   }
 
   unmount() {
@@ -57,37 +57,40 @@ export class ViewRow implements IDisposable {
 
   mounted: boolean = false;
 
+  prevSlibing: ViewRow = null;
+  nextSlibing: ViewRow = null;
+
   private cellCache: { [key: string]: ViewCell } = Object.create(null);
 
   host: HTMLElement;
-  rowIndex: number;
   data: Datum;
 
-  constructor(host: HTMLElement, rowIndex: number, data: Datum, private ctx: GridContext) {
+  constructor(host: HTMLElement, data: Datum, private ctx: GridContext) {
     let container = document.createElement('div');
     addClass(container, 'nila-grid-row');
     this.domNode = container;
     this.host = host;
-    this.rowIndex = rowIndex;
     this.data = data;
     if (this.ctx.options.rowHeight) {
       this.domNode.style.height = this.ctx.options.rowHeight + 'px';
     }
   }
 
-  mount(slibing?: ViewRow) {
-    this.mounted = true;
+  mountBefore(slibing: ViewRow = null) {
+    this.nextSlibing = slibing;
     if (slibing) {
+      slibing.prevSlibing = this;
       this.host.insertBefore(this.domNode, slibing.domNode);
     } else {
       this.host.appendChild(this.domNode);
     }
+    this.mounted = true;
   }
 
   private mountCell(index: number): boolean {
     let cell: ViewCell = this.cellCache[index];
     if (!cell) {
-      cell = new ViewCell(this.domNode, this.rowIndex, index, this.data, this.ctx.columns[index]);
+      cell = new ViewCell(this.domNode, this.data, this.ctx.columns[index]);
       this.cellCache[index] = cell;
     }
     if (cell.mounted) return false;
@@ -121,6 +124,15 @@ export class ViewRow implements IDisposable {
 
   dispose() {
     this.mounted = false;
+
+    if (this.prevSlibing) {
+      this.prevSlibing.nextSlibing = this.nextSlibing;
+    }
+    if (this.nextSlibing) {
+      this.nextSlibing.prevSlibing = this.prevSlibing;
+    }
+    this.nextSlibing = null;
+    this.prevSlibing = null;
 
     this.domNode.remove();
 

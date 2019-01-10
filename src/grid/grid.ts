@@ -1,7 +1,7 @@
 import { React } from '../rax';
 import { Datum } from 'src/data/data';
 
-function defaultFormatter(row: number, cell: number, value: any, columnDef: IGridColumnDefinition, dataContext: Datum): any {
+function defaultFormatter(value: any, columnDef: IGridColumnDefinition, dataContext: Datum): any {
   return function () {
 
     return React.createElement('div', null, (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
@@ -52,7 +52,7 @@ export const COLUMN_DEFAULT: Partial<IGridColumnDefinition> = {
 };
 
 export interface CellFormatter {
-  (row: number, cell: number, value: any, m: IGridColumnDefinition, item: Datum): any
+  (value: any, m: IGridColumnDefinition, item: Datum): any
 }
 
 export interface IGridColumnDefinition {

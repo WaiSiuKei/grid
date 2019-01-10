@@ -299,14 +299,14 @@ export class Grid implements IDisposable {
   protected insertItemInDOM(index: number): void {
     let row: ViewRow = this.rowCache[index];
     if (!row) {
-      row = new ViewRow(this.rowsContainer, index, this.ctx.model.get(index), this.ctx);
+      row = new ViewRow(this.rowsContainer, this.ctx.model.get(index), this.ctx);
       this.rowCache[index] = row;
     }
     if (row.mounted) return;
 
     let nextRow = this.rowCache[index + 1];
 
-    row.mount(nextRow);
+    row.mountBefore(nextRow);
   }
 
   protected removeItemFromDOM(index: number): void {
