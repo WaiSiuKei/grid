@@ -44,6 +44,14 @@ export function isObject(obj: any): boolean {
     && !(obj instanceof Date);
 }
 
+export function isString(str: any): str is string {
+  if (typeof (str) === BuintinType.string || str instanceof String) {
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * In **contrast** to just checking `typeof` this will return `false` for `NaN`.
  * @returns whether the provided parameter is a JavaScript Number or not.

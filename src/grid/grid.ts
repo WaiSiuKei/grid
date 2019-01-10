@@ -41,7 +41,7 @@ export interface IGridOptions {
   // addNewRowCssClass: "new-row",
   // preserveCopiedSelectionOnPaste: false,
   // showCellSelection: true,
-  // viewportClass: null,
+  viewportClass: string,
   // emulatePagingWhenScrolling: true, // when scrolling off bottom of viewport, place new row at top of viewport
 }
 
@@ -51,7 +51,7 @@ export const GRID_DEFAULT: Partial<IGridOptions> = {
   rowHeight: 20,
   defaultFormatter,
   showHeaderRow: true,
-  // headerRowHeight: 20,
+  headerRowHeight: 20,
 };
 
 export const COLUMN_DEFAULT: Partial<IGridColumnDefinition> = {

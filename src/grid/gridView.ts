@@ -1,9 +1,9 @@
 import { ScrollbarVisibility, ScrollEvent } from 'src/base/common/scrollable';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
-import { addClass, getContentHeight, getContentWidth } from 'src/base/browser/dom';
+import { addClass, addClasses, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
 import { ViewRow } from 'src/grid/viewRow';
-import { isNumber, isUndefinedOrNull } from 'src/base/common/types';
+import { isNumber, isString, isUndefinedOrNull } from 'src/base/common/types';
 import { ViewHeaderRow } from 'src/grid/viewHeader';
 import { GridContext } from 'src/grid/girdContext';
 import { GridModel } from 'src/grid/gridModel';
@@ -121,6 +121,10 @@ export class GridView implements IDisposable {
 
     this.body = document.createElement('div');
     this.body.className = 'nila-grid-body';
+    if (isString(this.ctx.options.viewportClass) && this.ctx.options.viewportClass.length) {
+      let classes = this.ctx.options.viewportClass.split(/\s+/i);
+      addClasses(this.body, ...classes);
+    }
     this.scrollableElement = new ScrollableElement(this.body, {
       alwaysConsumeMouseWheel: true,
       horizontal: ScrollbarVisibility.Visible,
