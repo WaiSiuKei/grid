@@ -58,7 +58,10 @@ export class ViewHeaderRow implements IDisposable {
     let container = document.createElement('div');
     addClass(container, 'nila-grid-header');
     this.domNode = container;
-
+    if (!this.ctx.options.showHeaderRow) {
+      this.domNode.style.visibility = 'hidden';
+      this.domNode.style.display = 'none';
+    }
   }
 
   render(scrollLeft: number, viewWidth: number): CellToModify {

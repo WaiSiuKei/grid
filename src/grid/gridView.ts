@@ -139,7 +139,7 @@ export class GridView implements IDisposable {
     let body = this.scrollableElement.getDomNode();
     this.domNode.appendChild(body);
     container.appendChild(this.domNode);
-    let headerHeight = getContentHeight(this.header.domNode);
+    let headerHeight = this.ctx.options.showHeaderRow ? getContentHeight(this.header.domNode) : 0;
     body.style.height = getContentHeight(this.domNode) - headerHeight + 'px';
   }
 
