@@ -65,27 +65,34 @@ export class DataView implements IDataView, IDisposable {
   }
 
   private calulateDiff(prev: Datum[], next: Datum[]): RowsPatch {
+    let rowPatch: RowsPatch = [];
+
     if (prev.length > this.options.fullUpdateThreshold || next.length > this.options.fullUpdateThreshold) {
       this.hashes.length = 0;
-      return [
-        {
-          type: 'add',
+      if (prev.length) {
+        rowPatch.push({
+          type: 'remove',
           oldPos: 0,
           newPos: 0,
           items: prev
-        },
-        {
-          type: 'remove',
+        });
+      }
+      if (next.length) {
+        rowPatch.push({
+          type: 'add',
           oldPos: prev.length,
           newPos: 0,
           items: next
-        }
-      ];
+        });
+      }
+
+      return rowPatch;
     }
+
     let newHashed = next.map(d => hash(d));
     let patch = getPatch(this.hashes, newHashed);
 
-    let ret = patch.map((p: PatchItem<number>) => {
+    rowPatch = patch.map((p: PatchItem<number>) => {
       if (p.type === 'add') {
         return {
           ...p,
@@ -100,7 +107,7 @@ export class DataView implements IDataView, IDisposable {
     });
 
     this.hashes = newHashed;
-    return ret;
+    return rowPatch;
   }
 
   private refresh() {
