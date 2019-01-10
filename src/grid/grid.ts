@@ -20,6 +20,7 @@ export interface IGridOptions {
   defaultFormatter: CellFormatter,
   showHeaderRow: boolean
   headerRowHeight: number,
+  viewportClass: string,
 
   // enableAddRow: false,
   // enableCellNavigation: true,
@@ -41,7 +42,6 @@ export interface IGridOptions {
   // addNewRowCssClass: "new-row",
   // preserveCopiedSelectionOnPaste: false,
   // showCellSelection: true,
-  viewportClass: string,
   // emulatePagingWhenScrolling: true, // when scrolling off bottom of viewport, place new row at top of viewport
 }
 
