@@ -30,7 +30,6 @@ export interface IGridOptions {
   // cellFlashingCssClass: "flashing",
   // selectedCellCssClass: "selected",
   // multiSelect: true,
-  // enableTextSelectionOnCells: false,
   // dataItemColumnValueExtractor: null,
   // fullWidthRows: false,
   // multiColumnSort: false,
@@ -40,7 +39,6 @@ export interface IGridOptions {
 
   // forceSyncScrolling: false,
   // addNewRowCssClass: "new-row",
-  // preserveCopiedSelectionOnPaste: false,
   // showCellSelection: true,
   // emulatePagingWhenScrolling: true, // when scrolling off bottom of viewport, place new row at top of viewport
 }
