@@ -11,8 +11,6 @@ export interface Datum {
   [key: string]: any
 }
 
-export interface IGrid {}
-
 export type IDataSource = Datum[]
 
 export interface IGridOptions {
@@ -29,11 +27,6 @@ export interface IGridOptions {
   // forceFitColumns: false,
   // autoHeight: false,
   // headerRowHeight: 25,
-  // createFooterRow: false,
-  // showFooterRow: false,
-  // footerRowHeight: 25,
-  // formatterFactory: null,
-  // editorFactory: null,
   // cellFlashingCssClass: "flashing",
   // selectedCellCssClass: "selected",
   // multiSelect: true,
@@ -51,11 +44,10 @@ export interface IGridOptions {
   // showCellSelection: true,
   // viewportClass: null,
   // emulatePagingWhenScrolling: true, // when scrolling off bottom of viewport, place new row at top of viewport
-  // editorCellNavOnLRKeys: false
 }
 
 export const GRID_DEFAULT: Partial<IGridOptions> = {
-  explicitInitialization: false,
+  explicitInitialization: true,
   defaultColumnWidth: 80,
   showHeaderRow: true,
   rowHeight: 20,

@@ -73,8 +73,6 @@ for (let i = 0; i < 500000; i++) {
 
 let t = new Grid(document.getElementById('myGrid'), data, columns);
 
-t.render();
-
 Object.defineProperty(window, 'grid', {
   value: t
 });
