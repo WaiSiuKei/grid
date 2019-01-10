@@ -12,7 +12,7 @@ import { mapBy, sum, sumBy } from 'src/base/common/functional';
 import { IDisposable } from 'src/base/common/lifecycle';
 
 function validateAndEnforceOptions(opt: Partial<IGridOptions>): IGridOptions {
-  return Object.assign({}, opt, GRID_DEFAULT) as IGridOptions;
+  return Object.assign({}, GRID_DEFAULT, opt) as IGridOptions;
 }
 
 function validatedAndEnforeColumnDefinitions(col: Array<Partial<IGridColumnDefinition>>, defaultWidth?: number, defaultFormatter?: CellFormatter): IGridColumnDefinition[] {

@@ -135,7 +135,7 @@ export class ViewHeaderRow implements IDisposable {
     }
     if (cell.mounted) return false;
 
-    cell.mount(this.cellCache[index + 1]);
+    if (this.ctx.options.showHeaderRow) cell.mount(this.cellCache[index + 1]);
     return true;
   }
 
