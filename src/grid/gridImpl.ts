@@ -73,10 +73,9 @@ function resolvingColumnWidths(col: Array<IGridColumnDefinition>, totalWidth: nu
 }
 
 export class Grid implements IDisposable {
-  protected ctx: GridContext;
-
   protected static counter: number = 0;
-  protected instanceId: number;
+
+  protected ctx: GridContext;
 
   protected domNode: HTMLElement;
   protected body: HTMLElement;
@@ -84,10 +83,8 @@ export class Grid implements IDisposable {
   protected scrollableElement: ScrollableElement;
   protected header: ViewHeaderRow;
 
-  protected lastRenderTop: number;
-  protected lastRenderHeight: number;
-
   protected rowCache: { [key: string]: ViewRow } = Object.create(null);
+  protected mountedRows: ViewRow[] = [];
 
   private shouldShowHorizonalScrollbar = false;
   private shouldShowVerticalScrollbar = false;
@@ -98,12 +95,6 @@ export class Grid implements IDisposable {
     let columns = validatedAndEnforeColumnDefinitions(col, opt.defaultColumnWidth, opt.defaultFormatter);
     resolvingColumnWidths(columns, container.clientWidth);
     this.ctx = new GridContext(model, columns, opt);
-
-    Grid.counter++;
-    this.instanceId = Grid.counter;
-
-    this.lastRenderTop = 0;
-    this.lastRenderHeight = 0;
 
     this.createElement(container);
 
@@ -128,7 +119,7 @@ export class Grid implements IDisposable {
 
   protected createElement(container: HTMLElement) {
     this.domNode = document.createElement('div');
-    this.domNode.className = `nila-grid nila-grid-instance-${this.instanceId}`;
+    this.domNode.className = `nila-grid nila-grid-instance-${Grid.counter++}`;
 
     this.header = new ViewHeaderRow(this.ctx);
 
@@ -145,7 +136,12 @@ export class Grid implements IDisposable {
     });
 
     this.scrollableElement.onScroll((e) => {
-      this._render(e);
+      if (e.heightChanged || e.scrollHeightChanged || e.scrollTopChanged) {
+        this.renderVerticalChanges(e.height, e.scrollTop);
+        this.renderHorizonalChanges(e.width, e.scrollLeft);
+      } else if (e.widthChanged || e.scrollWidthChanged || e.scrollLeftChanged) {
+        this.renderHorizonalChanges(e.width, e.scrollLeft);
+      }
     });
 
     this.rowsContainer = document.createElement('div');
@@ -171,7 +167,8 @@ export class Grid implements IDisposable {
     this.viewWidth = w;
     this.scrollWidth = this.getContentWidth();
 
-    this._render(h, w);
+    this.renderVerticalChanges(h);
+    this.renderHorizonalChanges(w);
   }
 
   getTotalRowsHeight(): number {
@@ -226,74 +223,54 @@ export class Grid implements IDisposable {
     this.scrollableElement.setScrollPosition({ scrollLeft });
   }
 
-  protected _render(height: number, width: number): void
-  protected _render(e: ScrollEvent): void
-  protected _render(arg1: any, arg2?: any): void {
-    let scrollTop = 0;
-    let scrollLeft = 0;
-    let viewHeight: number;
-    let viewWidth: number;
-    let hasVerticalDelta = false;
-    if (isNumber(arg1)) {
-      viewHeight = arg1;
-      viewWidth = arg2;
-      hasVerticalDelta = true;
-    } else {
-      let e = arg1 as ScrollEvent;
-      scrollTop = e.scrollTop;
-      scrollLeft = e.scrollLeft;
-      viewHeight = e.height;
-      viewWidth = e.width;
-      hasVerticalDelta = e.scrollHeightChanged || e.scrollTopChanged || e.heightChanged;
-    }
-
+  protected lastRenderTop: number = 0;
+  protected lastRenderHeight: number = 0;
+  private renderVerticalChanges(viewHeight: number, scrollTop = 0): void {
     if (!viewHeight) return;
+    let i: number;
+    let stop: number;
 
-    if (hasVerticalDelta) {
-      let i: number;
-      let stop: number;
+    let renderTop = scrollTop;
+    let renderBottom = scrollTop + viewHeight;
+    let thisRenderBottom = this.lastRenderTop + this.lastRenderHeight;
 
-      let renderTop = scrollTop;
-      let renderBottom = scrollTop + viewHeight;
-      let thisRenderBottom = this.lastRenderTop + this.lastRenderHeight;
-
-      // when view scrolls down, start rendering from the renderBottom
-      for (i = this.indexAfter(renderBottom) - 1, stop = this.indexAt(Math.max(thisRenderBottom, renderTop)); i >= stop; i--) {
-        this.insertItemInDOM(i);
-      }
-
-      // when view scrolls up, start rendering from either this.renderTop or renderBottom
-      for (i = Math.min(this.indexAt(this.lastRenderTop), this.indexAfter(renderBottom)) - 1, stop = this.indexAt(renderTop); i >= stop; i--) {
-        this.insertItemInDOM(i);
-      }
-
-      // when view scrolls down, start unrendering from renderTop
-      for (i = this.indexAt(this.lastRenderTop), stop = Math.min(this.indexAt(renderTop), this.indexAfter(thisRenderBottom)); i < stop; i++) {
-        this.removeItemFromDOM(i);
-      }
-
-      // when view scrolls up, start unrendering from either renderBottom this.renderTop
-      for (i = Math.max(this.indexAfter(renderBottom), this.indexAt(this.lastRenderTop)), stop = this.indexAfter(thisRenderBottom); i < stop; i++) {
-        this.removeItemFromDOM(i);
-      }
-
-      let topItem = this.indexAt(renderTop);
-
-      let t = (this.getItemTop(topItem) - renderTop);
-      let r = this.ctx.options.rowHeight;
-      this.rowsContainer.style.top = clamp(t, r, -r) + 'px';
-
-      this.lastRenderTop = renderTop;
-      this.lastRenderHeight = renderBottom - renderTop;
+    // when view scrolls down, start rendering from the renderBottom
+    for (i = this.indexAfter(renderBottom) - 1, stop = this.indexAt(Math.max(thisRenderBottom, renderTop)); i >= stop; i--) {
+      this.insertItemInDOM(i);
     }
 
+    // when view scrolls up, start rendering from either this.renderTop or renderBottom
+    for (i = Math.min(this.indexAt(this.lastRenderTop), this.indexAfter(renderBottom)) - 1, stop = this.indexAt(renderTop); i >= stop; i--) {
+      this.insertItemInDOM(i);
+    }
+
+    // when view scrolls down, start unrendering from renderTop
+    for (i = this.indexAt(this.lastRenderTop), stop = Math.min(this.indexAt(renderTop), this.indexAfter(thisRenderBottom)); i < stop; i++) {
+      this.removeItemFromDOM(i);
+    }
+
+    // when view scrolls up, start unrendering from either renderBottom this.renderTop
+    for (i = Math.max(this.indexAfter(renderBottom), this.indexAt(this.lastRenderTop)), stop = this.indexAfter(thisRenderBottom); i < stop; i++) {
+      this.removeItemFromDOM(i);
+    }
+
+    let topItem = this.indexAt(renderTop);
+
+    let t = (this.getItemTop(topItem) - renderTop);
+    let r = this.ctx.options.rowHeight;
+    this.rowsContainer.style.top = clamp(t, r, -r) + 'px';
+
+    this.lastRenderTop = renderTop;
+    this.lastRenderHeight = renderBottom - renderTop;
+  }
+
+  private renderHorizonalChanges(viewWidth: number, scrollLeft = 0) {
     let { mounted, margin } = this.header.render(scrollLeft, viewWidth);
     for (let index in this.rowCache) {
       let row: ViewRow = this.rowCache[index];
       row.updateCell(mounted, margin);
     }
   }
-
   // DOM changes
 
   protected insertItemInDOM(index: number): void {
