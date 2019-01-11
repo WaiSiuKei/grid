@@ -10,7 +10,7 @@ import { GridContext } from 'src/grid/girdContext';
 import { GridModel } from 'src/grid/gridModel';
 import { CellFormatter, COLUMN_DEFAULT, GRID_DEFAULT, IGridColumnDefinition, IGridOptions } from 'src/grid/grid';
 import { mapBy, sum, sumBy } from 'src/base/common/functional';
-import { IDisposable } from 'src/base/common/lifecycle';
+import { dispose, IDisposable } from 'src/base/common/lifecycle';
 import { IDataSet } from 'src/data/data';
 import { DataView } from 'src/data/dataView';
 
@@ -84,10 +84,13 @@ export class Grid implements IDisposable {
   protected header: ViewHeaderRow;
 
   protected rowCache: { [key: string]: ViewRow } = Object.create(null);
-  protected mountedRows: ViewRow[] = [];
 
   private shouldShowHorizonalScrollbar = false;
   private shouldShowVerticalScrollbar = false;
+
+  private viewEventRegistered = false;
+
+  private toDispose: IDisposable[] = [];
 
   constructor(protected container: HTMLElement, ds: IDataSet, col: Array<Partial<IGridColumnDefinition>>, options: Partial<IGridOptions> = {}) {
     let opt = validateAndEnforceOptions(options);
@@ -99,22 +102,36 @@ export class Grid implements IDisposable {
     this.createElement(container);
 
     if (this.ctx.options.explicitInitialization) {
-      this.layout();
+      this.render();
     }
 
     if (ds instanceof DataView) {
-      this.registerListeners(ds);
+      this.registerDateListeners(ds);
     }
   }
 
-  private registerListeners(ds: DataView) {
-    ds.onRowsChanged((evt) => {
+  private registerViewListeners() {
+    this.toDispose.push(this.scrollableElement.onScroll((e) => {
+      if (e.heightChanged || e.scrollHeightChanged || e.scrollTopChanged) {
+        this.renderVerticalChanges(e.height, e.scrollTop);
+        this.renderHorizonalChanges(e.width, e.scrollLeft);
+      } else if (e.widthChanged || e.scrollWidthChanged || e.scrollLeftChanged) {
+        this.renderHorizonalChanges(e.width, e.scrollLeft);
+      }
+    }));
+  }
+
+  private registerDateListeners(ds: DataView) {
+    this.toDispose.push(ds.onRowsChanged((evt) => {
       console.log(evt);
-    });
+    }));
   }
 
   public render() {
     this.layout();
+    if (!this.viewEventRegistered) {
+      this.registerViewListeners();
+    }
   }
 
   protected createElement(container: HTMLElement) {
@@ -133,15 +150,6 @@ export class Grid implements IDisposable {
       alwaysConsumeMouseWheel: true,
       horizontal: ScrollbarVisibility.Visible,
       vertical: ScrollbarVisibility.Visible,
-    });
-
-    this.scrollableElement.onScroll((e) => {
-      if (e.heightChanged || e.scrollHeightChanged || e.scrollTopChanged) {
-        this.renderVerticalChanges(e.height, e.scrollTop);
-        this.renderHorizonalChanges(e.width, e.scrollLeft);
-      } else if (e.widthChanged || e.scrollWidthChanged || e.scrollLeftChanged) {
-        this.renderHorizonalChanges(e.width, e.scrollLeft);
-      }
     });
 
     this.rowsContainer = document.createElement('div');
@@ -295,7 +303,7 @@ export class Grid implements IDisposable {
   }
 
   protected getItemTop(index: number) {
-    return index * 20 + (index ? 1 : 0);
+    return index * this.ctx.options.rowHeight + (index ? 1 : 0);
   }
 
   protected indexAt(position: number): number {
@@ -337,5 +345,7 @@ export class Grid implements IDisposable {
     });
     this.scrollableElement.dispose();
     this.domNode.remove();
+    dispose(this.toDispose);
+    this.toDispose.length = 0;
   }
 }
