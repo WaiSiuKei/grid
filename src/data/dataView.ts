@@ -4,7 +4,7 @@ import { Datum, IDataView } from 'src/data/data';
 import { isArray } from 'src/base/common/types';
 import { deepClone } from 'src/base/common/objects';
 import { hash } from 'src/base/common/hash';
-import { getPatch, PatchItem } from 'src/base/common/patch';
+import { getPatch, PatchChange, PatchItem } from 'src/base/common/patch';
 
 export type RowsPatch = PatchItem<Datum>[]
 
@@ -51,16 +51,37 @@ export class DataView implements IDataView, IDisposable {
     return this.items.length;
   }
 
-  getItem(idx: number): Datum {
+  public getItem(idx: number): Datum {
     return this.items[idx];
   }
 
-  setItems(data: Datum[], all = false) {
+  public setItems(data: Datum[]) {
     if (!isArray(data)) {
       throw new Error('Expect an array');
     }
     this.memorizedItems = this.items;
     this.items = data.map(d => deepClone(d));
+    this.refresh();
+  }
+
+  public push(data: Datum) {
+    this.memorizedItems = this.items.slice();
+    this.items.push(deepClone(data));
+    this.refresh();
+  }
+
+  public pop() {
+    this.memorizedItems = this.items.slice();
+    this.items.pop();
+    this.refresh();
+  }
+
+  public beginUpdate() {
+    this.suspend = true;
+  }
+
+  public endUpdate() {
+    this.suspend = false;
     this.refresh();
   }
 
@@ -71,7 +92,7 @@ export class DataView implements IDataView, IDisposable {
       this.hashes.length = 0;
       if (prev.length) {
         rowPatch.push({
-          type: 'remove',
+          type: PatchChange.Remove,
           oldPos: 0,
           newPos: 0,
           items: prev
@@ -79,7 +100,7 @@ export class DataView implements IDataView, IDisposable {
       }
       if (next.length) {
         rowPatch.push({
-          type: 'add',
+          type: PatchChange.Add,
           oldPos: prev.length,
           newPos: 0,
           items: next
@@ -93,7 +114,7 @@ export class DataView implements IDataView, IDisposable {
     let patch = getPatch(this.hashes, newHashed);
 
     rowPatch = patch.map((p: PatchItem<number>) => {
-      if (p.type === 'add') {
+      if (p.type === PatchChange.Remove) {
         return {
           ...p,
           items: p.items.map(i => prev[this.hashes.indexOf(i)])
@@ -122,5 +143,8 @@ export class DataView implements IDataView, IDisposable {
   dispose() {
     dispose(this.toDispose);
     this.toDispose.length = 0;
+    this.memorizedItems.length = 0;
+    this.items.length = 0;
+    this.hashes.length = 0;
   }
 }

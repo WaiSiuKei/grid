@@ -3,8 +3,8 @@ import { DataView } from 'src/data/dataView';
 import { isArray } from 'src/base/common/types';
 
 export class GridModel {
-  items: Datum[] = [];
-  ds: DataView;
+  private items: Datum[] = [];
+  private ds: DataView;
 
   constructor(ds: IDataSet) {
     if (ds instanceof DataView) {

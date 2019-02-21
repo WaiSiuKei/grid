@@ -1,7 +1,7 @@
 import './grid.css';
 import { ScrollbarVisibility } from 'src/base/common/scrollable';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
-import { addClass, addClasses, getContentHeight, getContentWidth } from 'src/base/browser/dom';
+import { addClasses, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
 import { ViewRow } from 'src/grid/viewRow';
 import { isNumber, isString, isUndefinedOrNull } from 'src/base/common/types';
@@ -11,8 +11,9 @@ import { GridModel } from 'src/grid/gridModel';
 import { CellFormatter, COLUMN_DEFAULT, GRID_DEFAULT, IGridColumnDefinition, IGridOptions } from 'src/grid/grid';
 import { mapBy, sum, sumBy } from 'src/base/common/functional';
 import { dispose, IDisposable } from 'src/base/common/lifecycle';
-import { IDataSet } from 'src/data/data';
-import { DataView } from 'src/data/dataView';
+import { Datum, IDataSet } from 'src/data/data';
+import { DataView, RowsPatch } from 'src/data/dataView';
+import { PatchChange, PatchItem } from 'src/base/common/patch';
 
 function validateAndEnforceOptions(opt: Partial<IGridOptions>): IGridOptions {
   return Object.assign({}, GRID_DEFAULT, opt) as IGridOptions;
@@ -106,7 +107,7 @@ export class Grid implements IDisposable {
     }
 
     if (ds instanceof DataView) {
-      this.registerDateListeners(ds);
+      this.registerDataListeners(ds);
     }
   }
 
@@ -121,9 +122,16 @@ export class Grid implements IDisposable {
     }));
   }
 
-  private registerDateListeners(ds: DataView) {
+  private registerDataListeners(ds: DataView) {
     this.toDispose.push(ds.onRowsChanged((evt) => {
-      console.log(evt);
+      console.log('rowsChanged', evt);
+      let reRenderHappened = false;
+      for (let i = 0, len = evt.length; i < len; i++) {
+        reRenderHappened = this.patchChanges(evt[i]);
+      }
+      if (reRenderHappened) {
+        this.renderHorizonalChanges(getContentWidth(this.body));
+      }
     }));
   }
 
@@ -169,11 +177,11 @@ export class Grid implements IDisposable {
     let h = height || getContentHeight(this.body);
     if (h > this.container.clientHeight) this.shouldShowVerticalScrollbar = true;
     this.viewHeight = h;
-    this.scrollHeight = this.getTotalRowsHeight();
+    this.scrollHeight = this.getTotalRowsHeight() || 0;
     let w = width || getContentWidth(this.body);
     if (w > this.container.clientWidth) this.shouldShowHorizonalScrollbar = true;
     this.viewWidth = w;
-    this.scrollWidth = this.getContentWidth();
+    this.scrollWidth = this.getContentWidth() || 0;
 
     this.renderVerticalChanges(h);
     this.renderHorizonalChanges(w);
@@ -235,11 +243,11 @@ export class Grid implements IDisposable {
   private lastIndexOfLastMountedRow = -1;
   private renderVerticalChanges(viewHeight: number, scrollTop = 0): void {
     if (!viewHeight) return;
-    // console.log('start', this.lastIndexOfFirstMountedRow, this.lastIndexOfLastMountedRow);
+    console.log('start', this.lastIndexOfFirstMountedRow, this.lastIndexOfLastMountedRow);
 
     let renderTop = scrollTop;
     let renderBottom = scrollTop + viewHeight;
-    // console.log('scrollTop=', scrollTop, 'renderBottom=', renderBottom);
+    console.log('scrollTop=', scrollTop, 'renderBottom=', renderBottom);
     let shouldFrom = this.indexAt(renderTop);
     let shouldTo = this.indexAt(renderBottom);
 
@@ -273,12 +281,14 @@ export class Grid implements IDisposable {
       }
     }
 
+    if (!this.ctx.model.length) return;
+
     if (!this.mountedRows.length) {
       indexOfFirstRowToGrowUp = -1;
       indexOfFirstRowToGrowDown = shouldFrom;
     }
 
-    // console.log('indexOfFirstRowToGrowDown=', indexOfFirstRowToGrowDown, 'indexOfFirstRowToGrowUp=', indexOfFirstRowToGrowUp);
+    console.log('indexOfFirstRowToGrowDown=', indexOfFirstRowToGrowDown, 'indexOfFirstRowToGrowUp=', indexOfFirstRowToGrowUp);
     while (indexOfFirstRowToGrowDown > -1 && indexOfFirstRowToGrowDown <= shouldTo) {
       let r = new ViewRow(this.rowsContainer, this.ctx.model.get(indexOfFirstRowToGrowDown), this.ctx);
       if (!this.mountedRows.length) {
@@ -306,7 +316,7 @@ export class Grid implements IDisposable {
     let r = this.ctx.options.rowHeight;
     let transform = this.getRowTop(shouldFrom) - renderTop;
     this.rowsContainer.style.top = clamp(transform, r, -r) + 'px';
-    // console.log('end', this.lastIndexOfFirstMountedRow, this.lastIndexOfLastMountedRow);
+    console.log('end', this.lastIndexOfFirstMountedRow, this.lastIndexOfLastMountedRow);
   }
 
   private renderHorizonalChanges(viewWidth: number, scrollLeft = 0) {
@@ -315,6 +325,42 @@ export class Grid implements IDisposable {
       this.mountedRows[i].updateCell(mounted, margin);
     }
   }
+
+  private patchChanges(patch: PatchItem<Datum>): boolean {
+    switch (patch.type) {
+      case PatchChange.Add:
+        return this.handleAdding(patch);
+      case PatchChange.Remove:
+        return this.handleRemoval(patch);
+    }
+    return false;
+  }
+
+  private handleRemoval(patch: PatchItem<Datum>): boolean {
+    if (this.lastIndexOfFirstMountedRow === -1 && this.lastIndexOfLastMountedRow === -1) {
+      return false;
+    }
+
+    if (patch.newPos >= this.lastIndexOfFirstMountedRow && patch.newPos <= this.lastIndexOfLastMountedRow) {
+      this.scrollHeight = this.getTotalRowsHeight();
+      return true;
+    }
+
+    return false;
+  }
+
+  private handleAdding(patch: PatchItem<Datum>): boolean {
+    if (this.lastIndexOfFirstMountedRow === -1 && this.lastIndexOfLastMountedRow === -1) {
+      this.scrollHeight = this.getTotalRowsHeight();
+      return true;
+    }
+    if (patch.newPos > this.lastIndexOfLastMountedRow) {
+      this.scrollHeight = this.getTotalRowsHeight();
+      return true;
+    }
+    return false;
+  }
+
   // DOM changes
 
   protected getRowTop(index: number) {
@@ -327,12 +373,15 @@ export class Grid implements IDisposable {
 
   protected indexAt(position: number): number {
     let left = 0;
-    let l = this.ctx.model.items.length;
+    let l = this.ctx.model.length;
     let right = l - 1;
     let center: number;
 
     // Binary search
     let r = this.ctx.options.rowHeight;
+    if (position === 0) return 0;
+    if (position > r * right) return right;
+
     while (left < right) {
       center = Math.floor((left + right) / 2);
 
@@ -353,7 +402,7 @@ export class Grid implements IDisposable {
   }
 
   protected indexAfter(position: number): number {
-    return Math.min(this.indexAt(position) + 1, this.ctx.model.items.length);
+    return Math.min(this.indexAt(position) + 1, this.ctx.model.length);
   }
 
   dispose() {

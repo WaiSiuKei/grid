@@ -1,7 +1,12 @@
 import { bestSubSequence } from 'src/base/common/lcs';
 
+export enum PatchChange {
+  Add = 'add',
+  Remove = 'remove',
+}
+
 export interface PatchItem<T> {
-  type: 'add' | 'remove';
+  type: PatchChange;
   oldPos: number;
   newPos: number;
   items: T[];
@@ -32,7 +37,7 @@ export function getPatch<T>(
     } else if (type === 'remove') {
       if (!lastRemove) {
         lastRemove = {
-          type: 'remove',
+          type: PatchChange.Remove,
           oldPos: oldStart as number,
           newPos: newStart as number,
           items: [],
@@ -50,7 +55,7 @@ export function getPatch<T>(
     } else if (type === 'add') {
       if (!lastAdd) {
         lastAdd = {
-          type: 'add',
+          type: PatchChange.Add,
           oldPos: oldStart,
           newPos: newStart,
           items: [],

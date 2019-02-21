@@ -7,4 +7,9 @@ export interface IDataView {
   getItem(idx: number): Datum
 }
 
+export enum DataViewRowsChangeReason {
+  Add = 'add',
+  Remove = 'remove'
+}
+
 export type IDataSet = Datum[] | IDataView

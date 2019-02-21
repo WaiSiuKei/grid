@@ -37,7 +37,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 500000; i++) {
+for (let i = 0; i < 5; i++) {
   data[i] = {
     title: 'Task ' + i,
     duration: '5 days',
@@ -45,16 +45,16 @@ for (let i = 0; i < 500000; i++) {
     start: '01/01/2009',
     finish: '01/05/2009',
     effortDriven: (i % 5 == 0),
-    a: '01/01/2009',
-    b: '01/01/2009',
-    c: '01/01/2009',
-    d: '01/01/2009',
-    e: '01/01/2009',
-    f: '01/01/2009',
-    g: '01/01/2009',
-    h: '01/01/2009',
-    i: '01/01/2009',
-    j: '01/01/2009',
+    // a: '01/01/2009',
+    // b: '01/01/2009',
+    // c: '01/01/2009',
+    // d: '01/01/2009',
+    // e: '01/01/2009',
+    // f: '01/01/2009',
+    // g: '01/01/2009',
+    // h: '01/01/2009',
+    // i: '01/01/2009',
+    // j: '01/01/2009',
   };
 }
 //
@@ -74,9 +74,18 @@ for (let i = 0; i < 500000; i++) {
 
 let dv = new DataView();
 
-let t = new Grid(document.getElementById('myGrid'), data, columns);
+let t = new Grid(document.getElementById('myGrid'), dv, columns);
 
 dv.setItems(data);
+dv.push({
+  title: 'Task ' + 1000,
+  duration: '5 days',
+  percentComplete: Math.round(Math.random() * 100),
+  start: '01/01/2009',
+  finish: '01/05/2009',
+  effortDriven: 11,
+});
+dv.pop();
 Object.defineProperty(window, 'grid', {
   value: t
 });
