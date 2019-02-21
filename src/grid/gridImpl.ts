@@ -250,8 +250,9 @@ export class Grid implements IDisposable {
     console.log('scrollTop=', scrollTop, 'renderBottom=', renderBottom);
     let shouldFrom = this.indexAt(renderTop);
     let shouldTo = this.indexAt(renderBottom);
+    if (shouldFrom === this.lastIndexOfFirstMountedRow && shouldTo === this.lastIndexOfLastMountedRow) return;
 
-    // console.log('shouldFrom=', shouldFrom, 'shouldTo=', shouldTo);
+    console.log('shouldFrom=', shouldFrom, 'shouldTo=', shouldTo);
     let indexOfFirstRowToGrowDown = -1;
     let indexOfFirstRowToGrowUp = -1;
 
@@ -342,6 +343,10 @@ export class Grid implements IDisposable {
     }
 
     if (patch.newPos >= this.lastIndexOfFirstMountedRow && patch.newPos <= this.lastIndexOfLastMountedRow) {
+      while (this.lastIndexOfLastMountedRow < patch.newPos) {
+        this.mountedRows.pop().dispose();
+        this.lastIndexOfLastMountedRow--;
+      }
       this.scrollHeight = this.getTotalRowsHeight();
       return true;
     }

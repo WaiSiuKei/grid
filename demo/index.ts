@@ -37,7 +37,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 5; i++) {
+for (let i = 0; i < 24; i++) {
   data[i] = {
     title: 'Task ' + i,
     duration: '5 days',
@@ -77,14 +77,6 @@ let dv = new DataView();
 let t = new Grid(document.getElementById('myGrid'), dv, columns);
 
 dv.setItems(data);
-dv.push({
-  title: 'Task ' + 1000,
-  duration: '5 days',
-  percentComplete: Math.round(Math.random() * 100),
-  start: '01/01/2009',
-  finish: '01/05/2009',
-  effortDriven: 11,
-});
 dv.pop();
 Object.defineProperty(window, 'grid', {
   value: t
