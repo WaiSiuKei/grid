@@ -1,5 +1,5 @@
 import './grid.css';
-import { ScrollbarVisibility, ScrollEvent } from 'src/base/common/scrollable';
+import { ScrollbarVisibility } from 'src/base/common/scrollable';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
 import { addClass, addClasses, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
@@ -83,7 +83,7 @@ export class Grid implements IDisposable {
   protected scrollableElement: ScrollableElement;
   protected header: ViewHeaderRow;
 
-  protected rowCache: { [key: string]: ViewRow } = Object.create(null);
+  protected mountedRows: ViewRow[] = [];
 
   private shouldShowHorizonalScrollbar = false;
   private shouldShowVerticalScrollbar = false;
@@ -231,79 +231,98 @@ export class Grid implements IDisposable {
     this.scrollableElement.setScrollPosition({ scrollLeft });
   }
 
-  protected lastRenderTop: number = 0;
-  protected lastRenderHeight: number = 0;
+  private lastIndexOfFirstMountedRow = -1;
+  private lastIndexOfLastMountedRow = -1;
   private renderVerticalChanges(viewHeight: number, scrollTop = 0): void {
     if (!viewHeight) return;
-    let i: number;
-    let stop: number;
+    // console.log('start', this.lastIndexOfFirstMountedRow, this.lastIndexOfLastMountedRow);
 
     let renderTop = scrollTop;
     let renderBottom = scrollTop + viewHeight;
-    let thisRenderBottom = this.lastRenderTop + this.lastRenderHeight;
+    // console.log('scrollTop=', scrollTop, 'renderBottom=', renderBottom);
+    let shouldFrom = this.indexAt(renderTop);
+    let shouldTo = this.indexAt(renderBottom);
 
-    // when view scrolls down, start rendering from the renderBottom
-    for (i = this.indexAfter(renderBottom) - 1, stop = this.indexAt(Math.max(thisRenderBottom, renderTop)); i >= stop; i--) {
-      this.insertItemInDOM(i);
+    // console.log('shouldFrom=', shouldFrom, 'shouldTo=', shouldTo);
+    let indexOfFirstRowToGrowDown = -1;
+    let indexOfFirstRowToGrowUp = -1;
+
+    if (this.lastIndexOfLastMountedRow < shouldTo) {
+      // 向下滚，下边需要填充
+      indexOfFirstRowToGrowDown = this.lastIndexOfLastMountedRow + 1;
+    } else {
+      // 向上滚，去掉多余的
+      let i = this.lastIndexOfLastMountedRow;
+      while (i > shouldTo && this.mountedRows.length) {
+        // console.log('remove', i, shouldTo);
+        this.mountedRows.pop().dispose();
+        i--;
+      }
     }
 
-    // when view scrolls up, start rendering from either this.renderTop or renderBottom
-    for (i = Math.min(this.indexAt(this.lastRenderTop), this.indexAfter(renderBottom)) - 1, stop = this.indexAt(renderTop); i >= stop; i--) {
-      this.insertItemInDOM(i);
+    if (this.lastIndexOfFirstMountedRow > shouldFrom) {
+      // 向上滚，上面需要填充
+      indexOfFirstRowToGrowUp = this.lastIndexOfFirstMountedRow - 1;
+    } else {
+      // 向下滚，去掉多余的
+      let i = this.lastIndexOfFirstMountedRow;
+      while (i < shouldFrom && this.mountedRows.length) {
+        // console.log('remove', i, shouldFrom);
+        this.mountedRows.shift().dispose();
+        i++;
+      }
     }
 
-    // when view scrolls down, start unrendering from renderTop
-    for (i = this.indexAt(this.lastRenderTop), stop = Math.min(this.indexAt(renderTop), this.indexAfter(thisRenderBottom)); i < stop; i++) {
-      this.removeItemFromDOM(i);
+    if (!this.mountedRows.length) {
+      indexOfFirstRowToGrowUp = -1;
+      indexOfFirstRowToGrowDown = shouldFrom;
     }
 
-    // when view scrolls up, start unrendering from either renderBottom this.renderTop
-    for (i = Math.max(this.indexAfter(renderBottom), this.indexAt(this.lastRenderTop)), stop = this.indexAfter(thisRenderBottom); i < stop; i++) {
-      this.removeItemFromDOM(i);
+    // console.log('indexOfFirstRowToGrowDown=', indexOfFirstRowToGrowDown, 'indexOfFirstRowToGrowUp=', indexOfFirstRowToGrowUp);
+    while (indexOfFirstRowToGrowDown > -1 && indexOfFirstRowToGrowDown <= shouldTo) {
+      let r = new ViewRow(this.rowsContainer, this.ctx.model.get(indexOfFirstRowToGrowDown), this.ctx);
+      if (!this.mountedRows.length) {
+        r.mountBefore(null);
+      } else {
+        r.mountAfter(this.mountedRows[this.mountedRows.length - 1]);
+      }
+      this.mountedRows.push(r);
+      indexOfFirstRowToGrowDown++;
     }
 
-    let topItem = this.indexAt(renderTop);
+    while (indexOfFirstRowToGrowUp > -1 && indexOfFirstRowToGrowUp >= shouldFrom) {
+      let r = new ViewRow(this.rowsContainer, this.ctx.model.get(indexOfFirstRowToGrowUp), this.ctx);
+      if (this.mountedRows.length) {
+        r.mountBefore(this.mountedRows[0]);
+      } else {
+        r.mountBefore(null);
+      }
+      this.mountedRows.unshift(r);
+      indexOfFirstRowToGrowUp--;
+    }
 
-    let t = (this.getItemTop(topItem) - renderTop);
+    this.lastIndexOfLastMountedRow = shouldTo;
+    this.lastIndexOfFirstMountedRow = shouldFrom;
     let r = this.ctx.options.rowHeight;
-    this.rowsContainer.style.top = clamp(t, r, -r) + 'px';
-
-    this.lastRenderTop = renderTop;
-    this.lastRenderHeight = renderBottom - renderTop;
+    let transform = this.getRowTop(shouldFrom) - renderTop;
+    this.rowsContainer.style.top = clamp(transform, r, -r) + 'px';
+    // console.log('end', this.lastIndexOfFirstMountedRow, this.lastIndexOfLastMountedRow);
   }
 
   private renderHorizonalChanges(viewWidth: number, scrollLeft = 0) {
     let { mounted, margin } = this.header.render(scrollLeft, viewWidth);
-    for (let index in this.rowCache) {
-      let row: ViewRow = this.rowCache[index];
-      row.updateCell(mounted, margin);
+    for (let i = 0, len = this.mountedRows.length; i < len; i++) {
+      this.mountedRows[i].updateCell(mounted, margin);
     }
   }
   // DOM changes
 
-  protected insertItemInDOM(index: number): void {
-    let row: ViewRow = this.rowCache[index];
-    if (!row) {
-      row = new ViewRow(this.rowsContainer, this.ctx.model.get(index), this.ctx);
-      this.rowCache[index] = row;
-    }
-    if (row.mounted) return;
-
-    let nextRow = this.rowCache[index + 1];
-
-    row.mountBefore(nextRow);
-  }
-
-  protected removeItemFromDOM(index: number): void {
-    let row = this.rowCache[index];
-    if (row) {
-      row.dispose();
-      delete this.rowCache[index];
-    }
-  }
-
-  protected getItemTop(index: number) {
+  protected getRowTop(index: number) {
     return index * this.ctx.options.rowHeight + (index ? 1 : 0);
+  }
+
+  protected getRowBottom(index: number) {
+    return (index + 1) * this.ctx.options.rowHeight;
   }
 
   protected indexAt(position: number): number {
@@ -317,7 +336,7 @@ export class Grid implements IDisposable {
     while (left < right) {
       center = Math.floor((left + right) / 2);
 
-      let top = this.getItemTop(center);
+      let top = this.getRowTop(center);
       if (position < top) {
         right = center;
       } else if (position >= top + r) {
@@ -330,7 +349,7 @@ export class Grid implements IDisposable {
       }
     }
 
-    return l;
+    return left;
   }
 
   protected indexAfter(position: number): number {
@@ -339,10 +358,6 @@ export class Grid implements IDisposable {
 
   dispose() {
     this.header.dispose();
-    Object.keys(this.rowCache).forEach(k => {
-      this.rowCache[k].dispose();
-      delete this.rowCache[k];
-    });
     this.scrollableElement.dispose();
     this.domNode.remove();
     dispose(this.toDispose);

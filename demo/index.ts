@@ -4,12 +4,12 @@ import { DataView } from 'src/data/dataView';
 
 let columns = [
   // multi columns
-  // { id: 'title', name: 'Title', field: 'title' },
-  // { id: 'duration', name: 'Duration', field: 'duration' },
-  // { id: '%', name: '% Complete', field: 'percentComplete' },
-  // { id: 'start', name: 'Start', field: 'start' },
-  // { id: 'finish', name: 'Finish', field: 'finish' },
-  // { id: 'effort-driven', name: 'Effort Driven', field: 'effortDriven' },
+  { id: 'title', name: 'Title', field: 'title' },
+  { id: 'duration', name: 'Duration', field: 'duration' },
+  { id: '%', name: '% Complete', field: 'percentComplete' },
+  { id: 'start', name: 'Start', field: 'start' },
+  { id: 'finish', name: 'Finish', field: 'finish' },
+  { id: 'effort-driven', name: 'Effort Driven', field: 'effortDriven' },
   // { id: 'a', name: 'a', field: 'a' },
   // { id: 'b', name: 'b', field: 'b' },
   // { id: 'c', name: 'c', field: 'c' },
@@ -22,8 +22,8 @@ let columns = [
   // { id: 'j', name: 'j', field: 'j' },
 
   // flex grow
-  { id: 'a', name: 'a', field: 'a', flexGrow: 1 },
-  { id: 'b', name: 'b', field: 'b' },
+  // { id: 'a', name: 'a', field: 'a', flexGrow: 1 },
+  // { id: 'b', name: 'b', field: 'b' },
 
   // flex shrink
   // { id: 'a', name: 'a', field: 'a', flexShrink: 1 },

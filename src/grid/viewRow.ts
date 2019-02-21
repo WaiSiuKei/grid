@@ -87,6 +87,18 @@ export class ViewRow implements IDisposable {
     this.mounted = true;
   }
 
+  mountAfter(slibing: ViewRow) {
+    this.prevSlibing = slibing;
+    slibing.nextSlibing = this;
+    let next = slibing.domNode.nextElementSibling;
+    if (next) {
+      this.host.insertBefore(this.domNode, next);
+    } else {
+      this.host.appendChild(this.domNode);
+    }
+    this.mounted = true;
+  }
+
   private mountCell(index: number): boolean {
     let cell: ViewCell = this.cellCache[index];
     if (!cell) {
