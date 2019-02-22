@@ -68,7 +68,6 @@ export interface IGridColumnDefinition {
   flexGrow?: number
   flexShrink?: number
   // tooltip: string
-  // colspan: number
+  colspan?: number
   formatter?: CellFormatter
 }
-

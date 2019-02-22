@@ -115,8 +115,8 @@ export class Grid implements IDisposable {
     this.toDispose.push(this.scrollableElement.onScroll((e) => {
       if (e.heightChanged || e.scrollHeightChanged || e.scrollTopChanged) {
         this.renderVerticalChanges(e.height, e.scrollTop);
-        this.renderHorizonalChanges(e.width, e.scrollLeft);
-      } else if (e.widthChanged || e.scrollWidthChanged || e.scrollLeftChanged) {
+      }
+      if (e.widthChanged || e.scrollWidthChanged || e.scrollLeftChanged) {
         this.renderHorizonalChanges(e.width, e.scrollLeft);
       }
     }));
@@ -183,6 +183,7 @@ export class Grid implements IDisposable {
     this.viewWidth = w;
     this.scrollWidth = this.getContentWidth() || 0;
 
+    this.renderHeader(w);
     this.renderVerticalChanges(h);
     this.renderHorizonalChanges(w);
   }
@@ -296,6 +297,7 @@ export class Grid implements IDisposable {
         } else {
           r.mountAfter(this.mountedRows[this.mountedRows.length - 1]);
         }
+        this.renderRow(r);
         this.mountedRows.push(r);
         indexOfFirstRowToGrowDown++;
       }
@@ -307,6 +309,7 @@ export class Grid implements IDisposable {
         } else {
           r.mountBefore(null);
         }
+        this.renderRow(r);
         this.mountedRows.unshift(r);
         indexOfFirstRowToGrowUp--;
       }
@@ -330,6 +333,12 @@ export class Grid implements IDisposable {
     for (let i = 0, len = this.mountedRows.length; i < len; i++) {
       this.mountedRows[i].updateCell(mounted, margin);
     }
+  }
+
+  private renderHeader(viewWidth: number) {
+    let { mounted, margin } = this.header.render(0, viewWidth);
+    this.memorizedMargin = margin;
+    this.memorizedMounted = mounted;
   }
 
   private renderRow(row: ViewRow): void {
@@ -438,7 +447,6 @@ export class Grid implements IDisposable {
     }
     if (patch.newPos >= this.indexOfFirstMountedRow && patch.newPos <= this.indexOfLastMountedRow) {
       // 插入点已经在viewport内，必然影响
-      // fixme，考虑transform top
       let count = Math.min(this.indexOfLastMountedRow - patch.newPos + 1, patch.items.length);
       let i = 0;
       while (i < count) {
