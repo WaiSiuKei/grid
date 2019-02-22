@@ -4,7 +4,7 @@ import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableEleme
 import { addClasses, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
 import { ViewRow } from 'src/grid/viewRow';
-import { isNumber, isString, isUndefinedOrNull } from 'src/base/common/types';
+import { isString, isUndefinedOrNull } from 'src/base/common/types';
 import { ViewHeaderRow } from 'src/grid/viewHeader';
 import { GridContext } from 'src/grid/girdContext';
 import { GridModel } from 'src/grid/gridModel';
@@ -12,7 +12,7 @@ import { CellFormatter, COLUMN_DEFAULT, GRID_DEFAULT, IGridColumnDefinition, IGr
 import { mapBy, sum, sumBy } from 'src/base/common/functional';
 import { dispose, IDisposable } from 'src/base/common/lifecycle';
 import { Datum, IDataSet } from 'src/data/data';
-import { DataView, RowsPatch } from 'src/data/dataView';
+import { DataView } from 'src/data/dataView';
 import { PatchChange, PatchItem } from 'src/base/common/patch';
 
 function validateAndEnforceOptions(opt: Partial<IGridOptions>): IGridOptions {
