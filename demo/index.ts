@@ -37,7 +37,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 50; i++) {
   data[i] = {
     title: 'Task ' + i,
     duration: '5 days',
@@ -80,14 +80,14 @@ dv.setItems(data);
 // dv.pop();
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
-    dv.unshift({
-      title: 'Task ' + 1000,
-      duration: '5 days',
-      percentComplete: Math.round(Math.random() * 100),
-      start: '01/01/2009',
-      finish: '01/05/2009',
-      effortDriven: 12,
-    });
+    dv.beginUpdate();
+    dv.shift();
+    dv.shift();
+    dv.shift();
+    dv.shift();
+    // dv.shift();
+    // dv.pop();
+    dv.endUpdate();
   }
 });
 Object.defineProperty(window, 'grid', {

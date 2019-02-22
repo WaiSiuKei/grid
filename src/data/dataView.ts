@@ -55,6 +55,10 @@ export class DataView implements IDataView, IDisposable {
     return this.items[idx];
   }
 
+  public getItems(): Datum[] {
+    return this.items.slice();
+  }
+
   public setItems(data: Datum[]) {
     if (!isArray(data)) {
       throw new Error('Expect an array');
@@ -65,25 +69,49 @@ export class DataView implements IDataView, IDisposable {
   }
 
   public push(data: Datum) {
-    this.memorizedItems = this.items.slice();
-    this.items.push(data);
-    this.refresh();
+    if (!this.suspend) {
+      this.memorizedItems = this.items.slice();
+      this.items.push(data);
+      this.refresh();
+    } else {
+      this.items.push(data);
+    }
   }
 
   public pop() {
-    this.memorizedItems = this.items.slice();
-    this.items.pop();
-    this.refresh();
+    if (!this.suspend) {
+      this.memorizedItems = this.items.slice();
+      this.items.pop();
+      this.refresh();
+    } else {
+      this.items.pop();
+    }
   }
 
   public unshift(data: Datum) {
-    this.memorizedItems = this.items.slice();
-    this.items.unshift(data);
-    this.refresh();
+    if (!this.suspend) {
+      this.memorizedItems = this.items.slice();
+      this.items.unshift(data);
+      this.refresh();
+    } else {
+      this.items.unshift(data);
+    }
+
+  }
+
+  public shift() {
+    if (!this.suspend) {
+      this.memorizedItems = this.items.slice();
+      this.items.shift();
+      this.refresh();
+    } else {
+      this.items.shift();
+    }
   }
 
   public beginUpdate() {
     this.suspend = true;
+    this.memorizedItems = this.items.slice();
   }
 
   public endUpdate() {

@@ -243,15 +243,15 @@ export class Grid implements IDisposable {
   private indexOfLastMountedRow = -1;
   private renderVerticalChanges(viewHeight: number, scrollTop = 0): void {
     if (!viewHeight) return;
-    console.log('start', this.indexOfFirstMountedRow, this.indexOfLastMountedRow);
+    // console.log('start', this.indexOfFirstMountedRow, this.indexOfLastMountedRow);
 
     let renderTop = scrollTop;
     let renderBottom = scrollTop + viewHeight;
-    console.log('scrollTop=', scrollTop, 'renderBottom=', renderBottom);
+    // console.log('scrollTop=', scrollTop, 'renderBottom=', renderBottom);
     let shouldFrom = this.indexAt(renderTop);
     let shouldTo = this.indexAt(renderBottom);
     if (shouldFrom !== this.indexOfFirstMountedRow || shouldTo !== this.indexOfLastMountedRow) {
-      console.log('shouldFrom=', shouldFrom, 'shouldTo=', shouldTo);
+      // console.log('shouldFrom=', shouldFrom, 'shouldTo=', shouldTo);
       let indexOfFirstRowToGrowDown = -1;
       let indexOfFirstRowToGrowUp = -1;
 
@@ -288,7 +288,7 @@ export class Grid implements IDisposable {
         indexOfFirstRowToGrowDown = shouldFrom;
       }
 
-      console.log('indexOfFirstRowToGrowDown=', indexOfFirstRowToGrowDown, 'indexOfFirstRowToGrowUp=', indexOfFirstRowToGrowUp);
+      // console.log('indexOfFirstRowToGrowDown=', indexOfFirstRowToGrowDown, 'indexOfFirstRowToGrowUp=', indexOfFirstRowToGrowUp);
       while (indexOfFirstRowToGrowDown > -1 && indexOfFirstRowToGrowDown <= shouldTo) {
         let r = new ViewRow(this.rowsContainer, this.ctx.model.get(indexOfFirstRowToGrowDown), this.ctx);
         if (!this.mountedRows.length) {
@@ -318,7 +318,7 @@ export class Grid implements IDisposable {
     let r = this.ctx.options.rowHeight;
     let transform = this.getRowTop(shouldFrom) - renderTop;
     this.rowsContainer.style.top = clamp(transform, r, -r) + 'px';
-    console.log('end', this.indexOfFirstMountedRow, this.indexOfLastMountedRow);
+    // console.log('end', this.indexOfFirstMountedRow, this.indexOfLastMountedRow);
   }
 
   private memorizedMounted: string[];
@@ -348,18 +348,78 @@ export class Grid implements IDisposable {
   }
 
   private handleRemoval(patch: PatchItem<Datum>): boolean {
-    this.scrollHeight = this.getTotalRowsHeight();
+    console.log(patch);
 
     if (this.indexOfFirstMountedRow === -1 && this.indexOfLastMountedRow === -1) {
-      return false;
+      this.scrollHeight = this.getTotalRowsHeight();
+      return true;
     }
 
     if (patch.newPos >= this.indexOfFirstMountedRow && patch.newPos <= this.indexOfLastMountedRow) {
-      while (this.indexOfLastMountedRow < patch.newPos) {
-        this.mountedRows.pop().dispose();
-        this.indexOfLastMountedRow--;
+      let count = patch.items.length;
+      let start = patch.newPos;
+      let lastIndexMayDelete = start + count - 1;
+      let lastIndexCanDelete = Math.min(lastIndexMayDelete, this.indexOfLastMountedRow);
+      for (let i = lastIndexCanDelete; i >= start; i--) {
+        let arrIndex = i - this.indexOfFirstMountedRow;
+        this.mountedRows[arrIndex].dispose();
+        this.mountedRows.splice(arrIndex, 1);
       }
-      return true;
+
+      let lastIndexMayDisplay = this.indexOfLastMountedRow;
+      let lastIndexCanDisplay = Math.min(this.ctx.model.length - 1, lastIndexMayDisplay);
+      let i = this.indexOfFirstMountedRow + this.mountedRows.length;
+      while (i <= lastIndexCanDisplay) {
+        let r = new ViewRow(this.rowsContainer, this.ctx.model.get(i), this.ctx);
+        r.mountAfter(this.mountedRows[this.mountedRows.length - 1]);
+        this.renderRow(r);
+        this.mountedRows.push(r);
+        i++;
+      }
+
+      this.indexOfLastMountedRow = lastIndexCanDisplay;
+
+      this.scrollHeight = this.getTotalRowsHeight();
+      return false;
+    }
+
+    if (patch.newPos > this.indexOfLastMountedRow) {
+      this.scrollHeight = this.getTotalRowsHeight();
+      return false;
+    }
+
+    if (patch.newPos < this.indexOfFirstMountedRow) {
+      if (patch.newPos + patch.items.length - 1 < this.indexOfFirstMountedRow) {
+        this.indexOfFirstMountedRow -= patch.items.length;
+        this.indexOfLastMountedRow -= patch.items.length;
+        this.scrollHeight = this.getTotalRowsHeight();
+        return false;
+      } else {
+        let firstIndexWillEffect = patch.newPos;
+        let lastIndexWillEffect = patch.newPos + patch.items.length - 1;
+        let lastIndexCanDelete = Math.min(lastIndexWillEffect, this.indexOfLastMountedRow);
+        let firstIndexCanDelete = Math.max(firstIndexWillEffect, this.indexOfFirstMountedRow);
+
+        for (let i = lastIndexCanDelete; i >= firstIndexCanDelete; i--) {
+          let arrIndex = i - this.indexOfFirstMountedRow;
+          this.mountedRows[arrIndex].dispose();
+          this.mountedRows.splice(arrIndex, 1);
+        }
+
+        let lastIndexDisplayed = Math.max(this.indexOfLastMountedRow - patch.items.length, -1);
+        let lastIndexCanDisplay = Math.min(this.indexOfLastMountedRow, this.ctx.model.length - 1);
+        for (let i = lastIndexDisplayed + 1; i <= lastIndexCanDisplay; i++) {
+          let r = new ViewRow(this.rowsContainer, this.ctx.model.get(i), this.ctx);
+          r.mountAfter(this.mountedRows[this.mountedRows.length - 1]);
+          this.renderRow(r);
+          this.mountedRows.push(r);
+        }
+
+        this.indexOfFirstMountedRow = patch.newPos;
+        this.indexOfLastMountedRow = lastIndexCanDisplay;
+        this.scrollHeight = this.getTotalRowsHeight();
+        return false;
+      }
     }
 
     return false;
@@ -409,7 +469,8 @@ export class Grid implements IDisposable {
       return false;
     }
     if (patch.newPos < this.indexOfFirstMountedRow) {
-      if (patch.newPos + patch.items.length < this.indexOfFirstMountedRow) {
+      let lastIndexWillEffect = patch.newPos + patch.items.length - 1;
+      if (lastIndexWillEffect < this.indexOfFirstMountedRow) {
         // 完全在viewport外，但是影响现在viewport的scrolltop
         this.indexOfFirstMountedRow += patch.items.length;
         this.indexOfLastMountedRow += patch.items.length;
@@ -449,8 +510,7 @@ export class Grid implements IDisposable {
     throw new Error('没处理');
   }
 
-  // DOM changes
-
+  //#region 这里几个方法算的时相对整个滚动区域的位置，假设全部显示/没有滚动条
   protected getRowTop(index: number) {
     return index * this.ctx.options.rowHeight + (index ? 1 : 0);
   }
@@ -492,6 +552,7 @@ export class Grid implements IDisposable {
   protected indexAfter(position: number): number {
     return Math.min(this.indexAt(position) + 1, this.ctx.model.length);
   }
+  //#endregion
 
   dispose() {
     this.header.dispose();
