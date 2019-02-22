@@ -1,7 +1,7 @@
 import { Event, Emitter } from 'src/base/common/event';
 import { dispose, IDisposable } from 'src/base/common/lifecycle';
 import { Datum, IDataView } from 'src/data/data';
-import { isArray } from 'src/base/common/types';
+import { isArray, isUndefinedOrNull } from 'src/base/common/types';
 import { deepClone } from 'src/base/common/objects';
 import { hash } from 'src/base/common/hash';
 import { getPatch, PatchChange, PatchItem } from 'src/base/common/patch';
@@ -68,13 +68,13 @@ export class DataView implements IDataView, IDisposable {
     this.refresh();
   }
 
-  public push(data: Datum) {
+  public push(...data: Datum[]) {
     if (!this.suspend) {
       this.memorizedItems = this.items.slice();
-      this.items.push(data);
+      this.items.push(...data);
       this.refresh();
     } else {
-      this.items.push(data);
+      this.items.push(...data);
     }
   }
 
@@ -88,13 +88,13 @@ export class DataView implements IDataView, IDisposable {
     }
   }
 
-  public unshift(data: Datum) {
+  public unshift(...data: Datum[]) {
     if (!this.suspend) {
       this.memorizedItems = this.items.slice();
-      this.items.unshift(data);
+      this.items.unshift(...data);
       this.refresh();
     } else {
-      this.items.unshift(data);
+      this.items.unshift(...data);
     }
 
   }
@@ -106,6 +106,16 @@ export class DataView implements IDataView, IDisposable {
       this.refresh();
     } else {
       this.items.shift();
+    }
+  }
+
+  public splice(start: number, deleteCount: number, ...items: Datum[]) {
+    if (!this.suspend) {
+      this.memorizedItems = this.items.slice();
+      this.items.splice(start, deleteCount, ...items);
+      this.refresh();
+    } else {
+      this.items.splice(start, deleteCount, ...items);
     }
   }
 

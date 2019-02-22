@@ -81,10 +81,7 @@ dv.setItems(data);
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     dv.beginUpdate();
-    dv.shift();
-    dv.shift();
-    dv.shift();
-    dv.shift();
+    dv.splice(5, 2);
     // dv.shift();
     // dv.pop();
     dv.endUpdate();
