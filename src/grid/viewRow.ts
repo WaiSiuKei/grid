@@ -4,6 +4,7 @@ import { addClass } from 'src/base/browser/dom';
 import { GridContext } from 'src/grid/girdContext';
 import { React, ReactDOM } from '../rax';
 import { Datum } from 'src/data/data';
+import { isFunction, isNumber, isString, isUndefinedOrNull } from 'src/base/common/types';
 
 export class ViewCell implements IDisposable {
   public width: number;
@@ -36,7 +37,18 @@ export class ViewCell implements IDisposable {
     } else {
       this.host.appendChild(this.domNode);
     }
-    ReactDOM.render(React.createElement(this.formatter(this.value, this.col, this.datum)), this.domNode);
+    let component = this.formatter(this.value, this.col, this.datum);
+    if (isString(component)) {
+      this.domNode.innerText = component;
+    } else if (isNumber(component)) {
+      this.domNode.innerText = component.toString();
+    } else if (isUndefinedOrNull(component)) {
+      // noop
+    } else if (isFunction(component)) {
+      ReactDOM.render(React.createElement(component), this.domNode);
+    } else {
+      throw new Error('Unsupported formatter type');
+    }
   }
 
   unmount() {

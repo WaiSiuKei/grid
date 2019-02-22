@@ -60,19 +60,25 @@ export class DataView implements IDataView, IDisposable {
       throw new Error('Expect an array');
     }
     this.memorizedItems = this.items;
-    this.items = data.map(d => deepClone(d));
+    this.items = data.slice();
     this.refresh();
   }
 
   public push(data: Datum) {
     this.memorizedItems = this.items.slice();
-    this.items.push(deepClone(data));
+    this.items.push(data);
     this.refresh();
   }
 
   public pop() {
     this.memorizedItems = this.items.slice();
     this.items.pop();
+    this.refresh();
+  }
+
+  public unshift(data: Datum) {
+    this.memorizedItems = this.items.slice();
+    this.items.unshift(data);
     this.refresh();
   }
 

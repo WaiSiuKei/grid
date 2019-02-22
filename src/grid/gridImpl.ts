@@ -320,11 +320,20 @@ export class Grid implements IDisposable {
     console.log('end', this.lastIndexOfFirstMountedRow, this.lastIndexOfLastMountedRow);
   }
 
+  private memorizedMounted: string[];
+  private memorizedMargin: number;
   private renderHorizonalChanges(viewWidth: number, scrollLeft = 0) {
     let { mounted, margin } = this.header.render(scrollLeft, viewWidth);
+    this.memorizedMargin = margin;
+    this.memorizedMounted = mounted;
     for (let i = 0, len = this.mountedRows.length; i < len; i++) {
       this.mountedRows[i].updateCell(mounted, margin);
     }
+  }
+
+  private renderRow(row: ViewRow): void {
+    if (isUndefinedOrNull(this.memorizedMounted) || isUndefinedOrNull(this.memorizedMargin)) throw new Error('not ready');
+    row.updateCell(this.memorizedMounted, this.memorizedMargin);
   }
 
   private patchChanges(patch: PatchItem<Datum>): boolean {
@@ -361,7 +370,31 @@ export class Grid implements IDisposable {
     }
     if (patch.newPos > this.lastIndexOfLastMountedRow) {
       this.scrollHeight = this.getTotalRowsHeight();
-      return true;
+      return false;
+    }
+    if (patch.newPos >= this.lastIndexOfFirstMountedRow && patch.newPos <= this.lastIndexOfLastMountedRow) {
+      let maxItemToDisplay = this.viewHeight / this.ctx.options.rowHeight;
+      let count = Math.min(this.lastIndexOfLastMountedRow - patch.newPos + 1, patch.items.length);
+      if (this.lastIndexOfLastMountedRow + patch.items.length > maxItemToDisplay) {
+        let i = count;
+        while (i) {
+          i--;
+          this.mountedRows.pop().dispose();
+        }
+      } else {
+        this.lastIndexOfLastMountedRow = this.lastIndexOfLastMountedRow + patch.items.length;
+      }
+      let i = 0;
+      while (i < count) {
+        let r = new ViewRow(this.rowsContainer, this.ctx.model.get(patch.newPos + i), this.ctx);
+        this.renderRow(r);
+        let index = patch.newPos + i;
+        r.mountBefore(this.mountedRows[index]);
+        this.mountedRows.splice(index, 0,);
+        i++;
+      }
+      this.scrollHeight = this.getTotalRowsHeight();
+      return false;
     }
     return false;
   }
