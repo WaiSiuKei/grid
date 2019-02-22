@@ -37,7 +37,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 24; i++) {
+for (let i = 0; i < 100; i++) {
   data[i] = {
     title: 'Task ' + i,
     duration: '5 days',
@@ -78,13 +78,17 @@ let t = new Grid(document.getElementById('myGrid'), dv, columns);
 
 dv.setItems(data);
 // dv.pop();
-dv.unshift({
-  title: 'Task ' + 1000,
-  duration: '5 days',
-  percentComplete: Math.round(Math.random() * 100),
-  start: '01/01/2009',
-  finish: '01/05/2009',
-  effortDriven: 12,
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') {
+    dv.unshift({
+      title: 'Task ' + 1000,
+      duration: '5 days',
+      percentComplete: Math.round(Math.random() * 100),
+      start: '01/01/2009',
+      finish: '01/05/2009',
+      effortDriven: 12,
+    });
+  }
 });
 Object.defineProperty(window, 'grid', {
   value: t
