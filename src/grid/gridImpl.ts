@@ -250,70 +250,71 @@ export class Grid implements IDisposable {
     console.log('scrollTop=', scrollTop, 'renderBottom=', renderBottom);
     let shouldFrom = this.indexAt(renderTop);
     let shouldTo = this.indexAt(renderBottom);
-    if (shouldFrom === this.lastIndexOfFirstMountedRow && shouldTo === this.lastIndexOfLastMountedRow) return;
+    if (shouldFrom !== this.lastIndexOfFirstMountedRow || shouldTo !== this.lastIndexOfLastMountedRow) {
+      console.log('shouldFrom=', shouldFrom, 'shouldTo=', shouldTo);
+      let indexOfFirstRowToGrowDown = -1;
+      let indexOfFirstRowToGrowUp = -1;
 
-    console.log('shouldFrom=', shouldFrom, 'shouldTo=', shouldTo);
-    let indexOfFirstRowToGrowDown = -1;
-    let indexOfFirstRowToGrowUp = -1;
-
-    if (this.lastIndexOfLastMountedRow < shouldTo) {
-      // 向下滚，下边需要填充
-      indexOfFirstRowToGrowDown = this.lastIndexOfLastMountedRow + 1;
-    } else {
-      // 向上滚，去掉多余的
-      let i = this.lastIndexOfLastMountedRow;
-      while (i > shouldTo && this.mountedRows.length) {
-        // console.log('remove', i, shouldTo);
-        this.mountedRows.pop().dispose();
-        i--;
+      if (this.lastIndexOfLastMountedRow < shouldTo) {
+        // 向下滚，下边需要填充
+        indexOfFirstRowToGrowDown = this.lastIndexOfLastMountedRow + 1;
+      } else {
+        // 向上滚，去掉多余的
+        let i = this.lastIndexOfLastMountedRow;
+        while (i > shouldTo && this.mountedRows.length) {
+          // console.log('remove', i, shouldTo);
+          this.mountedRows.pop().dispose();
+          i--;
+        }
       }
-    }
 
-    if (this.lastIndexOfFirstMountedRow > shouldFrom) {
-      // 向上滚，上面需要填充
-      indexOfFirstRowToGrowUp = this.lastIndexOfFirstMountedRow - 1;
-    } else {
-      // 向下滚，去掉多余的
-      let i = this.lastIndexOfFirstMountedRow;
-      while (i < shouldFrom && this.mountedRows.length) {
-        // console.log('remove', i, shouldFrom);
-        this.mountedRows.shift().dispose();
-        i++;
+      if (this.lastIndexOfFirstMountedRow > shouldFrom) {
+        // 向上滚，上面需要填充
+        indexOfFirstRowToGrowUp = this.lastIndexOfFirstMountedRow - 1;
+      } else {
+        // 向下滚，去掉多余的
+        let i = this.lastIndexOfFirstMountedRow;
+        while (i < shouldFrom && this.mountedRows.length) {
+          // console.log('remove', i, shouldFrom);
+          this.mountedRows.shift().dispose();
+          i++;
+        }
       }
-    }
 
-    if (!this.ctx.model.length) return;
+      if (!this.ctx.model.length) return;
 
-    if (!this.mountedRows.length) {
-      indexOfFirstRowToGrowUp = -1;
-      indexOfFirstRowToGrowDown = shouldFrom;
-    }
-
-    console.log('indexOfFirstRowToGrowDown=', indexOfFirstRowToGrowDown, 'indexOfFirstRowToGrowUp=', indexOfFirstRowToGrowUp);
-    while (indexOfFirstRowToGrowDown > -1 && indexOfFirstRowToGrowDown <= shouldTo) {
-      let r = new ViewRow(this.rowsContainer, this.ctx.model.get(indexOfFirstRowToGrowDown), this.ctx);
       if (!this.mountedRows.length) {
-        r.mountBefore(null);
-      } else {
-        r.mountAfter(this.mountedRows[this.mountedRows.length - 1]);
+        indexOfFirstRowToGrowUp = -1;
+        indexOfFirstRowToGrowDown = shouldFrom;
       }
-      this.mountedRows.push(r);
-      indexOfFirstRowToGrowDown++;
+
+      console.log('indexOfFirstRowToGrowDown=', indexOfFirstRowToGrowDown, 'indexOfFirstRowToGrowUp=', indexOfFirstRowToGrowUp);
+      while (indexOfFirstRowToGrowDown > -1 && indexOfFirstRowToGrowDown <= shouldTo) {
+        let r = new ViewRow(this.rowsContainer, this.ctx.model.get(indexOfFirstRowToGrowDown), this.ctx);
+        if (!this.mountedRows.length) {
+          r.mountBefore(null);
+        } else {
+          r.mountAfter(this.mountedRows[this.mountedRows.length - 1]);
+        }
+        this.mountedRows.push(r);
+        indexOfFirstRowToGrowDown++;
+      }
+
+      while (indexOfFirstRowToGrowUp > -1 && indexOfFirstRowToGrowUp >= shouldFrom) {
+        let r = new ViewRow(this.rowsContainer, this.ctx.model.get(indexOfFirstRowToGrowUp), this.ctx);
+        if (this.mountedRows.length) {
+          r.mountBefore(this.mountedRows[0]);
+        } else {
+          r.mountBefore(null);
+        }
+        this.mountedRows.unshift(r);
+        indexOfFirstRowToGrowUp--;
+      }
+
+      this.lastIndexOfLastMountedRow = shouldTo;
+      this.lastIndexOfFirstMountedRow = shouldFrom;
     }
 
-    while (indexOfFirstRowToGrowUp > -1 && indexOfFirstRowToGrowUp >= shouldFrom) {
-      let r = new ViewRow(this.rowsContainer, this.ctx.model.get(indexOfFirstRowToGrowUp), this.ctx);
-      if (this.mountedRows.length) {
-        r.mountBefore(this.mountedRows[0]);
-      } else {
-        r.mountBefore(null);
-      }
-      this.mountedRows.unshift(r);
-      indexOfFirstRowToGrowUp--;
-    }
-
-    this.lastIndexOfLastMountedRow = shouldTo;
-    this.lastIndexOfFirstMountedRow = shouldFrom;
     let r = this.ctx.options.rowHeight;
     let transform = this.getRowTop(shouldFrom) - renderTop;
     this.rowsContainer.style.top = clamp(transform, r, -r) + 'px';
@@ -347,6 +348,8 @@ export class Grid implements IDisposable {
   }
 
   private handleRemoval(patch: PatchItem<Datum>): boolean {
+    this.scrollHeight = this.getTotalRowsHeight();
+
     if (this.lastIndexOfFirstMountedRow === -1 && this.lastIndexOfLastMountedRow === -1) {
       return false;
     }
@@ -356,7 +359,6 @@ export class Grid implements IDisposable {
         this.mountedRows.pop().dispose();
         this.lastIndexOfLastMountedRow--;
       }
-      this.scrollHeight = this.getTotalRowsHeight();
       return true;
     }
 
@@ -375,7 +377,7 @@ export class Grid implements IDisposable {
     if (patch.newPos >= this.lastIndexOfFirstMountedRow && patch.newPos <= this.lastIndexOfLastMountedRow) {
       let maxItemToDisplay = this.viewHeight / this.ctx.options.rowHeight;
       let count = Math.min(this.lastIndexOfLastMountedRow - patch.newPos + 1, patch.items.length);
-      if (this.lastIndexOfLastMountedRow + patch.items.length > maxItemToDisplay) {
+      if (this.lastIndexOfLastMountedRow + patch.items.length >= maxItemToDisplay) {
         let i = count;
         while (i) {
           i--;
@@ -390,9 +392,10 @@ export class Grid implements IDisposable {
         this.renderRow(r);
         let index = patch.newPos + i;
         r.mountBefore(this.mountedRows[index]);
-        this.mountedRows.splice(index, 0,);
+        this.mountedRows.splice(index, 0, r);
         i++;
       }
+      console.log('add', this.lastIndexOfFirstMountedRow, this.lastIndexOfLastMountedRow);
       this.scrollHeight = this.getTotalRowsHeight();
       return false;
     }
