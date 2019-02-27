@@ -137,8 +137,6 @@ export class Grid implements IDisposable {
   }
   //#endregion
 
-
-
   public render() {
     this.layout();
     if (!this.viewEventRegistered) {
@@ -147,7 +145,25 @@ export class Grid implements IDisposable {
   }
 
   public invalidate() {
+    this.invalidateAllRows();
+    this.header.invalidate();
+  }
 
+  public invalidateRow(idx: number): void {
+    if (idx < this.indexOfFirstMountedRow || idx > this.indexOfLastMountedRow) return;
+    this.mountedRows[idx - this.indexOfFirstMountedRow].invalidate();
+  }
+
+  public invalidateRows(idxs: number[]) {
+    for (let i = 0, len = idxs.length; i < len; i++) {
+      this.invalidateRow(idxs[i]);
+    }
+  }
+
+  public invalidateAllRows() {
+    while (this.mountedRows.length) {
+      this.mountedRows.pop().dispose();
+    }
   }
 
   //#region private dom

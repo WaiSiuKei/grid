@@ -121,6 +121,8 @@ abstract class ViewRow implements IDisposable {
     this.mounted = true;
   }
 
+  abstract invalidate(): void
+
   abstract updateCell(headerMounted: string[], margin: number): void
 
   dispose() {
@@ -159,7 +161,7 @@ export class ViewDataRow extends ViewRow {
     return true;
   }
 
-  private unmountCell(index: number): boolean {
+  private unmountCell(index: number | string): boolean {
     let cell = this.cellCache[index];
     if (cell) {
       cell.dispose();
@@ -180,6 +182,13 @@ export class ViewDataRow extends ViewRow {
     }
 
     this.domNode.style.left = margin + 'px';
+  }
+
+  invalidate(): void {
+    Object.keys(this.cellCache).forEach(k => {
+      this.unmountCell(k);
+    });
+    this.cellCache = Object.create(null);
   }
 
   dispose() {
@@ -207,6 +216,13 @@ export class ViewGroupRow extends ViewRow {
     }
     this.domNode.style.left = margin + 'px';
   }
+
+  invalidate(): void {
+    if (this.cell) {
+      this.cell.dispose();
+      this.cell = null;
+    }
+  }
 }
 
 export class ViewGroupTotalsRow extends ViewRow {
@@ -216,6 +232,9 @@ export class ViewGroupTotalsRow extends ViewRow {
   updateCell(headerMounted: string[], margin: number): void {
     // fixme
     this.domNode.style.left = margin + 'px';
+  }
+  invalidate(): void {
+
   }
 }
 

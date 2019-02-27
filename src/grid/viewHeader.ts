@@ -126,6 +126,15 @@ export class ViewHeaderRow implements IDisposable {
     this.render(0, w);
   }
 
+  public invalidate(): void {
+    Object.keys(this.cellCache).forEach(k => {
+      this.unmountCell(k);
+    });
+    this.cellCache = Object.create(null);
+    this.lastRenderWidth = 0;
+    this.lastRenderWidth = 0;
+  }
+
   private getItemLeft(index: number): number {
     if (index === 0) return 0;
     let sum = 0;
@@ -147,7 +156,7 @@ export class ViewHeaderRow implements IDisposable {
     return true;
   }
 
-  private unmountCell(index: number): boolean {
+  private unmountCell(index: number | string): boolean {
     let cell = this.cellCache[index];
     if (cell) {
       cell.dispose();
@@ -157,7 +166,7 @@ export class ViewHeaderRow implements IDisposable {
     return true;
   }
 
-  public indexAt(position: number): number {
+  private indexAt(position: number): number {
     let left = 0;
     let right = this.ctx.columns.length - 1;
     let center: number;
@@ -182,7 +191,7 @@ export class ViewHeaderRow implements IDisposable {
     return this.ctx.columns.length - 1;
   }
 
-  public indexAfter(position: number): number {
+  private indexAfter(position: number): number {
     return Math.min(this.indexAt(position) + 1, this.ctx.columns.length);
   }
 
