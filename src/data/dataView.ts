@@ -134,7 +134,6 @@ export class DataView implements IDataView, IDisposable {
   }
 
   public setGrouping(gps: Array<Partial<GroupingSetting>> | null) {
-
     this.groupingSettings = [];
     if (isArray(gps) && gps.length) {
       this.groupingSettings = gps.map((gp, i) => {
@@ -146,6 +145,7 @@ export class DataView implements IDataView, IDisposable {
         return g;
       });
     }
+    this.scheduleUpdate();
   }
 
   public getGrouping(level: number): InternalGroupingSetting {

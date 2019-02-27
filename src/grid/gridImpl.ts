@@ -111,6 +111,7 @@ export class Grid implements IDisposable {
     }
   }
 
+  //#region private listener
   private registerViewListeners() {
     this.toDispose.push(this.scrollableElement.onScroll((e) => {
       if (e.heightChanged || e.scrollHeightChanged || e.scrollTopChanged) {
@@ -134,6 +135,9 @@ export class Grid implements IDisposable {
       }
     }));
   }
+  //#endregion
+
+
 
   public render() {
     this.layout();
@@ -142,6 +146,11 @@ export class Grid implements IDisposable {
     }
   }
 
+  public invalidate() {
+
+  }
+
+  //#region private dom
   protected createElement(container: HTMLElement) {
     this.domNode = document.createElement('div');
     this.domNode.className = `nila-grid nila-grid-instance-${Grid.counter++}`;
@@ -188,11 +197,11 @@ export class Grid implements IDisposable {
     this.renderHorizonalChanges(w);
   }
 
-  getTotalRowsHeight(): number {
+  protected getTotalRowsHeight(): number {
     return this.ctx.model.length * this.ctx.options.rowHeight;
   }
 
-  getContentWidth(): number {
+  protected getContentWidth(): number {
     // FIXME
     return sumBy(this.ctx.columns, 'width');
   }
@@ -239,7 +248,9 @@ export class Grid implements IDisposable {
     this.scrollableElement.setScrollDimensions({ scrollWidth });
     this.scrollableElement.setScrollPosition({ scrollLeft });
   }
+  //#endregion
 
+  //#region private rows mount/unmount
   private indexOfFirstMountedRow = -1;
   private indexOfLastMountedRow = -1;
   private renderVerticalChanges(viewHeight: number, scrollTop = 0): void {
@@ -518,7 +529,7 @@ export class Grid implements IDisposable {
     throw new Error('没处理');
   }
 
-  protected createRow(modelIndex: number): ViewBodyRow {
+  private createRow(modelIndex: number): ViewBodyRow {
     let row = this.ctx.model.get(modelIndex);
     if (row instanceof Group) {
       return new ViewGroupRow(this.rowsContainer, this.ctx, row as Group);
@@ -528,14 +539,11 @@ export class Grid implements IDisposable {
     }
     return new ViewDataRow(this.rowsContainer, this.ctx, row as Datum);
   }
+  //#endregion
 
-  //#region 这里几个方法算的时相对整个滚动区域的位置，假设全部显示/没有滚动条
+  //#region private row position 这里几个方法算的时相对整个滚动区域的位置，假设全部显示/没有滚动条
   protected getRowTop(index: number) {
     return index * this.ctx.options.rowHeight + (index ? 1 : 0);
-  }
-
-  protected getRowBottom(index: number) {
-    return (index + 1) * this.ctx.options.rowHeight;
   }
 
   protected indexAt(position: number): number {
