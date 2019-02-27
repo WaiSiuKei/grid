@@ -3,7 +3,6 @@ import { Datum } from 'src/data/data';
 
 function defaultFormatter(value: any, columnDef: IGridColumnDefinition, dataContext: Datum): any {
   return function () {
-
     return React.createElement('div', null, (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
   };
 }
@@ -17,7 +16,6 @@ export interface IGridOptions {
   headerRowHeight: number,
   viewportClass: string,
 
-  // enableAddRow: false,
   // enableCellNavigation: true,
   // enableColumnReorder: true,
   // forceFitColumns: false,
@@ -60,14 +58,10 @@ export interface IGridColumnDefinition {
   field: string
   name: string
 
-  // headerCssClass: string
-  // resizable: boolean
   minWidth?: number
   width?: number
   maxWidth?: number
   flexGrow?: number
   flexShrink?: number
-  // tooltip: string
-  colspan?: number
   formatter?: CellFormatter
 }

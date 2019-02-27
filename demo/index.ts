@@ -1,6 +1,7 @@
 // import './index.scss';
 import { Grid } from 'src/grid/gridImpl';
 import { DataView } from 'src/data/dataView';
+import { Datum } from 'src/data/data';
 
 let columns = [
   // multi columns
@@ -37,7 +38,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 50000; i++) {
+for (let i = 0; i < 200; i++) {
   data[i] = {
     title: 'Task ' + i,
     duration: '5 days',
@@ -76,17 +77,25 @@ let dv = new DataView();
 
 let t = new Grid(document.getElementById('myGrid'), dv, columns);
 
+dv.setGrouping([{
+  comparer(a: Datum, b: Datum) {
+    return a.percentComplete - b.percentComplete;
+  },
+  accessor(d) {
+    return Math.round(d.percentComplete / 10);
+  },
+}]);
 dv.setItems(data);
 // dv.pop();
-document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space') {
-    dv.beginUpdate();
-    dv.splice(5, 2);
-    // dv.shift();
-    // dv.pop();
-    dv.endUpdate();
-  }
-});
+// document.addEventListener('keydown', (e) => {
+//   if (e.code === 'Space') {
+//     dv.beginUpdate();
+//     dv.splice(5, 2);
+//     // dv.shift();
+//     // dv.pop();
+//     dv.endUpdate();
+//   }
+// });
 Object.defineProperty(window, 'grid', {
   value: t
 });

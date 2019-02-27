@@ -1,4 +1,4 @@
-import { Datum, IDataSet } from 'src/data/data';
+import { Datum, IDataSet, InternalGroupingSetting } from 'src/data/data';
 import { DataView } from 'src/data/dataView';
 import { isArray } from 'src/base/common/types';
 
@@ -21,6 +21,10 @@ export class GridModel {
   }
 
   get(idx: number): Datum {
-    return this.ds ? this.ds.getItem(idx) : this.items[idx];
+    return this.ds ? this.ds.getRow(idx) : this.items[idx];
+  }
+
+  getGrouping(level: number): InternalGroupingSetting {
+    return this.ds ? this.ds.getGrouping(level) : null;
   }
 }

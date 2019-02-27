@@ -3,7 +3,6 @@ import { ScrollbarVisibility } from 'src/base/common/scrollable';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
 import { addClasses, getClientArea, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
-import { ViewRow } from 'src/grid/viewRow';
 import { isString, isUndefinedOrNull } from 'src/base/common/types';
 import { ViewHeaderRow } from 'src/grid/viewHeader';
 import { GridContext } from 'src/grid/girdContext';
@@ -11,9 +10,10 @@ import { GridModel } from 'src/grid/gridModel';
 import { CellFormatter, COLUMN_DEFAULT, GRID_DEFAULT, IGridColumnDefinition, IGridOptions } from 'src/grid/grid';
 import { mapBy, sum, sumBy } from 'src/base/common/functional';
 import { dispose, IDisposable } from 'src/base/common/lifecycle';
-import { Datum, IDataSet } from 'src/data/data';
+import { Datum, Group, GroupTotals, IDataSet } from 'src/data/data';
 import { DataView } from 'src/data/dataView';
 import { PatchChange, PatchItem } from 'src/base/common/patch';
+import { ViewBodyRow, ViewDataRow, ViewGroupRow, ViewGroupTotalsRow } from 'src/grid/viewBody';
 
 function validateAndEnforceOptions(opt: Partial<IGridOptions>): IGridOptions {
   return Object.assign({}, GRID_DEFAULT, opt) as IGridOptions;
@@ -84,7 +84,7 @@ export class Grid implements IDisposable {
   protected scrollableElement: ScrollableElement;
   protected header: ViewHeaderRow;
 
-  protected mountedRows: ViewRow[] = [];
+  protected mountedRows: ViewBodyRow[] = [];
 
   private shouldShowHorizonalScrollbar = false;
   private shouldShowVerticalScrollbar = false;
@@ -291,7 +291,7 @@ export class Grid implements IDisposable {
 
       // console.log('indexOfFirstRowToGrowDown=', indexOfFirstRowToGrowDown, 'indexOfFirstRowToGrowUp=', indexOfFirstRowToGrowUp);
       while (indexOfFirstRowToGrowDown > -1 && indexOfFirstRowToGrowDown <= shouldTo) {
-        let r = new ViewRow(this.rowsContainer, this.ctx.model.get(indexOfFirstRowToGrowDown), this.ctx);
+        let r = this.createRow(indexOfFirstRowToGrowDown);
         if (!this.mountedRows.length) {
           r.mountBefore(null);
         } else {
@@ -303,7 +303,7 @@ export class Grid implements IDisposable {
       }
 
       while (indexOfFirstRowToGrowUp > -1 && indexOfFirstRowToGrowUp >= shouldFrom) {
-        let r = new ViewRow(this.rowsContainer, this.ctx.model.get(indexOfFirstRowToGrowUp), this.ctx);
+        let r = this.createRow(indexOfFirstRowToGrowUp);
         if (this.mountedRows.length) {
           r.mountBefore(this.mountedRows[0]);
         } else {
@@ -341,7 +341,7 @@ export class Grid implements IDisposable {
     this.memorizedMounted = mounted;
   }
 
-  private renderRow(row: ViewRow): void {
+  private renderRow(row: ViewBodyRow): void {
     if (isUndefinedOrNull(this.memorizedMounted) || isUndefinedOrNull(this.memorizedMargin)) throw new Error('not ready');
     row.updateCell(this.memorizedMounted, this.memorizedMargin);
   }
@@ -379,7 +379,7 @@ export class Grid implements IDisposable {
       let lastIndexCanDisplay = Math.min(this.ctx.model.length - 1, lastIndexMayDisplay);
       let i = this.indexOfFirstMountedRow + this.mountedRows.length;
       while (i <= lastIndexCanDisplay) {
-        let r = new ViewRow(this.rowsContainer, this.ctx.model.get(i), this.ctx);
+        let r = this.createRow(i);
         r.mountAfter(this.mountedRows[this.mountedRows.length - 1]);
         this.renderRow(r);
         this.mountedRows.push(r);
@@ -418,7 +418,7 @@ export class Grid implements IDisposable {
         let lastIndexDisplayed = Math.max(this.indexOfLastMountedRow - patch.items.length, -1);
         let lastIndexCanDisplay = Math.min(this.indexOfLastMountedRow, this.ctx.model.length - 1);
         for (let i = lastIndexDisplayed + 1; i <= lastIndexCanDisplay; i++) {
-          let r = new ViewRow(this.rowsContainer, this.ctx.model.get(i), this.ctx);
+          let r = this.createRow(i);
           r.mountAfter(this.mountedRows[this.mountedRows.length - 1]);
           this.renderRow(r);
           this.mountedRows.push(r);
@@ -450,7 +450,7 @@ export class Grid implements IDisposable {
       let count = Math.min(this.indexOfLastMountedRow - patch.newPos + 1, patch.items.length);
       let i = 0;
       while (i < count) {
-        let r = new ViewRow(this.rowsContainer, this.ctx.model.get(patch.newPos + i), this.ctx);
+        let r = this.createRow(patch.newPos + i);
         this.renderRow(r);
         let index = patch.newPos + i;
         r.mountBefore(this.mountedRows[index]);
@@ -490,7 +490,7 @@ export class Grid implements IDisposable {
         let newIndexOfFirstMountedRow = this.indexOfFirstMountedRow + patch.items.length;
         while (newIndexOfFirstMountedRow > this.indexOfFirstMountedRow) {
           newIndexOfFirstMountedRow--;
-          let r = new ViewRow(this.rowsContainer, this.ctx.model.get(newIndexOfFirstMountedRow), this.ctx);
+          let r = this.createRow(newIndexOfFirstMountedRow);
           r.mountBefore(this.mountedRows[0]);
           this.renderRow(r);
           this.mountedRows.unshift(r);
@@ -516,6 +516,18 @@ export class Grid implements IDisposable {
       }
     }
     throw new Error('没处理');
+  }
+
+  protected createRow(modelIndex: number): ViewBodyRow {
+    let row = this.ctx.model.get(modelIndex);
+    console.log(modelIndex, row);
+    if (row instanceof Group) {
+      return new ViewGroupRow(this.rowsContainer, this.ctx, row as Group);
+    }
+    if (row instanceof GroupTotals) {
+      return new ViewGroupTotalsRow(this.rowsContainer, this.ctx, row as GroupTotals);
+    }
+    return new ViewDataRow(this.rowsContainer, this.ctx, row as Datum);
   }
 
   //#region 这里几个方法算的时相对整个滚动区域的位置，假设全部显示/没有滚动条
