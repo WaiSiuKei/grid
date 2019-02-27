@@ -124,7 +124,7 @@ export class Grid implements IDisposable {
 
   private registerDataListeners(ds: DataView) {
     this.toDispose.push(ds.onRowsChanged((evt) => {
-      console.log('rowsChanged', evt);
+      // console.log('rowsChanged', evt);
       let reRenderHappened = false;
       for (let i = 0, len = evt.length; i < len; i++) {
         reRenderHappened = this.patchChanges(evt[i]);
@@ -357,7 +357,7 @@ export class Grid implements IDisposable {
   }
 
   private handleRemoval(patch: PatchItem<Datum>): boolean {
-    console.log(patch);
+    // console.log(patch);
 
     if (this.indexOfFirstMountedRow === -1 && this.indexOfLastMountedRow === -1) {
       this.scrollHeight = this.getTotalRowsHeight();
@@ -520,7 +520,6 @@ export class Grid implements IDisposable {
 
   protected createRow(modelIndex: number): ViewBodyRow {
     let row = this.ctx.model.get(modelIndex);
-    console.log(modelIndex, row);
     if (row instanceof Group) {
       return new ViewGroupRow(this.rowsContainer, this.ctx, row as Group);
     }
