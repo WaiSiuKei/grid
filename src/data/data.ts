@@ -1,4 +1,3 @@
-import { IGridColumnDefinition } from 'src/grid/grid';
 import { React } from 'src/rax';
 
 export interface Datum {
@@ -21,10 +20,10 @@ export function defaultGroupFormatter(group: Group, setting: GroupingSetting): a
   };
 }
 
-function defaultGroupTotalFormatter(key: string, value: any, totals: GroupTotals, setting: GroupingSetting): any {
+export function defaultGroupTotalFormatter(key: string, value: any, type: string): any {
   return function () {
 
-    return React.createElement('div', null, `totals: ${value}`);
+    return React.createElement('div', null, `${type}: ${value}`);
   };
 }
 
@@ -37,8 +36,9 @@ export interface DataAccessor {
 }
 
 export interface IAggregator {
-  accumulate(item: Datum): void
-  result: number
+  type: string
+  field: string
+  accumulate(item: Datum): number
 }
 
 interface Grouping<T> {
@@ -91,9 +91,7 @@ export interface IAggregation {
   value: number
 }
 
-export class GroupTotals implements Datum {
-  key: string;
-  value: any;
+export class GroupTotals {
   aggregations: IAggregation[] = [];
 
   constructor(private group: Group) {
@@ -109,6 +107,10 @@ export class GroupTotals implements Datum {
       field,
       value
     });
+  }
+
+  getByField(field: string): IAggregation {
+    return this.aggregations.find(a => a.field === field);
   }
 }
 

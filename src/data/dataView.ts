@@ -1,10 +1,9 @@
 import { Event, Emitter } from 'src/base/common/event';
 import { dispose, IDisposable } from 'src/base/common/lifecycle';
-import { DataAccessor, Datum, defaultGroupFormatter, Group, GroupingSetting, IDataView, InternalGroupingSetting, Row, SortingDirection, SortingSetting } from 'src/data/data';
+import { DataAccessor, Datum, defaultGroupFormatter, Group, GroupingSetting, GroupTotals, IAggregator, IDataView, InternalGroupingSetting, Row, SortingDirection, SortingSetting } from 'src/data/data';
 import { isArray, isFunction, isUndefinedOrNull } from 'src/base/common/types';
 import { hash } from 'src/base/common/hash';
 import { getPatch, PatchChange, PatchItem } from 'src/base/common/patch';
-import { find, indexOf } from 'src/base/common/functional';
 
 export type RowsPatch = PatchItem<Row>[]
 
@@ -167,6 +166,7 @@ export class DataView implements IDataView, IDisposable {
         g.formatter = gp.formatter || defaultGroupFormatter;
         g.comparer = gp.comparer;
         g.level = i;
+        g.aggregators = gp.aggregators || [];
         return g;
       });
     }
@@ -307,7 +307,6 @@ export class DataView implements IDataView, IDisposable {
   }
 
   private flattenGroupedRows(groups: Group[], level: number = 0) {
-    let groupingSetting = this.groupingSettings[level];
     let groupedRows: Row[] = [];
     for (let i = 0, l = groups.length; i < l; i++) {
       let group = groups[i];
@@ -318,7 +317,7 @@ export class DataView implements IDataView, IDisposable {
         groupedRows.push(...rows);
       }
 
-      if (group.totals && groupingSetting.displayTotalsRow && (!group.collapsed)) {
+      if (group.totals && (!group.collapsed)) {
         groupedRows.push(group.totals);
       }
     }
@@ -330,7 +329,12 @@ export class DataView implements IDataView, IDisposable {
       let groups: Group[] = this.extractGroups(items);
       let groupHashed = new Set();
       for (let i = 0, len = groups.length; i < len; i++) {
-        groupHashed.add(groups[i]['$$hash']);
+        let group = groups[i];
+        let h = group['$$hash'];
+        if (!group.collapsed) {
+          this.doAggregation(group);
+        }
+        groupHashed.add(h);
       }
       this.collapsedGroups = this.collapsedGroups.filter(h => groupHashed.has(h));
 
@@ -342,6 +346,20 @@ export class DataView implements IDataView, IDisposable {
     return items;
   }
 
+  private doAggregation(group: Group) {
+    // TODO: aggregateChildGroups
+
+    let totals = new GroupTotals(group);
+    totals['$$hash'] = `${group}&total=true`;
+    group.totals = totals;
+
+    let conf = this.groupingSettings[group.level];
+    for (let i = 0, len = conf.aggregators.length; i < len; i++) {
+      let agg = conf.aggregators[i];
+      totals.store(agg.type, agg.field, agg.accumulate(group.rows));
+    }
+  }
+
   public refresh() {
     if (this.suspend) {
       return;
@@ -349,6 +367,7 @@ export class DataView implements IDataView, IDisposable {
 
     this.rows = this.calulateRows(this.items);
     let patch = this.calulateDiff(this.memorizedRows, this.rows);
+    console.log('patch', patch);
     if (patch.length) {
       this._onRowsChanged.fire(patch);
     }

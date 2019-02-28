@@ -1,6 +1,7 @@
 // import './index.scss';
 import { Grid } from 'src/grid/gridImpl';
 import { DataView } from 'src/data/dataView';
+import { CountAggregator } from 'src/data/aggregation';
 
 let columns = [
   // multi columns
@@ -37,7 +38,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 500; i++) {
+for (let i = 0; i < 50; i++) {
   data[i] = {
     title: 'Task ' + i,
     duration: '5 days',
@@ -83,6 +84,9 @@ dv.setGrouping([{
   accessor(d) {
     return Math.floor(d.percentComplete / 10);
   },
+  aggregators: [
+    new CountAggregator('percentComplete')
+  ]
 }]);
 dv.setItems(data);
 // dv.pop();
