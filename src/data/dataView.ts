@@ -274,7 +274,7 @@ export class DataView implements IDataView, IDisposable {
       }
     }
 
-    groups.sort(groupingSetting.comparer);
+    groups.sort((a, b) => groupingSetting.comparer(a.key, b.key));
 
     return groups;
   }
@@ -316,7 +316,9 @@ export class DataView implements IDataView, IDisposable {
 
     this.rows = this.calulateRows(this.items);
     let patch = this.calulateDiff(this.memorizedRows, this.rows);
-    this._onRowsChanged.fire(patch);
+    if (patch.length) {
+      this._onRowsChanged.fire(patch);
+    }
   }
 
   dispose() {

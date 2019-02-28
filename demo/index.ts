@@ -1,7 +1,7 @@
 // import './index.scss';
 import { Grid } from 'src/grid/gridImpl';
 import { DataView } from 'src/data/dataView';
-import { Datum } from 'src/data/data';
+import { Datum, Group } from 'src/data/data';
 
 let columns = [
   // multi columns
@@ -38,7 +38,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 2000; i++) {
+for (let i = 0; i < 500; i++) {
   data[i] = {
     title: 'Task ' + i,
     duration: '5 days',
@@ -78,11 +78,11 @@ let dv = new DataView();
 let t = new Grid(document.getElementById('myGrid'), dv, columns);
 
 // dv.setGrouping([{
-//   comparer(a: Datum, b: Datum) {
-//     return a.percentComplete - b.percentComplete;
+//   comparer(a: number, b: number) {
+//     return a - b;
 //   },
 //   accessor(d) {
-//     return Math.round(d.percentComplete / 10);
+//     return Math.floor(d.percentComplete / 10);
 //   },
 // }]);
 dv.setItems(data);
