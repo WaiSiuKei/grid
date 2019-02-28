@@ -45,29 +45,41 @@
       g: '01/01/2009',
     };
   }
-  //
-  // let columns = [];
-  // let data = [];
-  // for (let i = 0; i < 10000; i++) {
-  //   let t = {};
-  //   for (let j = 0; j < 10000; j++) {
-  //     t[j] = j + i;
-  //   }
-  //   data[i] = t;
-  // }
-  //
-  // for (let j = 0; j < 10000; j++) {
-  //   columns.push({ id: j.toString(), name: 'Col' + j.toString(), field: j.toString() });
-  // }
 
-  let t = new NilaGrid.Grid(document.getElementById('myGrid'), data, columns);
+  let dv = new NilaGrid.DataView();
 
-  t.layout();
+  let t = new NilaGrid.Grid(document.getElementById('myGrid'), dv, columns);
+
+  dv.setGrouping([{
+    comparer(a, b) {
+      return a - b;
+    },
+    accessor(d) {
+      return Math.floor(d.percentComplete / 10);
+    },
+    aggregators: [
+      new NilaGrid.CountAggregator('percentComplete')
+    ]
+  }]);
+  dv.setSorting([{
+    accessor: 'percentComplete',
+    comparer(a, b) {
+      return a - b;
+    },
+  }, {
+    accessor: 'title',
+    comparer(a, b) {
+      return a - b;
+    },
+  }]);
+  dv.setItems(data);
 
   Object.defineProperty(window, 'grid', {
     value: t
   });
-
+  Object.defineProperty(window, 'dv', {
+    value: dv
+  });
 </script>
 </body>
 </html>

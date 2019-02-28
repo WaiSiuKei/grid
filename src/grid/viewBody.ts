@@ -3,8 +3,7 @@ import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass } from 'src/base/browser/dom';
 import { GridContext } from 'src/grid/girdContext';
 import { React, ReactDOM } from '../rax';
-import { Datum, defaultGroupTotalFormatter, Formatter, Group, GroupingSetting, GroupTotals, IAggregation } from 'src/data/data';
-import { isFunction, isNumber, isString, isUndefinedOrNull } from 'src/base/common/types';
+import { Datum, defaultGroupTotalFormatter, Formatter, Group, GroupingSetting, GroupTotals } from 'src/data/data';
 
 interface IViewCell {
   domNode: HTMLElement
@@ -32,7 +31,7 @@ abstract class ViewCell implements IDisposable, IViewCell {
       this.host.appendChild(this.domNode);
     }
     let component = this.getComponent();
-    if (component) ReactDOM.render(React.createElement(component), this.domNode);
+    if (component) ReactDOM.render(component(), this.domNode);
   }
 
   abstract getComponent(): Function

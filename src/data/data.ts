@@ -1,4 +1,4 @@
-import { React } from 'src/rax';
+import { React } from '../rax';
 
 export interface Datum {
   [key: string]: any
@@ -22,7 +22,6 @@ export function defaultGroupFormatter(group: Group, setting: GroupingSetting): a
 
 export function defaultGroupTotalFormatter(key: string, value: any, type: string): any {
   return function () {
-
     return React.createElement('div', null, `${type}: ${value}`);
   };
 }
