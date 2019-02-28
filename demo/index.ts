@@ -40,7 +40,8 @@ let columns = [
 let data = [];
 for (let i = 0; i < 50; i++) {
   data[i] = {
-    title: 'Task ' + i,
+    // title: 'Task ' + i,
+    title: i,
     duration: '5 days',
     percentComplete: Math.round(Math.random() * 100),
     start: '01/01/2009',
@@ -77,16 +78,27 @@ let dv = new DataView();
 
 let t = new Grid(document.getElementById('myGrid'), dv, columns);
 
-dv.setGrouping([{
+// dv.setGrouping([{
+//   comparer(a: number, b: number) {
+//     return a - b;
+//   },
+//   accessor(d) {
+//     return Math.floor(d.percentComplete / 10);
+//   },
+//   aggregators: [
+//     new CountAggregator('percentComplete')
+//   ]
+// }]);
+dv.setSorting([{
+  accessor: 'percentComplete',
   comparer(a: number, b: number) {
     return a - b;
   },
-  accessor(d) {
-    return Math.floor(d.percentComplete / 10);
+}, {
+  accessor: 'title',
+  comparer(a: number, b: number) {
+    return a - b;
   },
-  aggregators: [
-    new CountAggregator('percentComplete')
-  ]
 }]);
 dv.setItems(data);
 // dv.pop();

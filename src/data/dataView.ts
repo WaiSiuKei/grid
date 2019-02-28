@@ -1,6 +1,6 @@
 import { Event, Emitter } from 'src/base/common/event';
 import { dispose, IDisposable } from 'src/base/common/lifecycle';
-import { DataAccessor, Datum, defaultGroupFormatter, Group, GroupingSetting, GroupTotals, IAggregator, IDataView, InternalGroupingSetting, Row, SortingDirection, SortingSetting } from 'src/data/data';
+import { DataAccessor, Datum, defaultGroupFormatter, Group, GroupingSetting, GroupTotals, IAggregator, IDataView, InternalGroupingSetting, Row, SortingSetting } from 'src/data/data';
 import { isArray, isFunction, isUndefinedOrNull } from 'src/base/common/types';
 import { hash } from 'src/base/common/hash';
 import { getPatch, PatchChange, PatchItem } from 'src/base/common/patch';
@@ -43,7 +43,7 @@ export class DataView implements IDataView, IDisposable {
   private collapsedGroups: string[] = [];
 
   private groupingSettings: InternalGroupingSetting[];
-  private sortingSettings: SortingSetting[];
+  private sortingSettings: SortingSetting[] = [];
   private filteringSettings: any;
 
   private _onRowsChanged = new Emitter<RowsPatch>();
@@ -182,6 +182,18 @@ export class DataView implements IDataView, IDisposable {
     return this.groupingSettings.slice();
   }
 
+  public setSorting(sts: Array<SortingSetting> | null) {
+    this.sortingSettings.length = 0;
+    if (sts) {
+      this.sortingSettings = sts.slice();
+      this.scheduleUpdate();
+    }
+  }
+
+  public getSortingByField(field: string) {
+    return this.sortingSettings.find(s => s.accessor === field);
+  }
+
   public beginUpdate() {
     this.suspend = true;
     this.memorizedRows = this.rows.slice();
@@ -313,7 +325,12 @@ export class DataView implements IDataView, IDisposable {
       groupedRows.push(group);
 
       if (!group.collapsed) {
-        let rows = group.subGroups ? this.flattenGroupedRows(group.subGroups, level + 1) : group.rows;
+        let rows: Row[];
+        if (group.subGroups) {
+          rows = this.flattenGroupedRows(group.subGroups, level + 1);
+        } else {
+          rows = this.sortRows(group.rows);
+        }
         groupedRows.push(...rows);
       }
 
@@ -322,6 +339,24 @@ export class DataView implements IDataView, IDisposable {
       }
     }
     return groupedRows;
+  }
+
+  private sortRows(rows: Row[]): Row[] {
+    if (!this.sortingSettings.length) {
+      return rows;
+    }
+
+    let sortings = this.sortingSettings.slice();
+    return rows.slice().sort((a, b) => {
+      let res;
+      for (let i = 0, len = sortings.length; i < len; i++) {
+        let s = sortings[i];
+        let accessor = functor(s.accessor);
+        res = s.comparer(accessor(a), accessor(b));
+        if (res !== 0) return res;
+      }
+      return res;
+    });
   }
 
   private calulateRows(items: Datum[]): Row[] {
@@ -343,7 +378,7 @@ export class DataView implements IDataView, IDisposable {
       }
     }
 
-    return items;
+    return this.sortRows(items);
   }
 
   private doAggregation(group: Group) {
@@ -367,7 +402,6 @@ export class DataView implements IDataView, IDisposable {
 
     this.rows = this.calulateRows(this.items);
     let patch = this.calulateDiff(this.memorizedRows, this.rows);
-    console.log('patch', patch);
     if (patch.length) {
       this._onRowsChanged.fire(patch);
     }

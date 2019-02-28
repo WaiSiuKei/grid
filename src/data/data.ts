@@ -55,34 +55,9 @@ export interface InternalGroupingSetting extends Grouping<DataAccessor> {
 
 export type GroupingSetting = Grouping<string | DataAccessor>
 
-// var groupingInfoDefaults = {
-//   getter: null,
-//   formatter: null,
-//   comparer: function(a, b) {
-//     return (a.value === b.value ? 0 :
-//         (a.value > b.value ? 1 : -1)
-//     );
-//   },
-//   predefinedValues: [],
-//   aggregators: [],
-//   aggregateEmpty: false,
-//   aggregateCollapsed: false,
-//   aggregateChildGroups: false,
-//   collapsed: false,
-//   displayTotalsRow: true,
-//   lazyTotalsCalculation: false
-// };
-
-export enum SortingDirection {
-  Asc,
-  Desc,
-}
-
 export interface SortingSetting {
   accessor: string | DataAccessor
   comparer: (a: any, b: any) => number,
-  direction: SortingDirection
-  priority: number
 }
 
 export interface IAggregation {
