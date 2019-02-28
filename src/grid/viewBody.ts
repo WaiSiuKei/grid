@@ -125,6 +125,18 @@ abstract class ViewRow implements IDisposable {
 
   abstract updateCell(headerMounted: string[], margin: number): void
 
+  mount() {
+    this.mounted = true;
+    this.host.appendChild(this.domNode);
+  }
+
+  unmount() {
+    this.prevSlibing = null;
+    this.nextSlibing = null;
+    this.host.removeChild(this.domNode);
+    this.mounted = false;
+  }
+
   dispose() {
     this.mounted = false;
 
@@ -191,6 +203,10 @@ export class ViewDataRow extends ViewRow {
     this.cellCache = Object.create(null);
   }
 
+  toString() {
+    return JSON.stringify(this.data);
+  }
+
   dispose() {
     super.dispose();
     Object.keys(this.cellCache).forEach(i => {
@@ -238,4 +254,13 @@ export class ViewGroupTotalsRow extends ViewRow {
   }
 }
 
-export type ViewBodyRow = ViewDataRow | ViewGroupRow | ViewGroupTotalsRow
+export class ViewVirtialRow extends ViewRow {
+  updateCell(headerMounted: string[], margin: number): void {
+    // noop
+  }
+  invalidate(): void {
+    // noop
+  }
+}
+
+export type ViewBodyRow = ViewDataRow | ViewGroupRow | ViewGroupTotalsRow | ViewVirtialRow

@@ -10,10 +10,10 @@ import { GridModel } from 'src/grid/gridModel';
 import { CellFormatter, COLUMN_DEFAULT, GRID_DEFAULT, IGridColumnDefinition, IGridOptions } from 'src/grid/grid';
 import { mapBy, sum, sumBy } from 'src/base/common/functional';
 import { dispose, IDisposable } from 'src/base/common/lifecycle';
-import { Datum, Group, GroupTotals, IDataSet } from 'src/data/data';
+import { Datum, Group, GroupTotals, IDataSet, Row } from 'src/data/data';
 import { DataView } from 'src/data/dataView';
 import { PatchChange, PatchItem } from 'src/base/common/patch';
-import { ViewBodyRow, ViewDataRow, ViewGroupRow, ViewGroupTotalsRow } from 'src/grid/viewBody';
+import { ViewBodyRow, ViewDataRow, ViewGroupRow, ViewGroupTotalsRow, ViewVirtialRow } from 'src/grid/viewBody';
 
 function validateAndEnforceOptions(opt: Partial<IGridOptions>): IGridOptions {
   return Object.assign({}, GRID_DEFAULT, opt) as IGridOptions;
@@ -127,11 +127,14 @@ export class Grid implements IDisposable {
     this.toDispose.push(ds.onRowsChanged((evt) => {
       // console.log('rowsChanged', evt);
       let reRenderHappened = false;
-      for (let i = 0, len = evt.length; i < len; i++) {
-        reRenderHappened = this.patchChanges(evt[i]);
-      }
-      if (reRenderHappened) {
-        this.renderHorizonalChanges(getContentWidth(this.body));
+      if (evt.length === 1) {
+        let e = evt[0];
+        reRenderHappened = e.type === PatchChange.Add ? this.handleAdding(e) : this.handleRemoval(e);
+        if (reRenderHappened) {
+          this.renderHorizonalChanges(getContentWidth(this.body));
+        }
+      } else {
+        this.handlePatchs(evt);
       }
     }));
   }
@@ -318,7 +321,7 @@ export class Grid implements IDisposable {
 
       // console.log('indexOfFirstRowToGrowDown=', indexOfFirstRowToGrowDown, 'indexOfFirstRowToGrowUp=', indexOfFirstRowToGrowUp);
       while (indexOfFirstRowToGrowDown > -1 && indexOfFirstRowToGrowDown <= shouldTo) {
-        let r = this.createRow(indexOfFirstRowToGrowDown);
+        let r = this.createRowByIndex(indexOfFirstRowToGrowDown);
         if (!this.mountedRows.length) {
           r.mountBefore(null);
         } else {
@@ -330,7 +333,7 @@ export class Grid implements IDisposable {
       }
 
       while (indexOfFirstRowToGrowUp > -1 && indexOfFirstRowToGrowUp >= shouldFrom) {
-        let r = this.createRow(indexOfFirstRowToGrowUp);
+        let r = this.createRowByIndex(indexOfFirstRowToGrowUp);
         if (this.mountedRows.length) {
           r.mountBefore(this.mountedRows[0]);
         } else {
@@ -373,19 +376,64 @@ export class Grid implements IDisposable {
     row.updateCell(this.memorizedMounted, this.memorizedMargin);
   }
 
-  private patchChanges(patch: PatchItem<Datum>): boolean {
-    switch (patch.type) {
-      case PatchChange.Add:
-        return this.handleAdding(patch);
-      case PatchChange.Remove:
-        return this.handleRemoval(patch);
+  private handlePatchs(patchs: PatchItem<Row>[]): void {
+    let rows: ViewBodyRow[] = [];
+    for (let i = 0; i < this.indexOfFirstMountedRow; i++) {
+      rows.push(null);
     }
-    return false;
+    for (let i = 0, len = this.mountedRows.length; i < len; i++) {
+      let r = this.mountedRows[i];
+      r.unmount();
+      rows.push(r);
+    }
+    let segments: ViewBodyRow[][] = [];
+
+    let sameStart = 0;
+
+    for (let i = 0; i < patchs.length; ++i) {
+      let patch = patchs[i];
+      sameStart !== patch.oldPos && segments.push(rows.slice(sameStart, patch.oldPos));
+      if (patch.type === PatchChange.Add) {
+        let toAdd = patch.items.map(i => this.createRowByData(i));
+        segments.push(toAdd);
+        sameStart = patch.oldPos;
+      } else {
+        sameStart = patch.oldPos + patch.items.length;
+        for (let i = patch.oldPos; i < sameStart; i++) {
+          let row = rows[i];
+          if (row) {
+            row.dispose();
+            row[i] = null;
+          }
+        }
+      }
+    }
+
+    sameStart !== rows.length && segments.push(rows.slice(sameStart));
+
+    let patchedRows = [].concat.apply([], segments);
+
+    let shouldDisplayTo = Math.min(this.indexOfLastMountedRow, this.ctx.model.length);
+    let displayedTo = patchedRows.length;
+    for (let i = displayedTo; i < shouldDisplayTo; i++) {
+      let r = this.createRowByIndex(i);
+      patchedRows.push(r);
+    }
+
+    patchedRows = patchedRows.slice(this.indexOfFirstMountedRow, this.indexOfLastMountedRow + 1);
+    this.mountedRows.length = 0;
+    while (patchedRows.length) {
+      let r = patchedRows.shift();
+      if (!r) debugger;
+      if (!r.mounted) {
+        r.mount();
+        this.renderRow(r);
+      }
+      this.mountedRows.push(r);
+    }
   }
 
-  private handleRemoval(patch: PatchItem<Datum>): boolean {
-    // console.log(patch);
-
+  private handleRemoval(patch: PatchItem<Row>): boolean {
     if (this.indexOfFirstMountedRow === -1 && this.indexOfLastMountedRow === -1) {
       this.scrollHeight = this.getTotalRowsHeight();
       return true;
@@ -406,7 +454,7 @@ export class Grid implements IDisposable {
       let lastIndexCanDisplay = Math.min(this.ctx.model.length - 1, lastIndexMayDisplay);
       let i = this.indexOfFirstMountedRow + this.mountedRows.length;
       while (i <= lastIndexCanDisplay) {
-        let r = this.createRow(i);
+        let r = this.createRowByIndex(i);
         r.mountAfter(this.mountedRows[this.mountedRows.length - 1]);
         this.renderRow(r);
         this.mountedRows.push(r);
@@ -445,7 +493,7 @@ export class Grid implements IDisposable {
         let lastIndexDisplayed = Math.max(this.indexOfLastMountedRow - patch.items.length, -1);
         let lastIndexCanDisplay = Math.min(this.indexOfLastMountedRow, this.ctx.model.length - 1);
         for (let i = lastIndexDisplayed + 1; i <= lastIndexCanDisplay; i++) {
-          let r = this.createRow(i);
+          let r = this.createRowByIndex(i);
           r.mountAfter(this.mountedRows[this.mountedRows.length - 1]);
           this.renderRow(r);
           this.mountedRows.push(r);
@@ -461,7 +509,7 @@ export class Grid implements IDisposable {
     return false;
   }
 
-  private handleAdding(patch: PatchItem<Datum>): boolean {
+  private handleAdding(patch: PatchItem<Row>): boolean {
     if (this.indexOfFirstMountedRow === -1 && this.indexOfLastMountedRow === -1) {
       // mounted为空，重新渲染
       this.scrollHeight = this.getTotalRowsHeight();
@@ -477,7 +525,7 @@ export class Grid implements IDisposable {
       let count = Math.min(this.indexOfLastMountedRow - patch.newPos + 1, patch.items.length);
       let i = 0;
       while (i < count) {
-        let r = this.createRow(patch.newPos + i);
+        let r = this.createRowByIndex(patch.newPos + i);
         this.renderRow(r);
         let index = patch.newPos + i;
         r.mountBefore(this.mountedRows[index]);
@@ -517,7 +565,7 @@ export class Grid implements IDisposable {
         let newIndexOfFirstMountedRow = this.indexOfFirstMountedRow + patch.items.length;
         while (newIndexOfFirstMountedRow > this.indexOfFirstMountedRow) {
           newIndexOfFirstMountedRow--;
-          let r = this.createRow(newIndexOfFirstMountedRow);
+          let r = this.createRowByIndex(newIndexOfFirstMountedRow);
           r.mountBefore(this.mountedRows[0]);
           this.renderRow(r);
           this.mountedRows.unshift(r);
@@ -545,7 +593,7 @@ export class Grid implements IDisposable {
     throw new Error('没处理');
   }
 
-  private createRow(modelIndex: number): ViewBodyRow {
+  private createRowByIndex(modelIndex: number): ViewBodyRow {
     let row = this.ctx.model.get(modelIndex);
     if (row instanceof Group) {
       return new ViewGroupRow(this.rowsContainer, this.ctx, row as Group);
@@ -554,6 +602,19 @@ export class Grid implements IDisposable {
       return new ViewGroupTotalsRow(this.rowsContainer, this.ctx, row as GroupTotals);
     }
     return new ViewDataRow(this.rowsContainer, this.ctx, row as Datum);
+  }
+
+  private createRowByData(row: Row): ViewBodyRow {
+    if (row instanceof Group) {
+      return new ViewGroupRow(this.rowsContainer, this.ctx, row as Group);
+    }
+    if (row instanceof GroupTotals) {
+      return new ViewGroupTotalsRow(this.rowsContainer, this.ctx, row as GroupTotals);
+    }
+    if (row) {
+      return new ViewDataRow(this.rowsContainer, this.ctx, row as Datum);
+    }
+    return new ViewVirtialRow(this.rowsContainer, this.ctx);
   }
   //#endregion
 

@@ -80,7 +80,7 @@ export interface SortingSetting {
 
 export class GroupTotals {
   key: string;
-  value: string;
+  value: any;
 
   constructor(private group: Group) {
   }

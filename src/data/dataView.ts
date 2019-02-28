@@ -133,6 +133,27 @@ export class DataView implements IDataView, IDisposable {
     }
   }
 
+  public sort(compareFunction: (a: Datum, b: Datum) => number): Datum[] {
+    if (!this.suspend) {
+      this.memorizedRows = this.rows.slice();
+      let ret = this.items.sort(compareFunction);
+      this.refresh();
+      return ret;
+    } else {
+      return this.items.sort(compareFunction);
+    }
+  }
+
+  public reverse() {
+    if (!this.suspend) {
+      this.memorizedRows = this.rows.slice();
+      this.items.reverse();
+      this.refresh();
+    } else {
+      this.items.reverse();
+    }
+  }
+
   public setGrouping(gps: Array<Partial<GroupingSetting>> | null) {
     this.groupingSettings = [];
     if (isArray(gps) && gps.length) {

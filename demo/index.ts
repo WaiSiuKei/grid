@@ -38,7 +38,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 200; i++) {
+for (let i = 0; i < 2000; i++) {
   data[i] = {
     title: 'Task ' + i,
     duration: '5 days',
@@ -77,14 +77,14 @@ let dv = new DataView();
 
 let t = new Grid(document.getElementById('myGrid'), dv, columns);
 
-dv.setGrouping([{
-  comparer(a: Datum, b: Datum) {
-    return a.percentComplete - b.percentComplete;
-  },
-  accessor(d) {
-    return Math.round(d.percentComplete / 10);
-  },
-}]);
+// dv.setGrouping([{
+//   comparer(a: Datum, b: Datum) {
+//     return a.percentComplete - b.percentComplete;
+//   },
+//   accessor(d) {
+//     return Math.round(d.percentComplete / 10);
+//   },
+// }]);
 dv.setItems(data);
 // dv.pop();
 // document.addEventListener('keydown', (e) => {
@@ -98,4 +98,7 @@ dv.setItems(data);
 // });
 Object.defineProperty(window, 'grid', {
   value: t
+});
+Object.defineProperty(window, 'dv', {
+  value: dv
 });
