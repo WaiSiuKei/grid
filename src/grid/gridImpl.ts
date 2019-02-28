@@ -428,6 +428,7 @@ export class Grid implements IDisposable {
     }
   }
 
+  /*#region 不太通用，只能处理一次的patch
   private handleRemoval(patch: PatchItem<Row>): boolean {
     if (this.indexOfFirstMountedRow === -1 && this.indexOfLastMountedRow === -1) {
       this.scrollHeight = this.getTotalRowsHeight();
@@ -587,6 +588,7 @@ export class Grid implements IDisposable {
     }
     throw new Error('没处理');
   }
+  */
 
   private createRowByIndex(modelIndex: number): ViewBodyRow {
     let row = this.ctx.model.get(modelIndex);
