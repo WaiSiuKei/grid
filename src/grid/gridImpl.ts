@@ -125,14 +125,9 @@ export class Grid implements IDisposable {
 
   private registerDataListeners(ds: DataView) {
     this.toDispose.push(ds.onRowsChanged((evt) => {
-      // console.log('rowsChanged', evt);
-      let reRenderHappened = false;
-      if (evt.length === 1) {
-        let e = evt[0];
-        reRenderHappened = e.type === PatchChange.Add ? this.handleAdding(e) : this.handleRemoval(e);
-        if (reRenderHappened) {
-          this.renderHorizonalChanges(getContentWidth(this.body));
-        }
+      if (this.indexOfFirstMountedRow === -1 && this.indexOfLastMountedRow === -1) {
+        this.scrollHeight = this.getTotalRowsHeight();
+        this.renderHorizonalChanges(getContentWidth(this.body));
       } else {
         this.handlePatchs(evt);
       }
@@ -384,7 +379,7 @@ export class Grid implements IDisposable {
     for (let i = 0, len = this.mountedRows.length; i < len; i++) {
       let r = this.mountedRows[i];
       r.unmount();
-      rows.push(r);
+      rows[rows.length] = r;
     }
     let segments: ViewBodyRow[][] = [];
 
@@ -403,7 +398,7 @@ export class Grid implements IDisposable {
           let row = rows[i];
           if (row) {
             row.dispose();
-            row[i] = null;
+            rows[i] = null;
           }
         }
       }
@@ -413,9 +408,9 @@ export class Grid implements IDisposable {
 
     let patchedRows = [].concat.apply([], segments);
 
-    let shouldDisplayTo = Math.min(this.indexOfLastMountedRow, this.ctx.model.length);
+    let shouldDisplayTo = Math.min(this.indexOfLastMountedRow, this.ctx.model.length - 1);
     let displayedTo = patchedRows.length;
-    for (let i = displayedTo; i < shouldDisplayTo; i++) {
+    for (let i = displayedTo; i <= shouldDisplayTo; i++) {
       let r = this.createRowByIndex(i);
       patchedRows.push(r);
     }

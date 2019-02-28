@@ -1,7 +1,6 @@
 // import './index.scss';
 import { Grid } from 'src/grid/gridImpl';
 import { DataView } from 'src/data/dataView';
-import { Datum, Group } from 'src/data/data';
 
 let columns = [
   // multi columns
@@ -77,14 +76,14 @@ let dv = new DataView();
 
 let t = new Grid(document.getElementById('myGrid'), dv, columns);
 
-// dv.setGrouping([{
-//   comparer(a: number, b: number) {
-//     return a - b;
-//   },
-//   accessor(d) {
-//     return Math.floor(d.percentComplete / 10);
-//   },
-// }]);
+dv.setGrouping([{
+  comparer(a: number, b: number) {
+    return a - b;
+  },
+  accessor(d) {
+    return Math.floor(d.percentComplete / 10);
+  },
+}]);
 dv.setItems(data);
 // dv.pop();
 // document.addEventListener('keydown', (e) => {

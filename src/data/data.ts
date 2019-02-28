@@ -8,6 +8,8 @@ export interface Datum {
 export interface IDataView {
   length: number
   getItem(idx: number): Datum
+  collapseGroup(group: Group): void
+  expandGroup(group: Group): void
   scheduleUpdate(): void
 }
 
@@ -34,11 +36,16 @@ export interface DataAccessor {
   (d: Datum): any
 }
 
+export interface IAggregator {
+  accumulate(item: Datum): void
+  result: number
+}
+
 interface Grouping<T> {
   accessor: T
   comparer: (a: any, b: any) => number,
   formatter: Formatter<Group, GroupingSetting>
-  // aggregators
+  aggregators: IAggregator[]
 }
 
 export interface InternalGroupingSetting extends Grouping<DataAccessor> {
@@ -78,15 +85,30 @@ export interface SortingSetting {
   priority: number
 }
 
-export class GroupTotals {
+export interface IAggregation {
+  type: string
+  field: string
+  value: number
+}
+
+export class GroupTotals implements Datum {
   key: string;
   value: any;
+  aggregations: IAggregation[] = [];
 
   constructor(private group: Group) {
   }
 
   get rows() {
     return this.group.rows;
+  }
+
+  store(type: string, field: string, value: number) {
+    this.aggregations.push({
+      type,
+      field,
+      value
+    });
   }
 }
 
@@ -97,7 +119,6 @@ export class Group {
   totals: GroupTotals;
   subGroups: Group[];
   key: any; // any used as the key of a Map
-  label: string; // label for the key
   $$hash: string;
 
   constructor(private ds: IDataView) {
@@ -109,7 +130,11 @@ export class Group {
 
   set collapsed(val: boolean) {
     this._collapsed = val;
-    this.ds.scheduleUpdate();
+    if (val) {
+      this.ds.collapseGroup(this);
+    } else {
+      this.ds.expandGroup(this);
+    }
   }
 }
 

@@ -4,6 +4,7 @@ import { DataAccessor, Datum, defaultGroupFormatter, Group, GroupingSetting, IDa
 import { isArray, isFunction, isUndefinedOrNull } from 'src/base/common/types';
 import { hash } from 'src/base/common/hash';
 import { getPatch, PatchChange, PatchItem } from 'src/base/common/patch';
+import { find, indexOf } from 'src/base/common/functional';
 
 export type RowsPatch = PatchItem<Row>[]
 
@@ -39,6 +40,8 @@ export class DataView implements IDataView, IDisposable {
   // 给Grid显示的数据，包括grouped rows / aggregated rows
   private rows: Datum[] = [];
   private memorizedRows: Datum[] = [];
+
+  private collapsedGroups: string[] = [];
 
   private groupingSettings: InternalGroupingSetting[];
   private sortingSettings: SortingSetting[];
@@ -156,6 +159,7 @@ export class DataView implements IDataView, IDisposable {
 
   public setGrouping(gps: Array<Partial<GroupingSetting>> | null) {
     this.groupingSettings = [];
+    this.collapsedGroups.length = 0;
     if (isArray(gps) && gps.length) {
       this.groupingSettings = gps.map((gp, i) => {
         let g: InternalGroupingSetting = Object.create(null);
@@ -186,6 +190,24 @@ export class DataView implements IDataView, IDisposable {
   public endUpdate() {
     this.suspend = false;
     this.refresh();
+  }
+
+  public collapseGroup(group: Group) {
+    let h = group['$$hash'];
+    let prevOne = this.collapsedGroups.indexOf(h);
+    if (prevOne === -1) {
+      this.collapsedGroups.push(h);
+      this.scheduleUpdate();
+    }
+  }
+
+  public expandGroup(group: Group) {
+    let h = group['$$hash'];
+    let prevOne = this.collapsedGroups.indexOf(h);
+    if (prevOne !== -1) {
+      this.collapsedGroups.splice(prevOne, 1);
+      this.scheduleUpdate();
+    }
   }
 
   private prevFrame: number;
@@ -248,6 +270,7 @@ export class DataView implements IDataView, IDisposable {
 
     let groupsByVal = new Map<any, Group>();
     let groups: Group[] = [];
+    let level = groupingSetting.level;
 
     for (let i = 0, len = rows.length; i < len; i++) {
       let row = rows[i];
@@ -255,10 +278,14 @@ export class DataView implements IDataView, IDisposable {
 
       let group = groupsByVal.get(val);
       if (!group) {
+        let h = `?grouping='${hash(val)}&level=${level}`;
+        let prevOne = this.collapsedGroups.indexOf(h) > -1;
+
         group = new Group(this);
-        group['$$hash'] = '$$grouping:' + hash(val);
+        group['$$hash'] = h;
         group.key = val;
-        group.level = 0; // fixme
+        group.level = level;
+        group._collapsed = prevOne;
         groupsByVal.set(val, group);
         groups.push(group);
       }
@@ -301,6 +328,12 @@ export class DataView implements IDataView, IDisposable {
   private calulateRows(items: Datum[]): Row[] {
     if (isArray(this.groupingSettings) && this.groupingSettings.length) {
       let groups: Group[] = this.extractGroups(items);
+      let groupHashed = new Set();
+      for (let i = 0, len = groups.length; i < len; i++) {
+        groupHashed.add(groups[i]['$$hash']);
+      }
+      this.collapsedGroups = this.collapsedGroups.filter(h => groupHashed.has(h));
+
       if (groups.length) {
         return this.flattenGroupedRows(groups);
       }
