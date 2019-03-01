@@ -6,7 +6,6 @@ A Blazing fast grid supports virtual scrolling and React jsx!!!
 - [Demo](https://waisiukei.github.io/grid/)
 
 ## Doc
-###  Grid Options
 Reference SlickGrid，the difference is that you should return a component in the formatter function；
 - In React project，you should use the built-in React-like library：
 
@@ -51,9 +50,32 @@ const plugins = [
 
 ```
 
-### Features
+### Grid options
 
-#### DataView
+- explicitInitialization?: boolean
+- defaultColumnWidth?: number
+- rowHeight?: number
+- defaultFormatter?: CellFormatter,
+- showHeaderRow?: boolean
+- headerRowHeight?: number,
+- viewportClass?: string,
+
+### Column
+
+- id: string
+- field: string
+- name?: string
+- minWidth?: number
+- width?: number
+- maxWidth?: number
+- flexGrow?: number
+- flexShrink?: number
+- formatter?: CellFormatter
+
+
+### DataView
+
+Reference SlickGrid.DataView
 
 ```
 let dv = new DataView();
