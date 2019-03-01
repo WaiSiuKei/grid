@@ -51,4 +51,77 @@ const plugins = [
 
 ```
 
+### Features
 
+#### DataView
+
+```
+let dv = new DataView();
+
+let t = new Grid(document.getElementById('myGrid'), dv, columns);
+
+dv.setItems([...])
+
+dv.push({...});
+dv.pop();
+dv.shift();
+dv.unshift();
+dv.splice(idx, deleteCount, ...items);
+
+// Batched updated
+dv.beginUpdate();
+dv.push({...});
+dv.shift();
+dv.endUpdate();
+
+```
+
+#### Grouping
+
+Multi-grouping is supported.
+
+```
+dv.setGrouping([{
+  comparer(a: number, b: number) {
+    return a - b;
+  },
+  accessor(d) {
+    return Math.floor(d.percentComplete / 10);
+  },
+  aggregators: [
+    new CountAggregator('percentComplete')
+  ]
+}]);
+```
+
+Five built-in aggregators are provided:
+
+- AvgAggregator
+- MinAggregator
+- MaxAggregator
+- SumAggregator
+- CountAggregator
+
+#### Sorting
+Multi-sorting is supported.
+```
+dv.setSorting([{
+  accessor: 'percentComplete',
+  comparer(a: number, b: number) {
+    return a - b;
+  },
+}, {
+  accessor: 'title',
+  comparer(a: number, b: number) {
+    return a - b;
+  },
+}]);
+```
+## TODO
+- [x] JSX
+- [x] Virtual Scrolling
+- [x] DataView
+- [x] Groping
+- [x] Sorting
+- [ ] Filtering
+- [ ] Colspan
