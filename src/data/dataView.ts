@@ -1,6 +1,6 @@
 import { Event, Emitter } from 'src/base/common/event';
 import { dispose, IDisposable } from 'src/base/common/lifecycle';
-import { DataAccessor, Datum, defaultGroupFormatter, Group, GroupingSetting, GroupTotals, IAggregator, IDataView, InternalGroupingSetting, Row, SortingSetting } from 'src/data/data';
+import { DataAccessor, Datum, defaultGroupFormatter, Group, GroupingSetting, GroupTotals, IAggregator, IDataView, IFilter, InternalGroupingSetting, Row, SortingSetting } from 'src/data/data';
 import { isArray, isFunction, isUndefinedOrNull } from 'src/base/common/types';
 import { hash } from 'src/base/common/hash';
 import { getPatch, PatchChange, PatchItem } from 'src/base/common/patch';
@@ -44,7 +44,7 @@ export class DataView implements IDataView, IDisposable {
 
   private groupingSettings: InternalGroupingSetting[];
   private sortingSettings: SortingSetting[] = [];
-  private filteringSettings: any;
+  private filter: IFilter;
 
   private _onRowsChanged = new Emitter<RowsPatch>();
   public get onRowsChanged() { return this._onRowsChanged.event; }
@@ -56,7 +56,7 @@ export class DataView implements IDataView, IDisposable {
   }
 
   public get length(): number {
-    return this.items.length;
+    return this.rows.length;
   }
 
   public getItem(idx: number): Datum {
@@ -190,6 +190,11 @@ export class DataView implements IDataView, IDisposable {
     }
   }
 
+  public setFilter(filter: IFilter | null) {
+    this.filter = filter;
+    this.scheduleUpdate();
+  }
+
   public getSortingByField(field: string) {
     return this.sortingSettings.find(s => s.accessor === field);
   }
@@ -286,6 +291,10 @@ export class DataView implements IDataView, IDisposable {
 
     for (let i = 0, len = rows.length; i < len; i++) {
       let row = rows[i];
+      if (isFunction(this.filter)) {
+        if (!this.filter(row)) continue;
+      }
+
       let val = groupingSetting.accessor(row);
 
       let group = groupsByVal.get(val);
@@ -359,6 +368,14 @@ export class DataView implements IDataView, IDisposable {
     });
   }
 
+  private filterRows(rows: Row[]): Row[] {
+    if (!isFunction(this.filter)) {
+      return rows;
+    }
+
+    return rows.slice().filter(d => this.filter(d));
+  }
+
   private calulateRows(items: Datum[]): Row[] {
     if (isArray(this.groupingSettings) && this.groupingSettings.length) {
       let groups: Group[] = this.extractGroups(items);
@@ -378,14 +395,14 @@ export class DataView implements IDataView, IDisposable {
       }
     }
 
-    return this.sortRows(items);
+    return this.filterRows(this.sortRows(items));
   }
 
   private doAggregation(group: Group) {
     // TODO: aggregateChildGroups
 
     let totals = new GroupTotals(group);
-    totals['$$hash'] = `${group}&total=true`;
+    totals['$$hash'] = `${group['$$hash']}&total=true`;
     group.totals = totals;
 
     let conf = this.groupingSettings[group.level];

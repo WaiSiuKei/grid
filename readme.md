@@ -139,11 +139,20 @@ dv.setSorting([{
   },
 }]);
 ```
+
+#### Filter
+```Typescript
+dv.setFilter((d) => {
+  Math.floor(d.percentComplete / 10) > 2;
+});
+```
+
 ## TODO
 - [x] JSX
 - [x] Virtual Scrolling
 - [x] DataView
 - [x] Groping
 - [x] Sorting
-- [ ] Filtering
+- [x] Filtering
+- [ ] Plugins
 - [ ] Colspan

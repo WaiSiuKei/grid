@@ -100,6 +100,9 @@ dv.setSorting([{
     return a - b;
   },
 }]);
+// dv.setFilter((d) => {
+//   return Math.floor(d.percentComplete / 10) > 2;
+// });
 dv.setItems(data);
 // dv.pop();
 // document.addEventListener('keydown', (e) => {

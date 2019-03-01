@@ -115,3 +115,7 @@ export class Group {
 }
 
 export type Row = Datum | Group | GroupTotals
+
+export interface IFilter {
+  (d: Datum): boolean
+}
