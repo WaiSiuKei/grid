@@ -77,7 +77,7 @@ const plugins = [
 
 Reference SlickGrid.DataView
 
-```
+```Typescript
 let dv = new DataView();
 
 let t = new Grid(document.getElementById('myGrid'), dv, columns);
@@ -90,7 +90,7 @@ dv.shift();
 dv.unshift();
 dv.splice(idx, deleteCount, ...items);
 
-// Batched updated
+// Batched updates
 dv.beginUpdate();
 dv.push({...});
 dv.shift();
@@ -102,7 +102,7 @@ dv.endUpdate();
 
 Multi-grouping is supported.
 
-```
+```Typescript
 dv.setGrouping([{
   comparer(a: number, b: number) {
     return a - b;
@@ -126,7 +126,7 @@ Five built-in aggregators are provided:
 
 #### Sorting
 Multi-sorting is supported.
-```
+```Typescript
 dv.setSorting([{
   accessor: 'percentComplete',
   comparer(a: number, b: number) {
