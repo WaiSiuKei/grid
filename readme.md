@@ -39,7 +39,7 @@ function formatter(row, cell, value, columnDef, dataContext) {
 
 - In other project, you can use a JSX transpiler(of course, you can write vanilla js😰)
 
-```
+```js
 // babel.config.js
 
 const plugins = [
@@ -143,7 +143,7 @@ dv.setSorting([{
 #### Filter
 ```Typescript
 dv.setFilter((d) => {
-  Math.floor(d.percentComplete / 10) > 2;
+  return Math.floor(d.percentComplete / 10) > 2;
 });
 ```
 
