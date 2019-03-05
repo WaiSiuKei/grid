@@ -151,8 +151,12 @@ dv.setFilter((d) => {
 - [x] JSX
 - [x] Virtual Scrolling
 - [x] DataView
-- [x] Groping
+- [x] Row Groping
 - [x] Sorting
 - [x] Filtering
+- [ ] Column group
+- [ ] Column pin
+- [ ] Colspan / Rowspan (Merged cell)
 - [ ] Plugins
-- [ ] Colspan
+- [ ] Column resizing
+- [ ] Column re-ordering

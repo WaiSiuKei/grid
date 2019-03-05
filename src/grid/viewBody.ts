@@ -214,7 +214,7 @@ export class ViewDataRow extends ViewRow {
       if (!h[thisMounted[i]]) this.unmountCell(parseInt(thisMounted[i]));
     }
 
-    this.domNode.style.left = margin + 'px';
+    // this.domNode.style.left = margin + 'px';
   }
 
   invalidate(): void {
@@ -251,7 +251,7 @@ export class ViewGroupRow extends ViewRow {
       this.cell = new ViewMergedCell<Group, GroupingSetting>(this.domNode, -1, this.group, config.formatter, config);
       this.cell.mount();
     }
-    this.domNode.style.left = margin + 'px';
+    // this.domNode.style.left = margin + 'px';
   }
 
   invalidate(): void {
@@ -307,7 +307,7 @@ export class ViewGroupTotalsRow extends ViewRow {
       if (!h[thisMounted[i]]) this.unmountCell(parseInt(thisMounted[i]));
     }
 
-    this.domNode.style.left = margin + 'px';
+    // this.domNode.style.left = margin + 'px';
   }
 
   invalidate(): void {

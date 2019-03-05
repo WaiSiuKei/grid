@@ -355,6 +355,7 @@ export class Grid implements IDisposable {
     let { mounted, margin } = this.header.render(scrollLeft, viewWidth);
     this.memorizedMargin = margin;
     this.memorizedMounted = mounted;
+    this.rowsContainer.style.left = margin + 'px';
     for (let i = 0, len = this.mountedRows.length; i < len; i++) {
       this.mountedRows[i].updateCell(mounted, margin);
     }
