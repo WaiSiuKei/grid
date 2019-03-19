@@ -13,7 +13,7 @@ import { dispose, IDisposable } from 'src/base/common/lifecycle';
 import { Datum, Group, GroupTotals, IDataSet, Row } from 'src/data/data';
 import { DataView } from 'src/data/dataView';
 import { PatchChange, PatchItem } from 'src/base/common/patch';
-import { ViewBodyRow, ViewDataRow, ViewGroupRow, ViewGroupTotalsRow, ViewVirtialRow } from 'src/grid/viewBody';
+import { ViewBodyRow, ViewDataRow, ViewGroupRow, ViewGroupTotalsRow, ViewVirtualRow } from 'src/grid/viewBody';
 
 function validateAndEnforceOptions(opt: Partial<IGridOptions>): IGridOptions {
   return Object.assign({}, GRID_DEFAULT, opt) as IGridOptions;
@@ -613,7 +613,7 @@ export class Grid implements IDisposable {
     if (row) {
       return new ViewDataRow(this.rowsContainer, this.ctx, row as Datum);
     }
-    return new ViewVirtialRow(this.rowsContainer, this.ctx);
+    return new ViewVirtualRow(this.rowsContainer, this.ctx);
   }
   //#endregion
 

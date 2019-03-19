@@ -13,6 +13,7 @@ interface IViewCell {
 abstract class ViewCell implements IDisposable, IViewCell {
   domNode: HTMLElement;
   mounted: boolean = false;
+  rendered: boolean = false;
 
   constructor(protected host: HTMLElement, protected width: number) {
 
@@ -25,6 +26,7 @@ abstract class ViewCell implements IDisposable, IViewCell {
 
   mount(slibing?: IViewCell) {
     this.mounted = true;
+    this.rendered = true;
     if (slibing && slibing.mounted) {
       this.host.insertBefore(this.domNode, slibing.domNode);
     } else {
@@ -38,8 +40,25 @@ abstract class ViewCell implements IDisposable, IViewCell {
 
   unmount() {
     this.mounted = false;
+    this.rendered = false;
     ReactDOM.unmountComponentAtNode(this.domNode);
     this.host.removeChild(this.domNode);
+  }
+
+  attachDOM() {
+    this.mounted = true;
+    this.host.appendChild(this.domNode);
+  }
+
+  offDOM() {
+    this.rendered = false;
+    this.host.removeChild(this.domNode);
+  }
+
+  render() {
+    this.rendered = true;
+    let component = this.getComponent();
+    if (component) ReactDOM.render(component(), this.domNode);
   }
 
   dispose() {
@@ -181,45 +200,33 @@ export class ViewDataRow extends ViewRow {
     super(host, ctx);
   }
 
-  private mountCell(index: number): boolean {
-    let cell: ViewCell = this.cellCache[index];
-    if (!cell) {
-      let col = this.ctx.columns[index];
-      cell = new ViewDataCell(this.domNode, col.width, this.data, col);
-      this.cellCache[index] = cell;
-    }
-    if (cell.mounted) return false;
-
-    cell.mount(this.cellCache[index + 1]);
-    return true;
-  }
-
-  private unmountCell(index: number | string): boolean {
-    let cell = this.cellCache[index];
-    if (cell) {
-      cell.dispose();
-      delete this.cellCache[index];
-    }
-    return true;
-  }
-
   updateCell(headerMounted: string[], margin: number): void {
     let thisMounted = Object.keys(this.cellCache);
-    let h = {};
+    for (let k of thisMounted) {
+      if (headerMounted.indexOf(k) > -1) this.cellCache[k].offDOM();
+      else {
+        this.cellCache[k].dispose();
+        delete this.cellCache[k];
+      }
+    }
     for (let i = 0, len = headerMounted.length; i < len; i++) {
-      h[headerMounted[i]] = true;
-      this.mountCell(parseInt(headerMounted[i]));
+      let index = parseInt(headerMounted[i]);
+      if (!this.cellCache[index]) {
+        let col = this.ctx.columns[index];
+        this.cellCache[index] = new ViewDataCell(this.domNode, col.width, this.data, col);
+      }
+      let c = this.cellCache[index];
+      c.attachDOM();
+      if (!c.rendered) {
+        c.render();
+      }
     }
-    for (let i = 0, len = thisMounted.length; i < len; i++) {
-      if (!h[thisMounted[i]]) this.unmountCell(parseInt(thisMounted[i]));
-    }
-
-    // this.domNode.style.left = margin + 'px';
   }
 
   invalidate(): void {
     Object.keys(this.cellCache).forEach(k => {
-      this.unmountCell(k);
+      this.cellCache[k].dispose();
+      delete this.cellCache[k];
     });
     this.cellCache = Object.create(null);
   }
@@ -254,7 +261,7 @@ export class ViewGroupRow extends ViewRow {
       }
     } else {
       if (this.cell) {
-        this.cell.dispose()
+        this.cell.dispose();
         this.cell = null;
       }
     }
@@ -333,7 +340,7 @@ export class ViewGroupTotalsRow extends ViewRow {
   }
 }
 
-export class ViewVirtialRow extends ViewRow {
+export class ViewVirtualRow extends ViewRow {
   updateCell(headerMounted: string[], margin: number): void {
     // noop
   }
@@ -342,4 +349,4 @@ export class ViewVirtialRow extends ViewRow {
   }
 }
 
-export type ViewBodyRow = ViewDataRow | ViewGroupRow | ViewGroupTotalsRow | ViewVirtialRow
+export type ViewBodyRow = ViewDataRow | ViewGroupRow | ViewGroupTotalsRow | ViewVirtualRow
