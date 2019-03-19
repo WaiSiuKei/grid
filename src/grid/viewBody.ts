@@ -246,12 +246,18 @@ export class ViewGroupRow extends ViewRow {
     super(host, ctx);
   }
   updateCell(headerMounted: string[], margin: number): void {
-    if (!this.cell) {
-      let config = this.ctx.model.getGrouping(this.group.level);
-      this.cell = new ViewMergedCell<Group, GroupingSetting>(this.domNode, -1, this.group, config.formatter, config);
-      this.cell.mount();
+    if (headerMounted.indexOf('0') > -1) {
+      if (!this.cell) {
+        let config = this.ctx.model.getGrouping(this.group.level);
+        this.cell = new ViewMergedCell<Group, GroupingSetting>(this.domNode, -1, this.group, config.formatter, config);
+        this.cell.mount();
+      }
+    } else {
+      if (this.cell) {
+        this.cell.dispose()
+        this.cell = null;
+      }
     }
-    // this.domNode.style.left = margin + 'px';
   }
 
   invalidate(): void {
