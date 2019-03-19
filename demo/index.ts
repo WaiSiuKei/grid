@@ -38,7 +38,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 1; i++) {
   data[i] = {
     // title: 'Task ' + i,
     title: i,
@@ -78,28 +78,28 @@ let dv = new DataView();
 
 let t = new Grid(document.getElementById('myGrid'), dv, columns);
 
-dv.setGrouping([{
-  comparer(a: number, b: number) {
-    return a - b;
-  },
-  accessor(d) {
-    return Math.floor(d.percentComplete / 10);
-  },
-  aggregators: [
-    new CountAggregator('percentComplete')
-  ]
-}]);
-dv.setSorting([{
-  accessor: 'percentComplete',
-  comparer(a: number, b: number) {
-    return a - b;
-  },
-}, {
-  accessor: 'title',
-  comparer(a: number, b: number) {
-    return a - b;
-  },
-}]);
+// dv.setGrouping([{
+//   comparer(a: number, b: number) {
+//     return a - b;
+//   },
+//   accessor(d) {
+//     return Math.floor(d.percentComplete / 10);
+//   },
+//   aggregators: [
+//     new CountAggregator('percentComplete')
+//   ]
+// }]);
+// dv.setSorting([{
+//   accessor: 'percentComplete',
+//   comparer(a: number, b: number) {
+//     return a - b;
+//   },
+// }, {
+//   accessor: 'title',
+//   comparer(a: number, b: number) {
+//     return a - b;
+//   },
+// }]);
 // dv.setFilter((d) => {
 //   return Math.floor(d.percentComplete / 10) > 2;
 // });
