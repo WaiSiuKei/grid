@@ -316,67 +316,96 @@ export class ViewGroupRow extends ViewRow {
 }
 
 export class ViewGroupTotalsRow extends ViewRow {
-  protected cellCache: { [key: string]: ViewCell } = Object.create(null);
+  private keyOfMounted: string[] = [];
+  private mountedCells: ViewCell[] = [];
 
   constructor(host: HTMLElement, ctx: GridContext, private groupTotals: GroupTotals) {
     super(host, ctx);
   }
 
-  private mountCell(index: number): boolean {
-    let cell: ViewCell = this.cellCache[index];
-    if (!cell) {
-      let col = this.ctx.columns[index];
-      let a = this.groupTotals.getByField(col.field);
-      if (a) {
-        cell = new ViewAggregationCell(this.domNode, col.width, a.field, a.value, a.type);
-      } else {
-        cell = new ViewEmptyCell(this.domNode, col.width);
-      }
-      this.cellCache[index] = cell;
-    }
-    if (cell.mounted) return false;
-
-    cell.mountAfter(this.cellCache[index + 1]);
-    return true;
-  }
-
-  private unmountCell(index: number | string): boolean {
-    let cell = this.cellCache[index];
-    if (cell) {
-      cell.dispose();
-      delete this.cellCache[index];
-    }
-    return true;
-  }
-
   updateCell(headerMounted: string[], margin: number): void {
-    let thisMounted = Object.keys(this.cellCache);
-    let h = {};
-    for (let i = 0, len = headerMounted.length; i < len; i++) {
-      h[headerMounted[i]] = true;
-      this.mountCell(parseInt(headerMounted[i]));
+    let common = headerMounted.filter(h => this.keyOfMounted.indexOf(h) > -1);
+    if (common.length) {
+      let firstToKeep = common[0];
+      let lastToKeep = common[common.length - 1];
+      let firstMayMount = headerMounted[0];
+      let lastMayMount = headerMounted[headerMounted.length - 1];
+      let len = headerMounted.length;
+      if (firstToKeep === firstMayMount) {
+        // 删除👈，👉填充
+        let idxToStopDeletion = this.keyOfMounted.indexOf(firstToKeep);
+        let idxToDel = 0;
+        while (idxToDel < idxToStopDeletion) {
+          this.mountedCells.shift().dispose();
+          idxToDel++;
+        }
+        let idxToFill = common.length; // idxToStartFilling
+        while (idxToFill < len) {
+          let col = this.ctx.columns[headerMounted[idxToFill]];
+          let a = this.groupTotals.getByField(col.field);
+          let c: ViewCell;
+          if (a) {
+            c = new ViewAggregationCell(this.domNode, col.width, a.field, a.value, a.type);
+          } else {
+            c = new ViewEmptyCell(this.domNode, col.width);
+          }
+          c.mountAfter(this.mountedCells[this.mountedCells.length - 1]);
+          this.mountedCells.push(c);
+          idxToFill++;
+        }
+      } else if (lastToKeep === lastMayMount) {
+        // 删除👉，👈填充
+        let idxToStopDeletion = this.keyOfMounted.indexOf(lastToKeep);
+        let idxToDel = this.mountedCells.length - 1;
+        while (idxToDel > idxToStopDeletion) {
+          this.mountedCells.pop().dispose();
+          idxToDel--;
+        }
+        let idxToFill = len - common.length - 1;// idxToStartFilling
+        while (idxToFill >= 0) {
+          let col = this.ctx.columns[headerMounted[idxToFill]];
+          let a = this.groupTotals.getByField(col.field);
+          let c: ViewCell;
+          if (a) {
+            c = new ViewAggregationCell(this.domNode, col.width, a.field, a.value, a.type);
+          } else {
+            c = new ViewEmptyCell(this.domNode, col.width);
+          }
+          c.mountBefore(this.mountedCells[0]);
+          this.mountedCells.unshift(c);
+          idxToFill--;
+        }
+      }
+    } else {
+      while (this.mountedCells.length) {
+        this.mountedCells.pop().dispose();
+      }
+      for (let i = 0, len = headerMounted.length; i < len; i++) {
+        let col = this.ctx.columns[headerMounted[i]];
+        let a = this.groupTotals.getByField(col.field);
+        let c: ViewCell;
+        if (a) {
+          c = new ViewAggregationCell(this.domNode, col.width, a.field, a.value, a.type);
+        } else {
+          c = new ViewEmptyCell(this.domNode, col.width);
+        }
+        c.mountAfter(this.mountedCells[this.mountedCells.length - 1]);
+        this.mountedCells.push(c);
+      }
     }
-    for (let i = 0, len = thisMounted.length; i < len; i++) {
-      if (!h[thisMounted[i]]) this.unmountCell(parseInt(thisMounted[i]));
-    }
-
-    // this.domNode.style.left = margin + 'px';
+    this.keyOfMounted = headerMounted.slice();
   }
 
   invalidate(): void {
-    Object.keys(this.cellCache).forEach(k => {
-      this.unmountCell(k);
-    });
-    this.cellCache = Object.create(null);
+    while (this.mountedCells.length) {
+      this.mountedCells.pop().dispose();
+    }
+    this.keyOfMounted.length = 0;
   }
 
   dispose() {
     super.dispose();
-    Object.keys(this.cellCache).forEach(i => {
-      this.cellCache[i].dispose();
-      delete this.cellCache[i];
-    });
-
+    this.invalidate();
   }
 }
 
@@ -389,4 +418,5 @@ export class ViewVirtualRow extends ViewRow {
   }
 }
 
+export type ViewBodyCell = ViewCell | ViewEmptyCell | ViewDataCell
 export type ViewBodyRow = ViewDataRow | ViewGroupRow | ViewGroupTotalsRow | ViewVirtualRow

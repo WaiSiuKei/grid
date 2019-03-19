@@ -78,17 +78,17 @@ let dv = new DataView();
 
 let t = new Grid(document.getElementById('myGrid'), dv, columns);
 
-// dv.setGrouping([{
-//   comparer(a: number, b: number) {
-//     return a - b;
-//   },
-//   accessor(d) {
-//     return Math.floor(d.percentComplete / 10);
-//   },
-//   aggregators: [
-//     new CountAggregator('percentComplete')
-//   ]
-// }]);
+dv.setGrouping([{
+  comparer(a: number, b: number) {
+    return a - b;
+  },
+  accessor(d) {
+    return Math.floor(d.percentComplete / 10);
+  },
+  aggregators: [
+    new CountAggregator('percentComplete')
+  ]
+}]);
 // dv.setSorting([{
 //   accessor: 'percentComplete',
 //   comparer(a: number, b: number) {
