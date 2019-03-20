@@ -1,11 +1,12 @@
 // import './index.scss';
-import { Grid } from 'src/grid/gridImpl';
 import { DataView } from 'src/data/dataView';
 import { CountAggregator } from 'src/data/aggregation';
+import { Grid } from 'src/grid/gridImpl';
+import { ColumnPinAlignment } from 'src/grid/grid';
 
 let columns = [
   // multi columns
-  { id: 'title', name: 'Title', field: 'title' },
+  { id: 'title', name: 'Title', field: 'title', pinned: ColumnPinAlignment.Left },
   { id: 'duration', name: 'Duration', field: 'duration' },
   { id: '%', name: '% Complete', field: 'percentComplete' },
   { id: 'start', name: 'Start', field: 'start' },
@@ -20,7 +21,7 @@ let columns = [
   { id: 'g', name: 'g', field: 'g' },
   { id: 'h', name: 'h', field: 'h' },
   { id: 'i', name: 'i', field: 'i' },
-  { id: 'j', name: 'j', field: 'j' },
+  { id: 'total', name: 'total', field: 'j', pinned: ColumnPinAlignment.Right },
 
   // flex grow
   // { id: 'a', name: 'a', field: 'a', flexGrow: 1 },
@@ -75,8 +76,10 @@ for (let i = 0; i < 100; i++) {
 // }
 
 let dv = new DataView();
+dv.setItems(data);
 
-let t = new Grid(document.getElementById('myGrid'), dv, columns);
+let container = document.getElementById('myGrid');
+let t = new Grid(container, dv, columns);
 
 dv.setGrouping([{
   comparer(a: number, b: number) {
@@ -103,7 +106,6 @@ dv.setGrouping([{
 // dv.setFilter((d) => {
 //   return Math.floor(d.percentComplete / 10) > 2;
 // });
-dv.setItems(data);
 // dv.pop();
 // document.addEventListener('keydown', (e) => {
 //   if (e.code === 'Space') {

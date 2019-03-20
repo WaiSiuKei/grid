@@ -154,8 +154,8 @@ dv.setFilter((d) => {
 - [x] Row Groping
 - [x] Sorting
 - [x] Filtering
+- [x] Column pin
 - [ ] Column group
-- [ ] Column pin
 - [ ] Colspan / Rowspan (Merged cell)
 - [ ] Plugins
 - [ ] Column resizing

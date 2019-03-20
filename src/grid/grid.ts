@@ -16,6 +16,7 @@ export interface IGridOptions {
   headerRowHeight: number,
   viewportClass: string,
 
+  internalShowGroup?: boolean
   // enableCellNavigation: true,
   // enableColumnReorder: true,
   // forceFitColumns: false,
@@ -53,6 +54,11 @@ export interface CellFormatter {
   (value: any, m: IGridColumnDefinition, item: Datum): any
 }
 
+export enum ColumnPinAlignment {
+  Left = 'left',
+  Right = 'right'
+}
+
 export interface IGridColumnDefinition {
   id: string
   field: string
@@ -64,4 +70,5 @@ export interface IGridColumnDefinition {
   flexGrow?: number
   flexShrink?: number
   formatter?: CellFormatter
+  pinned?: ColumnPinAlignment
 }

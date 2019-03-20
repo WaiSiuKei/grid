@@ -1,10 +1,10 @@
-import { Grid } from 'src/grid/gridImpl';
+import { GridWidget } from 'src/grid/gridWidget';
 import { DataView } from 'src/data/dataView';
 import { React, ReactDOM } from './rax';
 import { AvgAggregator, CountAggregator, MaxAggregator, MinAggregator, SumAggregator } from 'src/data/aggregation';
 
 export default {
-  Grid,
+  Grid: GridWidget,
   DataView,
   AvgAggregator,
   MinAggregator,

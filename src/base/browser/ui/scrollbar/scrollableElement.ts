@@ -467,47 +467,6 @@ export class ScrollableElement extends AbstractScrollableElement {
   }
 }
 
-export class SmoothScrollableElement extends AbstractScrollableElement {
-
-  constructor(element: HTMLElement, options: ScrollableElementCreationOptions, scrollable: Scrollable) {
-    super(element, options, scrollable);
-  }
-
-}
-
-export class DomScrollableElement extends ScrollableElement {
-
-  private _element: HTMLElement;
-
-  constructor(element: HTMLElement, options: ScrollableElementCreationOptions) {
-    super(element, options);
-    this._element = element;
-    this.onScroll((e) => {
-      if (e.scrollTopChanged) {
-        this._element.scrollTop = e.scrollTop;
-      }
-      if (e.scrollLeftChanged) {
-        this._element.scrollLeft = e.scrollLeft;
-      }
-    });
-    this.scanDomNode();
-  }
-
-  public scanDomNode(): void {
-    // widh, scrollLeft, scrollWidth, height, scrollTop, scrollHeight
-    this.setScrollDimensions({
-      width: this._element.clientWidth,
-      scrollWidth: this._element.scrollWidth,
-      height: this._element.clientHeight,
-      scrollHeight: this._element.scrollHeight
-    });
-    this.setScrollPosition({
-      scrollLeft: this._element.scrollLeft,
-      scrollTop: this._element.scrollTop,
-    });
-  }
-}
-
 function resolveOptions(opts: ScrollableElementCreationOptions): ScrollableElementResolvedOptions {
   let result: ScrollableElementResolvedOptions = {
     lazyRender: (typeof opts.lazyRender !== 'undefined' ? opts.lazyRender : false),

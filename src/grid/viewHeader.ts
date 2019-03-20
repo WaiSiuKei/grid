@@ -48,6 +48,8 @@ export class ViewHeaderCell implements IDisposable {
 
 export class ViewHeaderRow implements IDisposable {
   domNode: HTMLElement;
+  pinedLayer: HTMLElement;
+  floatingLayer: HTMLElement;
 
   private cellCache: { [index: number]: ViewHeaderCell } = Object.create(null);
 
