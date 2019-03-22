@@ -1,9 +1,11 @@
 import { CellFormatter, IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
-import { addClass } from 'src/base/browser/dom';
+import { addClass, removeClass } from 'src/base/browser/dom';
 import { GridContext } from 'src/grid/girdContext';
 import { ReactDOM } from '../rax';
 import { Datum, defaultGroupTotalFormatter, Formatter, Group, GroupingSetting, GroupTotals } from 'src/data/data';
+import { Iterator } from 'src/base/common/iterator';
+import from = Iterator.from;
 
 interface IViewCell {
   domNode: HTMLElement
@@ -54,6 +56,17 @@ abstract class ViewCell implements IDisposable, IViewCell {
 
     this.mounted = true;
     this.render();
+  }
+
+  private _active: boolean = false;
+  setActive(val: boolean) {
+    if (this._active === val) return;
+    this._active = val;
+    if (val) {
+      addClass(this.domNode, 'active');
+    } else {
+      removeClass(this.domNode, 'active');
+    }
   }
 
   private render() {
@@ -141,6 +154,8 @@ abstract class ViewRow implements IDisposable {
   prevSlibing: ViewRow = null;
   nextSlibing: ViewRow = null;
 
+  hasActive: boolean = false;
+
   constructor(protected host: HTMLElement, protected ctx: GridContext) {
     let container = document.createElement('div');
     addClass(container, 'nila-grid-row');
@@ -148,6 +163,10 @@ abstract class ViewRow implements IDisposable {
     if (this.ctx.options.rowHeight) {
       this.domNode.style.height = this.ctx.options.rowHeight + 'px';
     }
+  }
+
+  updateRowIndex(idx: number | string) {
+    this.domNode.dataset.index = idx.toString();
   }
 
   mountBefore(slibing: ViewRow = null) {
@@ -187,6 +206,10 @@ abstract class ViewRow implements IDisposable {
     this.nextSlibing = null;
     this.host.removeChild(this.domNode);
     this.mounted = false;
+  }
+
+  setActiveCells(fromCol: number, toCol: number) {
+    console.log(fromCol, toCol);
   }
 
   dispose() {
@@ -266,6 +289,8 @@ export class ViewDataRow extends ViewRow {
       }
     }
     this.keyOfMounted = headerMounted.slice();
+
+    this.setActiveCells(this.activeFrom, this.activeTo);
   }
 
   invalidate(): void {
@@ -273,6 +298,30 @@ export class ViewDataRow extends ViewRow {
       this.mountedCells.pop().dispose();
     }
     this.keyOfMounted.length = 0;
+  }
+
+  private activeFrom: number = -1;
+  private activeTo: number = -1;
+  setActiveCells(from: number, to: number) {
+    this.activeFrom = from;
+    this.activeTo = to;
+    if (from === -1 && to === -1) {
+      this.hasActive = false;
+      for (let c of this.mountedCells) {
+        c.setActive(false);
+      }
+    } else {
+      this.hasActive = true;
+      for (let i = 0, len = this.keyOfMounted.length; i < len; i++) {
+        let k = this.keyOfMounted[i];
+        let val = parseInt(k);
+        if (val >= from && val <= to) {
+          this.mountedCells[i].setActive(true);
+        } else {
+          this.mountedCells[i].setActive(false);
+        }
+      }
+    }
   }
 
   toString() {

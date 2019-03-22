@@ -1,24 +1,28 @@
 import './grid.css';
 import { ScrollbarVisibility, ScrollEvent } from 'src/base/common/scrollable';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
-import { addClasses, getContentHeight, getContentWidth } from 'src/base/browser/dom';
+import { addClasses, addDisposableListener, EventType, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
 import { isString, isUndefinedOrNull } from 'src/base/common/types';
 import { ViewHeaderRow } from 'src/grid/viewHeader';
 import { GridContext } from 'src/grid/girdContext';
 import { sumBy } from 'src/base/common/functional';
-import { dispose, IDisposable } from 'src/base/common/lifecycle';
+import { Disposable, dispose, IDisposable } from 'src/base/common/lifecycle';
 import { Datum, Group, GroupTotals, IDataSet, Row } from 'src/data/data';
 import { DataView } from 'src/data/dataView';
 import { PatchChange, PatchItem } from 'src/base/common/patch';
 import { ViewBodyRow, ViewDataRow, ViewGroupRow, ViewGroupTotalsRow, ViewVirtualRow } from 'src/grid/viewBody';
+import { IGridMouseEvent, IGridWidget, IRange } from 'src/grid/grid';
+import { clientToLocal } from 'src/base/browser/event';
+import { Emitter } from 'src/base/common/event';
+import { StandardKeyboardEvent } from 'src/base/browser/ui/keyboardEvent';
 
 export interface IGridWidgetOptions {
   showHorizonalScrollbar: boolean
   showVerticalScrollbar: boolean
 }
 
-export class GridWidget implements IDisposable {
+export class GridWidget implements IDisposable, IGridWidget {
   protected static counter: number = 0;
 
   protected domNode: HTMLElement;
@@ -34,24 +38,53 @@ export class GridWidget implements IDisposable {
 
   private toDispose: IDisposable[] = [];
 
+  private _onClick: Emitter<IGridMouseEvent> = new Emitter<IGridMouseEvent>();
+  get onClick() { return this._onClick.event; }
+
+  private _onKeyDown: Emitter<StandardKeyboardEvent> = new Emitter<StandardKeyboardEvent>();
+  get onKeyDown() { return this._onKeyDown.event; }
+
   constructor(protected container: HTMLElement, ds: IDataSet, protected ctx: GridContext, protected options: IGridWidgetOptions) {
     this.createElement(container);
 
     if (ds instanceof DataView) {
       this.registerDataListeners(ds);
     }
+
+    this.toDispose.push(this._onClick);
+    this.toDispose.push(this._onKeyDown);
   }
 
   //#region private listener
   private registerViewListeners() {
-    this.toDispose.push(this.scrollableElement.onScroll((e) => {
-      if (e.heightChanged || e.scrollHeightChanged || e.scrollTopChanged) {
-        this.renderVerticalChanges(e.height, e.scrollTop);
+    this.toDispose.push(addDisposableListener(this.rowsContainer, EventType.CLICK, this.handleBodyClickEvent.bind(this)));
+    this.toDispose.push(addDisposableListener(this.rowsContainer, EventType.KEY_DOWN, this.handleBodyKeyDownEvent.bind(this)));
+  }
+
+  private handleBodyClickEvent(e: MouseEvent) {
+    const { x, y } = clientToLocal(e, this.rowsContainer);
+    let rowNumber = Math.floor(y / this.ctx.options.rowHeight);
+    let acc = 0;
+    const { columns } = this.ctx;
+    let colIndex = 0;
+    for (let i = 0, len = columns.length; i < len; i++) {
+      acc += columns[i].width;
+      if (acc > x) {
+        colIndex = i;
+        break;
       }
-      if (e.widthChanged || e.scrollWidthChanged || e.scrollLeftChanged) {
-        this.renderHorizonalChanges(e.width, e.scrollLeft);
-      }
-    }));
+    }
+    this._onClick.fire({
+      clientX: e.clientX,
+      clientY: e.clientY,
+      row: rowNumber + this.indexOfFirstMountedRow,
+      column: columns[colIndex],
+      data: this.ctx.model.get(rowNumber)
+    });
+  }
+
+  private handleBodyKeyDownEvent(e: KeyboardEvent) {
+    this._onKeyDown.fire(new StandardKeyboardEvent(e));
   }
 
   private registerDataListeners(ds: DataView) {
@@ -62,18 +95,22 @@ export class GridWidget implements IDisposable {
       } else {
         this.handlePatchs(evt);
       }
+      this.setSelection(this.selection);
     }));
   }
 
   public handleScroll(e: ScrollEvent) {
     if (e.heightChanged || e.scrollHeightChanged || e.scrollTopChanged) {
       this.renderVerticalChanges(e.height, e.scrollTop);
-      this.scrollTop = e.scrollTop;
+      if (this.scrollTop != e.scrollTop) {
+        this.scrollableElement.setScrollPosition({ scrollTop: e.scrollTop });
+      }
     }
 
     if (e.widthChanged || e.scrollWidthChanged || e.scrollLeftChanged) {
       this.renderHorizonalChanges(e.width, e.scrollLeft);
     }
+    this.setSelection(this.selection);
   }
   //#endregion
 
@@ -118,7 +155,10 @@ export class GridWidget implements IDisposable {
       vertical: this.options.showVerticalScrollbar ? ScrollbarVisibility.Visible : ScrollbarVisibility.Hidden,
     });
 
+    this.toDispose.push(this.scrollableElement);
+
     this.rowsContainer = document.createElement('div');
+    this.rowsContainer.tabIndex = -1;
     this.rowsContainer.className = 'nila-grid-rows';
 
     this.body.appendChild(this.rowsContainer);
@@ -129,6 +169,8 @@ export class GridWidget implements IDisposable {
     this.domNode.appendChild(body);
     let headerHeight = this.ctx.options.showHeaderRow ? this.ctx.options.headerRowHeight || getContentHeight(this.header.domNode) : 0;
     body.style.height = getContentHeight(this.domNode) - headerHeight + 'px';
+
+    this.registerViewListeners();
   }
 
   public layout(height?: number, width?: number): void {
@@ -187,8 +229,8 @@ export class GridWidget implements IDisposable {
   }
 
   protected set scrollTop(scrollTop: number) {
-    const scrollHeight = this.getTotalRowsHeight() + (this.shouldShowHorizonalScrollbar ? 10 : 0);
-    this.scrollableElement.setScrollDimensions({ scrollHeight });
+    // const scrollHeight = this.getTotalRowsHeight() + (this.shouldShowHorizonalScrollbar ? 10 : 0);
+    // this.scrollableElement.setScrollDimensions({ scrollHeight });
     this.scrollableElement.setScrollPosition({ scrollTop });
   }
 
@@ -206,8 +248,7 @@ export class GridWidget implements IDisposable {
   private renderVerticalChanges(viewHeight: number, scrollTop = 0): void {
     if (!viewHeight) return;
     // console.log('start', this.indexOfFirstMountedRow, this.indexOfLastMountedRow);
-
-    let renderTop = scrollTop;
+    let renderTop = scrollTop + 1;
     let renderBottom = scrollTop + viewHeight;
     // console.log('scrollTop=', scrollTop, 'renderBottom=', renderBottom);
     let shouldFrom = this.indexAt(renderTop);
@@ -293,7 +334,7 @@ export class GridWidget implements IDisposable {
     this.memorizedMounted = mounted;
     this.rowsContainer.style.left = margin + 'px';
     for (let i = 0, len = this.mountedRows.length; i < len; i++) {
-      this.mountedRows[i].updateCell(mounted, margin);
+      this.renderRow(this.mountedRows[i]);
     }
   }
 
@@ -425,12 +466,111 @@ export class GridWidget implements IDisposable {
   }
   //#endregion
 
+  //#region selection
+  selection: IRange;
+  public setSelection(range: IRange = null) {
+    if (this.selection) {
+      for (let r of this.mountedRows) {
+        r.setActiveCells(-1, -1);
+      }
+    }
+    this.selection = range;
+    if (!range) return;
+    const { left, right, top, bottom } = range;
+    if (bottom < this.indexOfFirstMountedRow) return;
+    if (top > this.indexOfLastMountedRow) return;
+    for (let i = 0, len = this.mountedRows.length; i < len; i++) {
+      let row = i + this.indexOfFirstMountedRow;
+      if (row >= range.top && row <= range.bottom) {
+        this.mountedRows[i].setActiveCells(left, right);
+      }
+    }
+  }
+
+  public getSelection(): IRange {
+    return this.selection;
+  }
+  //#endregion
+
+  //#region reveal
+  revealRow(row: number) {
+    if (row >= this.ctx.model.length) throw new Error('超出范围');
+    if (row <= this.indexOfFirstMountedRow) {
+      this.scrollTop = this.ctx.options.rowHeight * (row);
+    } else if (row >= this.indexOfLastMountedRow) {
+      let delta = row - this.indexOfLastMountedRow;
+      let currentScrollTop = this.scrollableElement.getScrollPosition().scrollTop;
+      this.scrollTop = currentScrollTop + delta * this.ctx.options.rowHeight;
+    }
+  }
+  //#endregion
   dispose() {
     this.header.dispose();
     this.scrollableElement.dispose();
     this.domNode.remove();
     dispose(this.toDispose);
     this.toDispose.length = 0;
+  }
+}
+
+export class VirtualGridWidget extends Disposable implements IGridWidget {
+  private _onClick: Emitter<IGridMouseEvent> = new Emitter<IGridMouseEvent>();
+  get onClick() { return this._onClick.event; }
+
+  private _onKeyDown: Emitter<StandardKeyboardEvent> = new Emitter<StandardKeyboardEvent>();
+  get onKeyDown() { return this._onKeyDown.event; }
+
+  domNode: HTMLElement;
+  scrollableElement: ScrollableElement;
+  constructor(protected container: HTMLElement) {
+    super();
+    this.scrollableElement = new ScrollableElement(container, {
+      alwaysConsumeMouseWheel: true,
+      horizontal: ScrollbarVisibility.Hidden,
+      vertical: ScrollbarVisibility.Hidden,
+    });
+
+    this._register(this.scrollableElement);
+
+    this._register(this._onClick);
+    this._register(this._onKeyDown);
+  }
+
+  public layout(height?: number, width?: number): void {
+    // noop
+  }
+
+  public handleScroll(e: ScrollEvent) {
+    // noop
+  }
+  //#endregion
+
+  public invalidate() {
+    // noop
+  }
+
+  public invalidateRow(idx: number): void {
+    // noop
+  }
+
+  public invalidateRows(idxs: number[]) {
+    // noop
+  }
+
+  public invalidateAllRows() {
+    // noop
+  }
+
+  public setSelection(range: IRange = null) {
+    // noop
+  }
+
+  public getSelection(): IRange {
+    return null;
+  }
+
+  revealRow(row: number) {
+
   }
 }
 

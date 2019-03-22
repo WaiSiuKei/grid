@@ -1,5 +1,10 @@
 import { React } from '../rax';
 import { Datum } from 'src/data/data';
+import { Event, Emitter } from 'src/base/common/event';
+import { StandardKeyboardEvent } from 'src/base/browser/ui/keyboardEvent';
+import { ScrollEvent } from 'src/base/common/scrollable';
+import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
+import { GridModel } from 'src/grid/gridModel';
 
 function defaultFormatter(value: any, columnDef: IGridColumnDefinition, dataContext: Datum): any {
   return function () {
@@ -71,4 +76,50 @@ export interface IGridColumnDefinition {
   flexShrink?: number
   formatter?: CellFormatter
   pinned?: ColumnPinAlignment
+}
+
+export interface IRange {
+  left: number // column index
+  right: number // column index
+  top: number
+  bottom: number
+}
+
+export interface IGridMouseEvent {
+  // x: number
+  // y: number
+  clientX: number
+  clientY: number
+  row: number,
+  column: IGridColumnDefinition
+  data: Datum
+}
+
+export interface IGridWidget {
+  onClick: Event<IGridMouseEvent>
+  onKeyDown: Event<StandardKeyboardEvent>
+  scrollableElement: ScrollableElement
+  layout(height?: number, width?: number): void
+  handleScroll(e: ScrollEvent): void
+  invalidate(): void
+  invalidateRow(idx: number): void
+  invalidateRows(idxs: number[]): void
+  invalidateAllRows(): void
+  setSelection(range: IRange): void
+  getSelection(): IRange
+  revealRow(row: number): void
+}
+
+export interface IGrid {
+  onClick: Event<IGridMouseEvent>
+  onKeyDown: Event<StandardKeyboardEvent>
+  columns: IGridColumnDefinition[]
+  model: GridModel;
+  // invalidate(): void
+  // invalidateRow(idx: number): void
+  // invalidateRows(idxs: number[]): void
+  // invalidateAllRows(): void
+  setSelection(range: IRange): void
+  getSelection(): IRange
+  revealRow(row: number): void
 }

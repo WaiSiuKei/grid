@@ -155,8 +155,8 @@ dv.setFilter((d) => {
 - [x] Sorting
 - [x] Filtering
 - [x] Column pin
+- [ ] Column resizing
+- [ ] Column re-ordering
 - [ ] Column group
 - [ ] Colspan / Rowspan (Merged cell)
 - [ ] Plugins
-- [ ] Column resizing
-- [ ] Column re-ordering

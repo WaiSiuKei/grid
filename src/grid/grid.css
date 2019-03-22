@@ -9,6 +9,8 @@
   white-space: nowrap;
   position: relative;
   overflow: hidden;
+
+  cursor: default;
 }
 
 .nila-grid .nila-grid-header {
@@ -57,6 +59,10 @@
 .nila-grid .nila-grid-cell {
   height: 100%;
   float: left;
+}
+
+.nila-grid .nila-grid-cell.active {
+  background-color: #DDDDDD;
 }
 
 .nila-grid .nila-grid-rows > .nila-grid-row > .content {

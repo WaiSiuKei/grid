@@ -3,10 +3,12 @@ import { DataView } from 'src/data/dataView';
 import { CountAggregator } from 'src/data/aggregation';
 import { Grid } from 'src/grid/gridImpl';
 import { ColumnPinAlignment } from 'src/grid/grid';
+import { RowSelectionPlugin } from 'src/plugins/rowSelection';
 
 let columns = [
   // multi columns
-  { id: 'title', name: 'Title', field: 'title', pinned: ColumnPinAlignment.Left },
+  // { id: 'title', name: 'Title', field: 'title', pinned: ColumnPinAlignment.Left },
+  { id: 'title', name: 'Title', field: 'title' },
   { id: 'duration', name: 'Duration', field: 'duration' },
   { id: '%', name: '% Complete', field: 'percentComplete' },
   { id: 'start', name: 'Start', field: 'start' },
@@ -21,7 +23,7 @@ let columns = [
   { id: 'g', name: 'g', field: 'g' },
   { id: 'h', name: 'h', field: 'h' },
   { id: 'i', name: 'i', field: 'i' },
-  { id: 'total', name: 'total', field: 'j', pinned: ColumnPinAlignment.Right },
+  // { id: 'total', name: 'total', field: 'j', pinned: ColumnPinAlignment.Right },
 
   // flex grow
   // { id: 'a', name: 'a', field: 'a', flexGrow: 1 },
@@ -39,7 +41,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 50; i++) {
   data[i] = {
     // title: 'Task ' + i,
     title: i,
@@ -80,18 +82,18 @@ dv.setItems(data);
 
 let container = document.getElementById('myGrid');
 let t = new Grid(container, dv, columns);
-
-dv.setGrouping([{
-  comparer(a: number, b: number) {
-    return a - b;
-  },
-  accessor(d) {
-    return Math.floor(d.percentComplete / 10);
-  },
-  aggregators: [
-    new CountAggregator('percentComplete')
-  ]
-}]);
+t.install(new RowSelectionPlugin());
+// dv.setGrouping([{
+//   comparer(a: number, b: number) {
+//     return a - b;
+//   },
+//   accessor(d) {
+//     return Math.floor(d.percentComplete / 10);
+//   },
+//   aggregators: [
+//     new CountAggregator('percentComplete')
+//   ]
+// }]);
 // dv.setSorting([{
 //   accessor: 'percentComplete',
 //   comparer(a: number, b: number) {
