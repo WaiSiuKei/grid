@@ -27,6 +27,23 @@
 .nila-grid .nila-grid-header-cell {
   height: 100%;
   float: left;
+  box-sizing: border-box;
+  padding-left: 5px;
+  display: inline-block;
+}
+
+.nila-grid .nila-grid-header-cell.sortable {
+  padding-right: 15px;
+}
+
+.sortable::after {
+  width: 6px;
+  height: 9px;
+  background-size: 100%;
+  background-image: url('./media/sortable.png');
+  background-repeat: no-repeat;
+  content: '';
+  display: inline-block;
 }
 
 .nila-grid > .nila-scrollable-element {

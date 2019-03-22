@@ -7,7 +7,7 @@ import { RowSelectionPlugin } from 'src/plugins/rowSelection';
 
 let columns = [
   // multi columns
-  { id: 'title', name: 'Title', field: 'title', pinned: ColumnPinAlignment.Left },
+  { id: 'title', name: 'Title', field: 'title', pinned: ColumnPinAlignment.Left, sortable: true },
   { id: 'duration', name: 'Duration', field: 'duration' },
   { id: '%', name: '% Complete', field: 'percentComplete' },
   { id: 'start', name: 'Start', field: 'start' },

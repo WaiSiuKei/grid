@@ -1,3 +1,4 @@
+import './grid.scss';
 import { addClasses, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { isUndefinedOrNull } from 'src/base/common/types';
 import { GridContext } from 'src/grid/girdContext';

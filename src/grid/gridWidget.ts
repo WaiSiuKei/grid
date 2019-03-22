@@ -1,4 +1,3 @@
-import './grid.css';
 import { ScrollbarVisibility, ScrollEvent } from 'src/base/common/scrollable';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
 import { addClasses, addDisposableListener, EventType, getContentHeight, getContentWidth } from 'src/base/browser/dom';

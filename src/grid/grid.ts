@@ -20,10 +20,9 @@ export interface IGridOptions {
   showHeaderRow: boolean
   headerRowHeight: number,
   viewportClass: string,
+  scrollbarSize?: number
 
   internalShowGroup?: boolean
-
-  scrollbarSize?: number
   // enableCellNavigation: true,
   // enableColumnReorder: true,
   // forceFitColumns: false,
@@ -79,6 +78,9 @@ export interface IGridColumnDefinition {
   flexShrink?: number
   formatter?: CellFormatter
   pinned?: ColumnPinAlignment
+  sortable?: boolean
+  // sortingComparer?: (a: Datum, b: Datum) => number,
+  // sortingComparer?: (a: Datum, b: Datum) => number,
 }
 
 export interface IRange {

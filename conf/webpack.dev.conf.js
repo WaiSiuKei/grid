@@ -21,6 +21,17 @@ module.exports = {
         use: ['babel-loader', 'ts-loader']
       },
       {
+        test: /\.(png|jpg)$/,
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 0
+            }
+          }
+        ]
+      },
+      {
         test: /\.js$/,
         exclude: /node_modules/,
         use: ['babel-loader']

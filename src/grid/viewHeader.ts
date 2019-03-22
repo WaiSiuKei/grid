@@ -17,13 +17,20 @@ export class ViewHeaderCell implements IDisposable {
     this.host = container;
 
     let el = document.createElement('div');
-    el.className = 'nila-grid-header-cell';
-    el.innerText = col.name;
+    addClass(el, 'nila-grid-header-cell');
+    if (col.sortable) {
+      addClass(el, 'sortable');
+    }
+
     this.width = col.width;
     el.style.width = `${this.width}px`;
     this.left = left;
     this.right = this.left + this.width;
     this.domNode = el;
+
+    let span = document.createElement('span');
+    span.innerText = col.name;
+    el.appendChild(span);
   }
 
   mount(slibing?: ViewHeaderCell) {
