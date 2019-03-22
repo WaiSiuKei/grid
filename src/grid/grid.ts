@@ -22,6 +22,8 @@ export interface IGridOptions {
   viewportClass: string,
 
   internalShowGroup?: boolean
+
+  scrollbarSize?: number
   // enableCellNavigation: true,
   // enableColumnReorder: true,
   // forceFitColumns: false,
@@ -49,6 +51,7 @@ export const GRID_DEFAULT: Partial<IGridOptions> = {
   defaultFormatter,
   showHeaderRow: true,
   headerRowHeight: 20,
+  scrollbarSize: 8,
 };
 
 export const COLUMN_DEFAULT: Partial<IGridColumnDefinition> = {

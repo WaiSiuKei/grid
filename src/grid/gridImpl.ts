@@ -282,7 +282,6 @@ export class Grid implements IDisposable, IGrid {
 
   setSelection(range: IRange) {
     const [rangeLeft, rangeCenter, rangeRight] = this.handleRange(range, this.leftColumns.length, this.centerColumns.length, this.rightColumns.length);
-    console.log(rangeLeft, rangeCenter, rangeRight);
     this.left.setSelection(rangeLeft);
     this.center.setSelection(rangeCenter);
     this.right.setSelection(rangeRight);

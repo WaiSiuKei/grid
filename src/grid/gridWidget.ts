@@ -149,10 +149,14 @@ export class GridWidget implements IDisposable, IGridWidget {
       let classes = this.ctx.options.viewportClass.split(/\s+/i);
       addClasses(this.body, ...classes);
     }
+
+    let scrollbarSize = this.ctx.options.scrollbarSize;
     this.scrollableElement = new ScrollableElement(this.body, {
       alwaysConsumeMouseWheel: true,
       horizontal: this.options.showHorizonalScrollbar ? ScrollbarVisibility.Visible : ScrollbarVisibility.Hidden,
       vertical: this.options.showVerticalScrollbar ? ScrollbarVisibility.Visible : ScrollbarVisibility.Hidden,
+      verticalScrollbarSize: scrollbarSize,
+      horizontalScrollbarSize: scrollbarSize,
     });
 
     this.toDispose.push(this.scrollableElement);
