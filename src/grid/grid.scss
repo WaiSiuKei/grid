@@ -34,6 +34,7 @@
 
 .nila-grid .nila-grid-header-cell.sortable {
   padding-right: 15px;
+  cursor: pointer;
 }
 
 .sortable::after {
@@ -44,6 +45,14 @@
   background-repeat: no-repeat;
   content: '';
   display: inline-block;
+}
+
+.sortable.desc::after {
+  background-image: url('./media/desc.png');
+}
+
+.sortable.asc::after {
+  background-image: url('./media/asc.png');
 }
 
 .nila-grid > .nila-scrollable-element {

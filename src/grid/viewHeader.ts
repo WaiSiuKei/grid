@@ -1,6 +1,6 @@
 import { IGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
-import { addClass, getContentWidth } from 'src/base/browser/dom';
+import { addClass, getContentWidth, removeClasses } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
 import { GridContext } from 'src/grid/girdContext';
 
@@ -40,6 +40,11 @@ export class ViewHeaderCell implements IDisposable {
     } else {
       this.host.appendChild(this.domNode);
     }
+  }
+
+  updateSortingDirection(direction: 'asc' | 'desc' | '') {
+    removeClasses(this.domNode, 'asc', 'desc');
+    addClass(this.domNode, direction);
   }
 
   unmount() {
@@ -125,6 +130,13 @@ export class ViewHeaderRow implements IDisposable {
       mounted,
       margin
     };
+  }
+
+  public updateSortingDirection(col: number, direction: 'asc' | 'desc' | '') {
+    let cell = this.cellCache[col];
+    if (cell) {
+      cell.updateSortingDirection(direction);
+    }
   }
 
   public mountTo(container: HTMLElement): void {

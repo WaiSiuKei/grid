@@ -5,7 +5,7 @@ import { GridContext } from 'src/grid/girdContext';
 import { mapBy, sum, sumBy } from 'src/base/common/functional';
 import { dispose, IDisposable } from 'src/base/common/lifecycle';
 import { IDataSet } from 'src/data/data';
-import { CellFormatter, COLUMN_DEFAULT, ColumnPinAlignment, GRID_DEFAULT, IGridWidget, IGridColumnDefinition, IGridMouseEvent, IGridOptions, IRange, IGrid } from 'src/grid/grid';
+import { CellFormatter, COLUMN_DEFAULT, ColumnPinAlignment, GRID_DEFAULT, IGridWidget, IGridColumnDefinition, IGridMouseEvent, IGridOptions, IRange, IGrid, InternalGridColumnDefinition } from 'src/grid/grid';
 import { GridWidget, VirtualGridWidget } from 'src/grid/gridWidget';
 import { GridModel } from 'src/grid/gridModel';
 import { IPlugin } from 'src/plugins/plugin';
@@ -16,8 +16,8 @@ function validateAndEnforceOptions(opt: Partial<IGridOptions>): IGridOptions {
   return Object.assign({}, GRID_DEFAULT, opt) as IGridOptions;
 }
 
-function validatedAndEnforeColumnDefinitions(col: Array<Partial<IGridColumnDefinition>>, defaultWidth?: number, defaultFormatter?: CellFormatter): IGridColumnDefinition[] {
-  let validatedCols: IGridColumnDefinition[] = [];
+function validatedAndEnforeColumnDefinitions(col: Array<Partial<IGridColumnDefinition>>, defaultWidth?: number, defaultFormatter?: CellFormatter): InternalGridColumnDefinition[] {
+  let validatedCols: InternalGridColumnDefinition[] = [];
 
   let defaultDef = COLUMN_DEFAULT;
   if (defaultWidth) {
@@ -53,8 +53,17 @@ function validatedAndEnforeColumnDefinitions(col: Array<Partial<IGridColumnDefin
     if (m.width > m.maxWidth) {
       m.width = m.maxWidth;
     }
-    validatedCols.push(m as IGridColumnDefinition);
+
+    if (m.sortable === true) {
+      m.sortable = {
+        accessor: m.field,
+      };
+      m.internalSortingDirection = '';
+    }
+
+    validatedCols.push(m as InternalGridColumnDefinition);
   }
+
   return validatedCols;
 }
 
@@ -83,9 +92,9 @@ export class Grid implements IDisposable, IGrid {
   private _onKeyDown: Emitter<StandardKeyboardEvent> = new Emitter<StandardKeyboardEvent>();
   get onKeyDown() { return this._onKeyDown.event; }
 
-  private leftColumns: IGridColumnDefinition[];
-  private centerColumns: IGridColumnDefinition[];
-  private rightColumns: IGridColumnDefinition[];
+  private leftColumns: InternalGridColumnDefinition[];
+  private centerColumns: InternalGridColumnDefinition[];
+  private rightColumns: InternalGridColumnDefinition[];
 
   private widthOfLeft: number;
   private widthOfCenter: number;

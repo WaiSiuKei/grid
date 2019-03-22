@@ -58,6 +58,50 @@ export class GridWidget implements IDisposable, IGridWidget {
   private registerViewListeners() {
     this.toDispose.push(addDisposableListener(this.rowsContainer, EventType.CLICK, this.handleBodyClickEvent.bind(this)));
     this.toDispose.push(addDisposableListener(this.rowsContainer, EventType.KEY_DOWN, this.handleBodyKeyDownEvent.bind(this)));
+    this.toDispose.push(addDisposableListener(this.header.domNode, EventType.CLICK, this.handleHeaderClickEvent.bind(this)));
+  }
+
+  private handleHeaderClickEvent(e: MouseEvent) {
+    const { x } = clientToLocal(e, this.rowsContainer);
+    let acc = 0;
+    const { columns } = this.ctx;
+    let colIndex = 0;
+    for (let i = 0, len = columns.length; i < len; i++) {
+      acc += columns[i].width;
+      if (acc > x) {
+        colIndex = i;
+        break;
+      }
+    }
+    let col = columns[colIndex];
+    if (col.sortable) {
+      switch (col.internalSortingDirection) {
+        case 'asc':
+          // -> desc
+          this.ctx.model.ds.setSorting([{
+            accessor: col.field,
+            comparer: col.sortable.comparer || ((a: any, b: any) => a - b)
+          }]);
+          col.internalSortingDirection = 'desc';
+          this.header.updateSortingDirection(colIndex, 'desc');
+          break;
+        case 'desc':
+          // ->none
+          this.ctx.model.ds.setSorting([]);
+          col.internalSortingDirection = '';
+          this.header.updateSortingDirection(colIndex, '');
+          break;
+        default:
+          // ->asc
+          this.ctx.model.ds.setSorting([{
+            accessor: col.field,
+            comparer: col.sortable.comparer ? ((a: any, b: any) => col.sortable.comparer(b, a)) : ((a: any, b: any) => b - a)
+          }]);
+          col.internalSortingDirection = 'asc';
+          this.header.updateSortingDirection(colIndex, 'asc');
+          break;
+      }
+    }
   }
 
   private handleBodyClickEvent(e: MouseEvent) {

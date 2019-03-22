@@ -1,12 +1,12 @@
 import { React } from '../rax';
-import { Datum } from 'src/data/data';
+import { Datum, SortingSetting } from 'src/data/data';
 import { Event, Emitter } from 'src/base/common/event';
 import { StandardKeyboardEvent } from 'src/base/browser/ui/keyboardEvent';
 import { ScrollEvent } from 'src/base/common/scrollable';
 import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableElement';
 import { GridModel } from 'src/grid/gridModel';
 
-function defaultFormatter(value: any, columnDef: IGridColumnDefinition, dataContext: Datum): any {
+function defaultFormatter(value: any, columnDef: InternalGridColumnDefinition, dataContext: Datum): any {
   return function () {
     return React.createElement('div', null, (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
   };
@@ -78,9 +78,24 @@ export interface IGridColumnDefinition {
   flexShrink?: number
   formatter?: CellFormatter
   pinned?: ColumnPinAlignment
-  sortable?: boolean
-  // sortingComparer?: (a: Datum, b: Datum) => number,
-  // sortingComparer?: (a: Datum, b: Datum) => number,
+  sortable?: boolean | Partial<SortingSetting>
+  internalSortingDirection?: 'asc' | 'desc' | ''
+}
+
+export interface InternalGridColumnDefinition {
+  id: string
+  field: string
+  name: string
+
+  minWidth?: number
+  width?: number
+  maxWidth?: number
+  flexGrow?: number
+  flexShrink?: number
+  formatter?: CellFormatter
+  pinned?: ColumnPinAlignment
+  sortable?: Partial<SortingSetting>
+  internalSortingDirection?: 'asc' | 'desc' | ''
 }
 
 export interface IRange {
@@ -96,7 +111,7 @@ export interface IGridMouseEvent {
   clientX: number
   clientY: number
   row: number,
-  column: IGridColumnDefinition
+  column: InternalGridColumnDefinition
   data: Datum
 }
 
@@ -118,7 +133,7 @@ export interface IGridWidget {
 export interface IGrid {
   onClick: Event<IGridMouseEvent>
   onKeyDown: Event<StandardKeyboardEvent>
-  columns: IGridColumnDefinition[]
+  columns: InternalGridColumnDefinition[]
   model: GridModel;
   // invalidate(): void
   // invalidateRow(idx: number): void

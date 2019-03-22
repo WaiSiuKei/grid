@@ -9,7 +9,7 @@ let columns = [
   // multi columns
   { id: 'title', name: 'Title', field: 'title', pinned: ColumnPinAlignment.Left, sortable: true },
   { id: 'duration', name: 'Duration', field: 'duration' },
-  { id: '%', name: '% Complete', field: 'percentComplete' },
+  { id: '%', name: '%', field: 'percentComplete', sortable: true },
   { id: 'start', name: 'Start', field: 'start' },
   { id: 'finish', name: 'Finish', field: 'finish' },
   { id: 'effort-driven', name: 'Effort Driven', field: 'effortDriven' },

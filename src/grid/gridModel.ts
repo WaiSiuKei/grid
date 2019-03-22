@@ -4,7 +4,7 @@ import { isArray } from 'src/base/common/types';
 
 export class GridModel {
   private items: Datum[] = [];
-  private ds: DataView;
+  public ds: DataView;
 
   constructor(ds: IDataSet) {
     if (ds instanceof DataView) {
