@@ -109,7 +109,8 @@ export class Grid implements IDisposable, IGrid {
 
     let css = `nila-grid-instance-${Grid.counter++}`;
     addClasses(this.container, 'nila-grid', css);
-    addClass(this.container, 'nila-dark');
+
+    addClass(this.container, options.theme || 'nila-light');
 
     let opt = validateAndEnforceOptions(options);
     this.model = new GridModel(ds);

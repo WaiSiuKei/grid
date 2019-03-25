@@ -21,6 +21,7 @@ export interface IGridOptions {
   headerRowHeight: number,
   viewportClass: string,
   scrollbarSize?: number
+  theme: string
 
   internalShowGroup?: boolean
   // enableCellNavigation: true,
