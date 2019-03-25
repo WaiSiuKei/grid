@@ -36,7 +36,7 @@ let columns = [
             return setCount(!count);
           },
           className: props.value
-        }, count.toString());
+        }, props.value);
       }
 
       return React.createElement(Welcome, { value, col, dataContext });

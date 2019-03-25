@@ -16,29 +16,6 @@ div.nila-grid-part {
   height: 100%;
   width: 100%;
   overflow: hidden;
-
-  box-sizing: border-box;
-  border-style: solid;
-  border-top-width: 0;
-  border-bottom-width: 0;
-  border-left-width: 0;
-  border-right-width: 0;
-
-  &:not(:first-of-type) {
-    border-left-width: 1px;
-  }
-
-  &.left {
-    z-index: 1;
-  }
-
-  &.center {
-    z-index: 0;
-  }
-
-  &.right {
-    z-index: 0;
-  }
 }
 
 .nila-grid-part .nila-grid-header {
@@ -74,6 +51,18 @@ div.nila-grid-part {
 
   &:last-of-type {
     border-right-width: 0;
+  }
+}
+
+.nila-grid-part.left div.nila-grid-header-cell {
+  &:last-of-type {
+    border-right-width: 1px;
+  }
+}
+
+.nila-grid-part.right div.nila-grid-header-cell {
+  &:first-of-type {
+    border-left-width: 1px;
   }
 }
 
@@ -134,21 +123,6 @@ div.nila-grid-part {
   border-top: 0;
   border-bottom-style: solid;
   border-bottom-width: 1px;
-
-  &:last-of-type {
-    border-bottom-width: 0;
-  }
-
-  //:not(:first-child) {
-  //  border-left-width: 1px;
-  //  border-right-width: 0;
-  //  border-top-width: 0;
-  //  border-bottom-width: 0;
-  //}
-  //
-  //:first-child {
-  //  border-left-width: 0;
-  //}
 }
 
 .nila-grid-part div.nila-grid-cell {
@@ -157,11 +131,25 @@ div.nila-grid-part {
   float: left;
   padding: 0 5px;
 
-  border-top: 0;
-  border-bottom: 0;
-  border-right: 0;
+  border-style: solid;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  border-right-width: 0;
+  border-left-width: 0;
+
   &:not(:first-of-type) {
-    border-left-style: solid;
+    border-left-width: 1px;
+  }
+}
+
+.nila-grid-part.left div.nila-grid-cell {
+  &:last-of-type {
+    border-right-width: 1px;
+  }
+}
+
+.nila-grid-part.right div.nila-grid-cell {
+  &:first-of-type {
     border-left-width: 1px;
   }
 }
