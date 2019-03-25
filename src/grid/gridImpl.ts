@@ -107,13 +107,21 @@ export class Grid implements IDisposable, IGrid {
     this.toDispose.push(this._onClick);
     this.toDispose.push(this._onKeyDown);
 
-    addClasses(this.container, 'nila-grid', ` nila-grid-instance-${Grid.counter++}`);
+    let css = `nila-grid-instance-${Grid.counter++}`;
+    addClasses(this.container, 'nila-grid', css);
     addClass(this.container, 'nila-dark');
 
     let opt = validateAndEnforceOptions(options);
     this.model = new GridModel(ds);
     let columns = validatedAndEnforeColumnDefinitions(col, opt.defaultColumnWidth, opt.defaultFormatter);
     resolvingColumnWidths(columns, container.clientWidth);
+
+    let style = document.createElement('style');
+    style.appendChild(document.createTextNode(`
+      .${css}  .nila-grid-cell { line-height: ${opt.rowHeight}px}
+      .${css}  .nila-grid-header-cell { line-height: ${opt.headerRowHeight}px}
+    `));
+    this.container.appendChild(style);
 
     this.leftColumns = columns.filter(c => c.pinned === ColumnPinAlignment.Left);
     this.rightColumns = columns.filter(c => c.pinned === ColumnPinAlignment.Right);
