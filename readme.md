@@ -161,4 +161,3 @@ dv.setFilter((d) => {
 - [ ] Column re-ordering
 - [ ] Column group
 - [ ] Colspan / Rowspan (Merged cell)
-
