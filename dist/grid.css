@@ -2,58 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-.nila-grid {
-  height: 100%;
-  width: 100%;
-  white-space: nowrap;
-  position: relative;
-  overflow: hidden; }
-
-.nila-grid .nila-grid-header {
-  display: block;
-  box-sizing: border-box;
-  overflow: hidden;
-  width: 200%;
-  position: relative; }
-
-.nila-grid .nila-grid-header-cell {
-  height: 100%;
-  float: left; }
-
-.nila-grid > .nila-scrollable-element {
-  display: block;
-  width: 100%;
-  bottom: 0; }
-
-.nila-grid > .nila-scrollable-element > .nila-grid-body {
-  height: 100%;
-  width: 100%;
-  position: relative; }
-
-.nila-grid .nila-grid-rows {
-  position: absolute;
-  width: 200%;
-  height: 100%; }
-
-.nila-grid .nila-grid-rows > .nila-grid-row {
-  display: block;
-  box-sizing: border-box;
-  overflow: hidden;
-  width: 100%;
-  position: relative; }
-
-.nila-grid .nila-grid-cell {
-  height: 100%;
-  float: left; }
-
-.nila-grid .nila-grid-rows > .nila-grid-row > .content {
-  position: relative;
-  height: 100%; }
-
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
 /* Arrows */
 .nila-scrollable-element > .visible {
   opacity: 1;

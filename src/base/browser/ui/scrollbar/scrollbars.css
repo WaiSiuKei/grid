@@ -5,102 +5,113 @@
 
 /* Arrows */
 .nila-scrollable-element > .visible {
-	opacity: 1;
+  opacity: 1;
 
-	/* Background rule added for IE9 - to allow clicks on dom node */
-	background:rgba(0,0,0,0);
+  /* Background rule added for IE9 - to allow clicks on dom node */
+  background: rgba(0, 0, 0, 0);
 
-	transition: opacity 100ms linear;
+  transition: opacity 100ms linear;
 }
+
 .nila-scrollable-element > .invisible {
-	opacity: 0;
-	pointer-events: none;
+  opacity: 0;
+  pointer-events: none;
 }
+
 .nila-scrollable-element > .invisible.fade {
-	transition: opacity 800ms linear;
+  transition: opacity 800ms linear;
 }
 
 /* Scrollable Content Inset Shadow */
 .nila-scrollable-element > .shadow {
-	position: absolute;
-	display: none;
+  position: absolute;
+  display: none;
 }
+
 .nila-scrollable-element > .shadow.top {
-	display: block;
-	top: 0;
-	left: 3px;
-	height: 3px;
-	width: 100%;
-	box-shadow: #DDD 0 6px 6px -6px inset;
+  display: block;
+  top: 0;
+  left: 3px;
+  height: 3px;
+  width: 100%;
+  box-shadow: #DDD 0 6px 6px -6px inset;
 }
+
 .nila-scrollable-element > .shadow.left {
-	display: block;
-	top: 3px;
-	left: 0;
-	height: 100%;
-	width: 3px;
-	box-shadow: #DDD 6px 0 6px -6px inset;
+  display: block;
+  top: 3px;
+  left: 0;
+  height: 100%;
+  width: 3px;
+  box-shadow: #DDD 6px 0 6px -6px inset;
 }
+
 .nila-scrollable-element > .shadow.top-left-corner {
-	display: block;
-	top: 0;
-	left: 0;
-	height: 3px;
-	width: 3px;
+  display: block;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 3px;
 }
+
 .nila-scrollable-element > .shadow.top.left {
-	box-shadow: #DDD 6px 6px 6px -6px inset;
+  box-shadow: #DDD 6px 6px 6px -6px inset;
 }
 
 /* ---------- Default Style ---------- */
 
 .nila-scrollable-element > .scrollbar > .slider {
-	background: rgba(100, 100, 100, .4);
+  background: rgba(100, 100, 100, .4);
 }
-/*.vs-dark .nila-scrollable-element > .scrollbar > .slider {*/
-	/*background: rgba(121, 121, 121, .4);*/
-/*}*/
-/*.hc-black .nila-scrollable-element > .scrollbar > .slider {*/
-	/*background: rgba(111, 195, 223, .6);*/
-/*}*/
+
+.nila-dark .nila-scrollable-element > .scrollbar > .slider {
+  background: rgba(121, 121, 121, .4);
+}
+
+.hc-black .nila-scrollable-element > .scrollbar > .slider {
+  background: rgba(111, 195, 223, .6);
+}
 
 .nila-scrollable-element > .scrollbar > .slider:hover {
-	background: rgba(100, 100, 100, .7);
+  background: rgba(100, 100, 100, .7);
 }
-/*.hc-black .nila-scrollable-element > .scrollbar > .slider:hover {*/
-	/*background: rgba(111, 195, 223, .8);*/
-/*}*/
+
+.hc-black .nila-scrollable-element > .scrollbar > .slider:hover {
+  background: rgba(111, 195, 223, .8);
+}
 
 .nila-scrollable-element > .scrollbar > .slider.active {
-	background: rgba(0, 0, 0, .6);
+  background: rgba(0, 0, 0, .6);
 }
-/*.vs-dark .nila-scrollable-element > .scrollbar > .slider.active {*/
-	/*background: rgba(191, 191, 191, .4);*/
-/*}*/
-/*.hc-black .nila-scrollable-element > .scrollbar > .slider.active {*/
-	/*background: rgba(111, 195, 223, 1);*/
-/*}*/
 
-/*.vs-dark .nila-scrollable-element .shadow.top {*/
-	/*box-shadow: none;*/
-/*}*/
+.nila-dark .nila-scrollable-element > .scrollbar > .slider.active {
+  background: rgba(191, 191, 191, .4);
+}
 
-/*.vs-dark .nila-scrollable-element .shadow.left {*/
-	/*box-shadow: #000 6px 0 6px -6px inset;*/
-/*}*/
+.hc-black .nila-scrollable-element > .scrollbar > .slider.active {
+  background: rgba(111, 195, 223, 1);
+}
 
-/*.vs-dark .nila-scrollable-element .shadow.top.left {*/
-	/*box-shadow: #000 6px 6px 6px -6px inset;*/
-/*}*/
+.nila-dark .nila-scrollable-element .shadow.top {
+  box-shadow: none;
+}
 
-/*.hc-black .nila-scrollable-element .shadow.top {*/
-	/*box-shadow: none;*/
-/*}*/
+.nila-dark .nila-scrollable-element .shadow.left {
+  box-shadow: #000 6px 0 6px -6px inset;
+}
 
-/*.hc-black .nila-scrollable-element .shadow.left {*/
-	/*box-shadow: none;*/
-/*}*/
+.nila-dark .nila-scrollable-element .shadow.top.left {
+  box-shadow: #000 6px 6px 6px -6px inset;
+}
 
-/*.hc-black .nila-scrollable-element .shadow.top.left {*/
-	/*box-shadow: none;*/
-/*}*/
+.hc-black .nila-scrollable-element .shadow.top {
+  box-shadow: none;
+}
+
+.hc-black .nila-scrollable-element .shadow.left {
+  box-shadow: none;
+}
+
+.hc-black .nila-scrollable-element .shadow.top.left {
+  box-shadow: none;
+}

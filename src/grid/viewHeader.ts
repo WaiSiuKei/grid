@@ -1,4 +1,4 @@
-import { IGridColumnDefinition } from 'src/grid/grid';
+import { InternalGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass, getContentWidth, removeClasses } from 'src/base/browser/dom';
 import { clamp } from 'src/base/common/number';
@@ -13,13 +13,17 @@ export class ViewHeaderCell implements IDisposable {
   private host: HTMLElement;
 
   mounted: boolean = false;
-  constructor(container: HTMLElement, cell: number, col: IGridColumnDefinition, left: number) {
+  constructor(container: HTMLElement, cell: number, col: InternalGridColumnDefinition, left: number) {
     this.host = container;
 
     let el = document.createElement('div');
     addClass(el, 'nila-grid-header-cell');
     if (col.sortable) {
       addClass(el, 'sortable');
+    }
+
+    if (col.headerClass) {
+      addClass(el, col.headerClass);
     }
 
     this.width = col.width;

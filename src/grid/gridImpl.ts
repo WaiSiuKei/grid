@@ -1,5 +1,5 @@
 import './grid.scss';
-import { addClasses, getContentHeight, getContentWidth } from 'src/base/browser/dom';
+import { addClass, addClasses, getContentHeight, getContentWidth } from 'src/base/browser/dom';
 import { isUndefinedOrNull } from 'src/base/common/types';
 import { GridContext } from 'src/grid/girdContext';
 import { mapBy, sum, sumBy } from 'src/base/common/functional';
@@ -80,6 +80,7 @@ function resolvingColumnWidths(col: Array<IGridColumnDefinition>, totalWidth: nu
 }
 
 export class Grid implements IDisposable, IGrid {
+  static counter = 0;
   left: IGridWidget;
   center: IGridWidget;
   right: IGridWidget;
@@ -106,6 +107,9 @@ export class Grid implements IDisposable, IGrid {
     this.toDispose.push(this._onClick);
     this.toDispose.push(this._onKeyDown);
 
+    addClasses(this.container, 'nila-grid', ` nila-grid-instance-${Grid.counter++}`);
+    addClass(this.container, 'nila-dark');
+
     let opt = validateAndEnforceOptions(options);
     this.model = new GridModel(ds);
     let columns = validatedAndEnforeColumnDefinitions(col, opt.defaultColumnWidth, opt.defaultFormatter);
@@ -123,7 +127,7 @@ export class Grid implements IDisposable, IGrid {
 
     let leftContainer = document.createElement('div');
     this.container.appendChild(leftContainer);
-    addClasses(leftContainer, 'grid-widget', 'left');
+    addClasses(leftContainer, 'nila-grid-part', 'left');
     leftContainer.style.width = this.widthOfLeft + 'px';
     leftContainer.style.position = 'absolute';
     leftContainer.style.top = '0';
@@ -132,12 +136,12 @@ export class Grid implements IDisposable, IGrid {
 
     let centerContainer = document.createElement('div');
     this.container.appendChild(centerContainer);
-    addClasses(centerContainer, 'grid-widget', 'center');
+    addClasses(centerContainer, 'nila-grid-part', 'center');
     centerContainer.style.position = 'absolute';
     centerContainer.style.top = '0';
-    centerContainer.style.right = this.widthOfRight + 'px';
     centerContainer.style.left = this.widthOfLeft + 'px';
     centerContainer.style.bottom = '0';
+    centerContainer.style.width = this.widthOfCenter + 'px';
 
     if (this.leftColumns.length) {
       this.left = new GridWidget(leftContainer, ds, new GridContext(this.model, this.leftColumns, { ...opt, internalShowGroup: true }), {
@@ -159,7 +163,7 @@ export class Grid implements IDisposable, IGrid {
 
     let rightContainer = document.createElement('div');
     this.container.appendChild(rightContainer);
-    addClasses(rightContainer, 'grid-widget', 'right');
+    addClasses(rightContainer, 'nila-grid-part', 'right');
     rightContainer.style.width = this.widthOfRight + 'px';
     rightContainer.style.position = 'absolute';
     rightContainer.style.top = '0';

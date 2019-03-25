@@ -181,8 +181,7 @@ export class GridWidget implements IDisposable, IGridWidget {
 
   //#region private dom
   protected createElement(container: HTMLElement) {
-    this.domNode = document.createElement('div');
-    this.domNode.className = `nila-grid nila-grid-instance-${GridWidget.counter++}`;
+    this.domNode = container;
 
     this.header = new ViewHeaderRow(this.ctx);
 
@@ -209,7 +208,6 @@ export class GridWidget implements IDisposable, IGridWidget {
     this.rowsContainer.className = 'nila-grid-rows';
 
     this.body.appendChild(this.rowsContainer);
-    container.appendChild(this.domNode);
     this.header.mountTo(this.domNode);
 
     let body = this.scrollableElement.getDomNode();
@@ -545,7 +543,7 @@ export class GridWidget implements IDisposable, IGridWidget {
     if (row <= this.indexOfFirstMountedRow) {
       this.scrollTop = this.ctx.options.rowHeight * (row);
     } else if (row >= this.indexOfLastMountedRow) {
-      let delta = row - this.indexOfLastMountedRow;
+      let delta = row - this.indexOfLastMountedRow + 1;
       let currentScrollTop = this.scrollableElement.getScrollPosition().scrollTop;
       this.scrollTop = currentScrollTop + delta * this.ctx.options.rowHeight;
     }

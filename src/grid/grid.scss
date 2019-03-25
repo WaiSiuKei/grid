@@ -1,8 +1,4 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-.nila-grid {
+div.nila-grid {
   height: 100%;
   width: 100%;
 
@@ -12,27 +8,76 @@
 
   cursor: default;
   user-select: none;
+
+  font-size: 14px;
 }
 
-.nila-grid .nila-grid-header {
+div.nila-grid-part {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+
+  box-sizing: border-box;
+  border-style: solid;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  border-left-width: 0;
+  border-right-width: 0;
+
+  &:not(:first-of-type) {
+    border-left-width: 1px;
+  }
+
+  &.left {
+    z-index: 1;
+  }
+
+  &.center {
+    z-index: 0;
+  }
+
+  &.right {
+    z-index: 0;
+  }
+}
+
+.nila-grid-part .nila-grid-header {
   display: block;
 
   box-sizing: border-box;
   overflow: hidden;
   width: 200%;
 
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+
   position: relative;
 }
 
-.nila-grid .nila-grid-header-cell {
+.nila-grid-part div.nila-grid-header-cell {
   height: 100%;
   float: left;
   box-sizing: border-box;
   padding-left: 5px;
   display: inline-block;
+  border-style: solid;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  border-left-width: 0;
+
+  &:not(:last-of-type) {
+    border-right-width: 1px;
+  }
+
+  &:last-of-type {
+    border-right-width: 0;
+  }
 }
 
-.nila-grid .nila-grid-header-cell.sortable {
+.nila-grid-part .nila-grid-header-cell.sortable {
   padding-right: 15px;
   cursor: pointer;
 }
@@ -40,6 +85,7 @@
 .sortable::after {
   width: 6px;
   height: 9px;
+  margin-left: 5px;
   background-size: 100%;
   background-image: url('./media/sortable.png');
   background-repeat: no-repeat;
@@ -55,26 +101,26 @@
   background-image: url('./media/asc.png');
 }
 
-.nila-grid > .nila-scrollable-element {
+.nila-grid-part > .nila-scrollable-element {
   display: block;
   width: 100%;
   bottom: 0;
 }
 
-.nila-grid > .nila-scrollable-element > .nila-grid-body {
+.nila-grid-part > .nila-scrollable-element > .nila-grid-body {
   height: 100%;
   width: 100%;
   position: relative;
 }
 
-.nila-grid .nila-grid-rows {
+.nila-grid-part .nila-grid-rows {
   position: absolute;
   width: 200%;
   height: 100%;
   outline: none
 }
 
-.nila-grid .nila-grid-rows > .nila-grid-row {
+.nila-grid-part .nila-grid-rows > div.nila-grid-row {
   display: block;
 
   box-sizing: border-box;
@@ -82,18 +128,126 @@
   width: 100%;
 
   position: relative;
+
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+
+  &:last-of-type {
+    border-bottom-width: 0;
+  }
+
+  //:not(:first-child) {
+  //  border-left-width: 1px;
+  //  border-right-width: 0;
+  //  border-top-width: 0;
+  //  border-bottom-width: 0;
+  //}
+  //
+  //:first-child {
+  //  border-left-width: 0;
+  //}
 }
 
-.nila-grid .nila-grid-cell {
+.nila-grid-part div.nila-grid-cell {
+  box-sizing: border-box;
   height: 100%;
   float: left;
+  padding: 0 5px;
+
+  border-top: 0;
+  border-bottom: 0;
+  border-right: 0;
+  &:not(:first-of-type) {
+    border-left-style: solid;
+    border-left-width: 1px;
+  }
 }
 
-.nila-grid .nila-grid-cell.active {
-  background-color: #DDDDDD;
-}
-
-.nila-grid .nila-grid-rows > .nila-grid-row > .content {
+.nila-grid-part .nila-grid-rows > .nila-grid-row > .content {
   position: relative;
   height: 100%;
+}
+
+.nila-grid-cell, .nila-grid-header-cell {
+  overflow: hidden;
+
+  :first-child {
+    width: 100%;
+    height: 100%;
+    display: inline-block; // 防止header的:after换行
+  }
+}
+
+.nila-dark {
+  .nila-grid-part {
+    background-color: #1c2435;
+    border-color: #262b35;
+  }
+
+  .nila-grid-header {
+    background-color: rgb(36, 44, 61);
+    border-color: #262b35;
+  }
+
+  .nila-grid-header-cell {
+    color: #b9c0d0;
+    border-color: #13171a;
+  }
+
+  .nila-grid-row {
+    border-color: #262b35;
+  }
+
+  .nila-grid-cell {
+    border-color: #262b35;
+    color: rgb(244, 244, 244);
+  }
+
+  .nila-grid-cell.active {
+    background-color: rgb(33, 55, 86);
+  }
+}
+
+.nila-light {
+  .nila-grid-part {
+    background-color: #fff;
+    color: #111;
+    border-color: #e9f0f7;
+  }
+
+  .nila-grid-header {
+    background-color: #f9f9f9;
+    border-color: #f9f9f9;
+  }
+
+  .nila-grid-header-cell {
+    border-color: #dce6f3;
+  }
+
+  .nila-grid-row {
+    border-color: #e9f0f7;
+  }
+
+  .nila-grid-cell {
+    border-color: #e9f0f7;
+  }
+
+  .nila-grid-cell.active {
+    background-color: #dde6f7;
+  }
+}
+
+.nila-grid {
+  .text-center {
+    text-align: center;
+  }
+  .text-left {
+    text-align: left;
+  }
+  .text-right {
+    text-align: right;
+  }
 }

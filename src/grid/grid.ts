@@ -71,6 +71,8 @@ export interface IGridColumnDefinition {
   field: string
   name: string
 
+  headerClass?: string
+  cssClass?: string
   minWidth?: number
   width?: number
   maxWidth?: number
@@ -87,6 +89,8 @@ export interface InternalGridColumnDefinition {
   field: string
   name: string
 
+  headerClass?: string
+  cssClass?: string
   minWidth?: number
   width?: number
   maxWidth?: number

@@ -1,11 +1,10 @@
-import { CellFormatter, IGridColumnDefinition } from 'src/grid/grid';
+import { CellFormatter, InternalGridColumnDefinition } from 'src/grid/grid';
 import { IDisposable } from 'src/base/common/lifecycle';
 import { addClass, removeClass } from 'src/base/browser/dom';
 import { GridContext } from 'src/grid/girdContext';
 import { ReactDOM } from '../rax';
 import { Datum, defaultGroupTotalFormatter, Formatter, Group, GroupingSetting, GroupTotals } from 'src/data/data';
 import { Iterator } from 'src/base/common/iterator';
-import from = Iterator.from;
 
 interface IViewCell {
   domNode: HTMLElement
@@ -109,12 +108,15 @@ export class ViewDataCell extends ViewCell implements IDisposable {
   private value: any;
   private formatter: CellFormatter;
 
-  constructor(host: HTMLElement | DocumentFragment, width: number, private datum: Datum, private col: IGridColumnDefinition) {
+  constructor(host: HTMLElement | DocumentFragment, width: number, private datum: Datum, private col: InternalGridColumnDefinition) {
     super(host, width);
     this.value = datum[col.field];
     this.formatter = col.formatter;
 
     addClass(this.domNode, 'data-cell');
+    if (col.cssClass) {
+      addClass(this.domNode, col.cssClass);
+    }
   }
 
   getComponent(): Function {

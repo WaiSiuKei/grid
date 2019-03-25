@@ -155,6 +155,7 @@ dv.setFilter((d) => {
 - [x] Sorting
 - [x] Filtering
 - [x] Column pin
+- [x] Theme
 - [ ] Column resizing
 - [ ] Column re-ordering
 - [ ] Column group

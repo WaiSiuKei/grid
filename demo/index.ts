@@ -7,9 +7,9 @@ import { RowSelectionPlugin } from 'src/plugins/rowSelection';
 
 let columns = [
   // multi columns
-  { id: 'title', name: 'Title', field: 'title', pinned: ColumnPinAlignment.Left, sortable: true },
+  { id: 'title', name: 'Title', field: 'title', pinned: ColumnPinAlignment.Left, sortable: true, headerClass: 'text-center', cssClass: 'text-center' },
   { id: 'duration', name: 'Duration', field: 'duration' },
-  { id: '%', name: '%', field: 'percentComplete', sortable: true },
+  { id: '%', name: '%', field: 'percentComplete', sortable: true, headerClass: 'text-right', cssClass: 'text-right' },
   { id: 'start', name: 'Start', field: 'start' },
   { id: 'finish', name: 'Finish', field: 'finish' },
   { id: 'effort-driven', name: 'Effort Driven', field: 'effortDriven' },
@@ -80,7 +80,7 @@ let dv = new DataView();
 dv.setItems(data);
 
 let container = document.getElementById('myGrid');
-let t = new Grid(container, dv, columns);
+let t = new Grid(container, dv, columns, { rowHeight: 25, headerRowHeight: 25 });
 t.install(new RowSelectionPlugin());
 // dv.setGrouping([{
 //   comparer(a: number, b: number) {
