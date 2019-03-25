@@ -7,9 +7,7 @@ import { ScrollableElement } from 'src/base/browser/ui/scrollbar/scrollableEleme
 import { GridModel } from 'src/grid/gridModel';
 
 function defaultFormatter(value: any, columnDef: InternalGridColumnDefinition, dataContext: Datum): any {
-  return function () {
-    return React.createElement('div', null, (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-  };
+  return React.createElement('div', null, (value + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
 }
 
 export interface IGridOptions {

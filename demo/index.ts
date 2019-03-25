@@ -2,8 +2,10 @@
 import { DataView } from 'src/data/dataView';
 import { CountAggregator } from 'src/data/aggregation';
 import { Grid } from 'src/grid/gridImpl';
-import { ColumnPinAlignment } from 'src/grid/grid';
+import { ColumnPinAlignment, IGridColumnDefinition } from 'src/grid/grid';
 import { RowSelectionPlugin } from 'src/plugins/rowSelection';
+import { React } from 'src/rax';
+import { useState, useEffect, useRef } from 'src/rax/hooks';
 
 let columns = [
   // multi columns
@@ -21,8 +23,25 @@ let columns = [
   { id: 'f', name: 'f', field: 'f' },
   { id: 'g', name: 'g', field: 'g' },
   { id: 'h', name: 'h', field: 'h' },
-  { id: 'i', name: 'i', field: 'i' },
-  { id: 'total', name: 'total', field: 'j', pinned: ColumnPinAlignment.Right },
+  { id: 'i', name: 'i', field: 'title' },
+  {
+    id: 'total', name: 'total', field: 'j', pinned: ColumnPinAlignment.Right, formatter(value: any, col: IGridColumnDefinition, dataContext: any) {
+      function Welcome(props: any) {
+
+        const [count, setCount] = useState(false);
+
+        return React.createElement('div', {
+          onClick: function onClick() {
+            console.log(count);
+            return setCount(!count);
+          },
+          className: props.value
+        }, count.toString());
+      }
+
+      return React.createElement(Welcome, { value, col, dataContext });
+    }
+  },
 
   // flex grow
   // { id: 'a', name: 'a', field: 'a', flexGrow: 1 },
@@ -40,7 +59,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 50; i++) {
+for (let i = 0; i < 2; i++) {
   data[i] = {
     // title: 'Task ' + i,
     title: i,

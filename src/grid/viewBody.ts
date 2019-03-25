@@ -70,7 +70,7 @@ abstract class ViewCell implements IDisposable, IViewCell {
 
   private render() {
     let component = this.getComponent();
-    if (component) ReactDOM.render(component(), this.domNode);
+    if (component) ReactDOM.render(component, this.domNode);
   }
 
   abstract getComponent(): Function

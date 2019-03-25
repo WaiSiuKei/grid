@@ -84,6 +84,16 @@ export class DataView implements IDataView, IDisposable {
     }
   }
 
+  public setItem(idx: number, row: Datum) {
+    if (!this.suspend) {
+      this.memorizedRows = this.rows.slice();
+      this.items[idx] = row;
+      this.refresh();
+    } else {
+      this.items[idx] = row;
+    }
+  }
+
   public push(...data: Datum[]) {
     if (!this.suspend) {
       this.memorizedRows = this.rows.slice();

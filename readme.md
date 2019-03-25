@@ -11,14 +11,17 @@ Reference SlickGrid，the difference is that you should return a component in th
 
 ```jsx
 function formatter(row, cell, value, columnDef, dataContext) {
-  const { React } = grid
-  return function app() {
-    React.useLayoutEffect(() => {
-      // console.log('hello', row, cell);
-    });
+  const { React } = grid;
+  function Welcome() {
+    const [count, setCount] = useState(0);
+    return React.createElement('div', {
+      onClick: function onClick() {
+        return setCount(count + 1);
+      }
+    }, count, ' times');
+  }
 
-    return <div>{value}</div>;
-  };
+  return React.createElement(Welcome);
 }
 ```
 
@@ -27,13 +30,11 @@ or
 ```js
 function formatter(row, cell, value, columnDef, dataContext) {
   const { React } = grid
-  return function app() {
-    React.useLayoutEffect(() => {
-      // console.log('hello', row, cell);
-    });
+  React.useLayoutEffect(() => {
+    // console.log('hello', row, cell);
+  });
 
-    return React.createElement('div', null, value);
-  };
+  return React.createElement('div', null, value);
 }
 ```
 
