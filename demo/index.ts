@@ -1,6 +1,5 @@
 // import './index.scss';
 import { DataView } from 'src/data/dataView';
-import { CountAggregator } from 'src/data/aggregation';
 import { Grid } from 'src/grid/gridImpl';
 import { ColumnPinAlignment, IGridColumnDefinition } from 'src/grid/grid';
 import { RowSelectionPlugin } from 'src/plugins/rowSelection';
@@ -31,7 +30,9 @@ let columns = [
         const [count, setCount] = useState(false);
 
         return React.createElement('div', {
-          onClick: function onClick() {
+          onClick: function onClick(e: MouseEvent) {
+            e.preventDefault();
+            e.stopPropagation();
             console.log(count);
             return setCount(!count);
           },
@@ -59,7 +60,7 @@ let columns = [
 ];
 
 let data = [];
-for (let i = 0; i < 2; i++) {
+for (let i = 0; i < 1e6; i++) {
   data[i] = {
     // title: 'Task ' + i,
     title: i,
