@@ -6,6 +6,11 @@
   <link rel="stylesheet" href="./dist/grid.css">
   <link>
   <title>Nila Grid example : Basic grid</title>
+  <style>
+    * {
+      font-family: "PingFang SC", "microsoft yahei", "WenQuanYi Zen Hei", Ubuntu, Arial, sans-serif;
+    }
+  </style>
 </head>
 <body>
 <div id="myGrid" style="width:600px;height:500px;"></div>
@@ -28,7 +33,7 @@
   ];
 
   let data = [];
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 500000; i++) {
     data[i] = {
       title: 'Task ' + i,
       duration: '5 days',
@@ -47,39 +52,31 @@
   }
 
   let dv = new NilaGrid.DataView();
-
-  let t = new NilaGrid.Grid(document.getElementById('myGrid'), dv, columns);
-
-  dv.setGrouping([{
-    comparer(a, b) {
-      return a - b;
-    },
-    accessor(d) {
-      return Math.floor(d.percentComplete / 10);
-    },
-    aggregators: [
-      new NilaGrid.CountAggregator('percentComplete')
-    ]
-  }]);
-  dv.setSorting([{
-    accessor: 'percentComplete',
-    comparer(a, b) {
-      return a - b;
-    },
-  }, {
-    accessor: 'title',
-    comparer(a, b) {
-      return a - b;
-    },
-  }]);
   dv.setItems(data);
 
-  Object.defineProperty(window, 'grid', {
-    value: t
-  });
-  Object.defineProperty(window, 'dv', {
-    value: dv
-  });
+  let t = new NilaGrid.Grid(document.getElementById('myGrid'), dv, columns, { rowHeight: 25, headerRowHeight: 25 });
+  // dv.setGrouping([{
+  //   comparer(a, b) {
+  //     return a - b;
+  //   },
+  //   accessor(d) {
+  //     return Math.floor(d.percentComplete / 10);
+  //   },
+  //   aggregators: [
+  //     new NilaGrid.CountAggregator('percentComplete')
+  //   ]
+  // }]);
+  // dv.setSorting([{
+  //   accessor: 'percentComplete',
+  //   comparer(a, b) {
+  //     return a - b;
+  //   },
+  // }, {
+  //   accessor: 'title',
+  //   comparer(a, b) {
+  //     return a - b;
+  //   },
+  // }]);
 </script>
 </body>
 </html>

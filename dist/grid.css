@@ -1,3 +1,181 @@
+div.nila-grid {
+  height: 100%;
+  width: 100%;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  user-select: none;
+  font-size: 14px; }
+
+div.nila-grid-part {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; }
+
+.nila-grid-part .nila-grid-header {
+  display: block;
+  box-sizing: border-box;
+  overflow: hidden;
+  width: 200%;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  position: relative; }
+
+.nila-grid-part div.nila-grid-header-cell {
+  height: 100%;
+  float: left;
+  box-sizing: border-box;
+  padding-left: 5px;
+  display: inline-block;
+  border-style: solid;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  border-left-width: 0; }
+  .nila-grid-part div.nila-grid-header-cell:not(:last-of-type) {
+    border-right-width: 1px; }
+  .nila-grid-part div.nila-grid-header-cell:last-of-type {
+    border-right-width: 0; }
+
+.nila-grid-part.left div.nila-grid-header-cell:last-of-type {
+  border-right-width: 1px; }
+
+.nila-grid-part.right div.nila-grid-header-cell:first-of-type {
+  border-left-width: 1px; }
+
+.nila-grid-part .nila-grid-header-cell.sortable {
+  padding-right: 15px;
+  cursor: pointer; }
+
+.sortable::after {
+  width: 6px;
+  height: 9px;
+  margin-left: 5px;
+  background-size: 100%;
+  background-image: url("./media/sortable.png");
+  background-repeat: no-repeat;
+  content: '';
+  display: inline-block; }
+
+.sortable.desc::after {
+  background-image: url("./media/desc.png"); }
+
+.sortable.asc::after {
+  background-image: url("./media/asc.png"); }
+
+.nila-grid-part > .nila-scrollable-element {
+  display: block;
+  width: 100%;
+  bottom: 0; }
+
+.nila-grid-part > .nila-scrollable-element > .nila-grid-body {
+  height: 100%;
+  width: 100%;
+  position: relative; }
+
+.nila-grid-part .nila-grid-rows {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  outline: none; }
+
+.nila-grid-part .nila-grid-rows > div.nila-grid-row {
+  display: block;
+  box-sizing: border-box;
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  border-bottom-style: solid;
+  border-bottom-width: 1px; }
+
+.nila-grid-part div.nila-grid-cell {
+  box-sizing: border-box;
+  height: 100%;
+  float: left;
+  padding: 0 5px;
+  border-style: solid;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  border-right-width: 0;
+  border-left-width: 0; }
+  .nila-grid-part div.nila-grid-cell:not(:first-of-type) {
+    border-left-width: 1px; }
+
+.nila-grid-part.left div.nila-grid-cell:last-of-type {
+  border-right-width: 1px; }
+
+.nila-grid-part.right div.nila-grid-cell:first-of-type {
+  border-left-width: 1px; }
+
+.nila-grid-part .nila-grid-rows > .nila-grid-row > .content {
+  position: relative;
+  height: 100%; }
+
+.nila-grid-cell, .nila-grid-header-cell {
+  overflow: hidden; }
+  .nila-grid-cell :first-child, .nila-grid-header-cell :first-child {
+    width: 100%;
+    height: 100%;
+    display: inline-block; }
+
+.nila-dark .nila-grid-part {
+  background-color: #1c2435;
+  border-color: #262b35; }
+
+.nila-dark .nila-grid-header {
+  background-color: #242c3d;
+  border-color: #262b35; }
+
+.nila-dark .nila-grid-header-cell {
+  color: #b9c0d0;
+  border-color: #13171a; }
+
+.nila-dark .nila-grid-row {
+  border-color: #262b35; }
+
+.nila-dark .nila-grid-cell {
+  border-color: #262b35;
+  color: #f4f4f4; }
+
+.nila-dark .nila-grid-cell.active {
+  background-color: #213756; }
+
+.nila-light .nila-grid-part {
+  background-color: #fff;
+  color: #111;
+  border-color: #e9f0f7; }
+
+.nila-light .nila-grid-header {
+  background-color: #f9f9f9;
+  border-color: #f9f9f9; }
+
+.nila-light .nila-grid-header-cell {
+  border-color: #dce6f3; }
+
+.nila-light .nila-grid-row {
+  border-color: #e9f0f7; }
+
+.nila-light .nila-grid-cell {
+  border-color: #e9f0f7; }
+
+.nila-light .nila-grid-cell.active {
+  background-color: #dde6f7; }
+
+.nila-grid .text-center {
+  text-align: center; }
+
+.nila-grid .text-left {
+  text-align: left; }
+
+.nila-grid .text-right {
+  text-align: right; }
+
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
